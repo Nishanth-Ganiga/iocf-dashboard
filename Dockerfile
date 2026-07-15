@@ -2,10 +2,11 @@
 FROM node:20-slim AS frontend-build
 ENV CI=true
 WORKDIR /app/web
-COPY web/package.json web/package-lock.json ./
-RUN npm install --no-audit --no-fund
+RUN corepack enable && corepack prepare pnpm@9 --activate
+COPY web/package.json ./
+RUN pnpm install
 COPY web/ ./
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: run the Python server, which serves both the API and the
 # built frontend from Stage 1.
