@@ -1,0 +1,172 @@
+/* Board Detail — leadership hero, full roster, stadiums, trophy cabinet,
+   and recent transfer activity for a single national cricket board. */
+
+.board-detail__back {
+  display: inline-block;
+  margin: 24px 0 20px;
+  color: var(--ioc-text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.board-detail__back:hover {
+  color: var(--ioc-gold);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Hero                                                                    */
+/* ---------------------------------------------------------------------- */
+.board-detail__hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 28px;
+  margin-bottom: 36px;
+}
+
+.board-detail__hero-info {
+  flex: 1;
+  min-width: 220px;
+}
+
+.board-detail__name {
+  font-family: 'Rajdhani', var(--sans);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.board-detail__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 0.88rem;
+}
+
+.board-detail__tier-pill {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--ioc-gold);
+}
+
+.board-detail__hero-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Player roster                                                          */
+/* ---------------------------------------------------------------------- */
+.board-detail__player-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.board-detail__player-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Stadiums                                                                */
+/* ---------------------------------------------------------------------- */
+.board-detail__stadium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.board-detail__stadium-card {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.board-detail__stadium-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.board-detail__stadium-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.board-detail__stadium-tag {
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  font-size: 0.65rem;
+  padding: 3px 10px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Trophy cabinet                                                          */
+/* ---------------------------------------------------------------------- */
+.board-detail__trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.board-detail__trophy-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 0.85rem;
+}
+
+.board-detail__trophy-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Transfer activity                                                       */
+/* ---------------------------------------------------------------------- */
+.board-detail__transfer-list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+
+.board-detail__transfer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.85rem;
+}
+.board-detail__transfer-row:last-child {
+  border-bottom: none;
+}
+
+.board-detail__transfer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ioc-gold);
+  box-shadow: 0 0 8px var(--ioc-gold);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .board-detail__hero {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .board-detail__hero-stats {
+    width: 100%;
+  }
+}

@@ -1,0 +1,264 @@
+/* ==========================================================================
+   IOCF Dashboard — Global design tokens & base styles
+   Theme: Black / Navy Blue / Gold / Neon Blue — premium glassmorphism
+   ========================================================================== */
+
+:root {
+  /* Core palette */
+  --ioc-black: #05070d;
+  --ioc-navy-950: #060a17;
+  --ioc-navy-900: #0a1128;
+  --ioc-navy-800: #0f1a3d;
+  --ioc-navy-700: #16234f;
+  --ioc-navy-600: #1c2d63;
+  --ioc-gold: #d4af37;
+  --ioc-gold-bright: #f5cf5c;
+  --ioc-gold-dim: #9c7c24;
+  --ioc-neon: #34e0ff;
+  --ioc-neon-dim: #1c8fa8;
+  --ioc-neon-glow: rgba(52, 224, 255, 0.35);
+  --ioc-gold-glow: rgba(212, 175, 55, 0.35);
+
+  --ioc-text: #eef2fb;
+  --ioc-text-dim: #a7b0c8;
+  --ioc-text-faint: #6b7590;
+
+  --ioc-success: #34e0a1;
+  --ioc-danger: #ff5470;
+  --ioc-warning: #ffb02e;
+
+  /* Glass surfaces */
+  --glass-bg: rgba(16, 22, 45, 0.55);
+  --glass-bg-strong: rgba(16, 22, 45, 0.78);
+  --glass-border: rgba(212, 175, 55, 0.18);
+  --glass-border-neon: rgba(52, 224, 255, 0.22);
+  --glass-blur: blur(18px);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-glow-gold: 0 0 24px var(--ioc-gold-glow);
+  --shadow-glow-neon: 0 0 24px var(--ioc-neon-glow);
+
+  --header-h: 72px;
+  --sidebar-w: 260px;
+  --sidebar-w-collapsed: 76px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #10184a 0%, var(--ioc-navy-950) 45%, var(--ioc-black) 100%);
+  background-attachment: fixed;
+  color: var(--ioc-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+::selection {
+  background: var(--ioc-gold);
+  color: var(--ioc-black);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--ioc-gold-dim), var(--ioc-navy-600));
+  border-radius: var(--radius-pill);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Utility: glass panel                                                   */
+/* ---------------------------------------------------------------------- */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-panel--neon {
+  border-color: var(--glass-border-neon);
+}
+
+.gold-text {
+  color: var(--ioc-gold);
+}
+
+.neon-text {
+  color: var(--ioc-neon);
+}
+
+.text-dim {
+  color: var(--ioc-text-dim);
+}
+
+.text-faint {
+  color: var(--ioc-text-faint);
+}
+
+.gradient-heading {
+  background: linear-gradient(90deg, var(--ioc-gold-bright) 0%, var(--ioc-gold) 45%, var(--ioc-neon) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                 */
+/* ---------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), background 0.25s var(--ease-out);
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--ioc-gold-bright), var(--ioc-gold) 60%, var(--ioc-gold-dim));
+  color: #14100a;
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.4);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.55);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--glass-border);
+  color: var(--ioc-text);
+}
+
+.btn-ghost:hover {
+  border-color: var(--ioc-neon);
+  color: var(--ioc-neon);
+  box-shadow: 0 0 18px rgba(52, 224, 255, 0.25);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  border-color: var(--ioc-gold);
+  color: var(--ioc-gold);
+}
+
+.btn-outline-gold:hover {
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Page transition                                                        */
+/* ---------------------------------------------------------------------- */
+.page-enter {
+  animation: pageFadeIn 0.5s var(--ease-out) both;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Responsive helpers                                                     */
+/* ---------------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 48px);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --header-h: 64px;
+  }
+}

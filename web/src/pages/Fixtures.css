@@ -1,0 +1,235 @@
+/* Fixtures & Results module — upcoming/results tabs, next-up strip, WTC grid */
+
+.fixture-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fixture-tab {
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: none;
+  color: var(--ioc-text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.fixture-tab:hover {
+  color: var(--ioc-text);
+}
+.fixture-tab.is-active {
+  background: linear-gradient(120deg, var(--ioc-gold-bright), var(--ioc-gold) 60%, var(--ioc-gold-dim));
+  color: #14100a;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Next Up strip                                                          */
+/* ---------------------------------------------------------------------- */
+.fixture-nextup {
+  padding: 18px 20px;
+  margin-bottom: 32px;
+}
+
+.fixture-nextup__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.fixture-nextup__row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.fixture-nextup__item {
+  flex: 0 0 260px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+}
+
+.fixture-nextup__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.fixture-nextup__name {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.fixture-nextup__meta {
+  font-size: 0.76rem;
+  margin-top: 2px;
+}
+
+.fixture-nextup__when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Fixture groups + cards                                                 */
+/* ---------------------------------------------------------------------- */
+.fixture-group {
+  margin-bottom: 30px;
+}
+
+.fixture-group__title {
+  font-family: 'Rajdhani', var(--sans);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ioc-neon);
+  margin-bottom: 14px;
+}
+
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.fixture-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+}
+
+.fixture-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fixture-card__teams {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.fixture-card__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.fixture-card__meta {
+  font-size: 0.78rem;
+  color: var(--ioc-text-dim);
+  margin-top: 2px;
+}
+
+.fixture-card__type {
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  flex-shrink: 0;
+}
+
+.fixture-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fixture-card__dates {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.fixture-card__winner {
+  font-size: 0.85rem;
+  color: var(--ioc-gold-bright);
+}
+
+.fixture-card__extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fixture-card__tag {
+  font-size: 0.74rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--ioc-text-dim);
+}
+
+.fixture-card__tag-value {
+  color: var(--ioc-text);
+}
+
+/* ---------------------------------------------------------------------- */
+/* WTC status grid                                                        */
+/* ---------------------------------------------------------------------- */
+.wtc-grid {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.wtc-grid__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+.wtc-grid__row:last-child {
+  border-bottom: none;
+}
+
+.wtc-grid__teams {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.wtc-grid__vs {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.wtc-grid__date {
+  font-size: 0.76rem;
+}
+
+@media (max-width: 640px) {
+  .fixture-tabs {
+    width: 100%;
+  }
+  .fixture-tab {
+    flex: 1;
+  }
+  .fixture-nextup__item {
+    flex: 0 0 220px;
+  }
+}

@@ -1,0 +1,222 @@
+/* Tournament detail — dispatcher page: banner, groups, match tables,
+   squads, fixtures, awards — shared across all tournament source types */
+
+.td-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ioc-text-dim);
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-bottom: 18px;
+  transition: color 0.2s;
+}
+.td-back:hover {
+  color: var(--ioc-gold);
+}
+
+.td-subsection {
+  margin: 30px 0;
+}
+
+.td-subsection__title {
+  font-family: 'Rajdhani', var(--sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--ioc-text);
+}
+
+.td-caption {
+  font-size: 0.8rem;
+  margin: -8px 0 14px;
+  max-width: 720px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Champion / runner-up banner                                            */
+/* ---------------------------------------------------------------------- */
+.td-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  padding: 22px 26px;
+  margin-bottom: 10px;
+}
+
+.td-banner__slot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.td-banner__slot--stat {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.td-banner__name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ioc-gold-bright);
+}
+
+.td-banner__sub {
+  font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Groups / team lists                                                    */
+/* ---------------------------------------------------------------------- */
+.td-team-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.td-team-list__items li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.td-team-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Match / awards tables                                                  */
+/* ---------------------------------------------------------------------- */
+.td-table-scroll {
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.td-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 480px;
+}
+
+.td-table th,
+.td-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  white-space: nowrap;
+}
+
+.td-table th {
+  color: var(--ioc-neon);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.td-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.td-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Fixture list (Emerging Talent League)                                  */
+/* ---------------------------------------------------------------------- */
+.td-fixture-list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+
+.td-fixture-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.td-fixture-row:last-child {
+  border-bottom: none;
+}
+
+.td-fixture-row__teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.td-fixture-row__meta {
+  font-size: 0.78rem;
+}
+
+.td-fixture-row__result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 0.78rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Representatives grid (Lone Warrior)                                    */
+/* ---------------------------------------------------------------------- */
+.td-rep-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.td-rep-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  cursor: default;
+}
+.td-rep-card:hover {
+  transform: none;
+  border-color: var(--glass-border);
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Squad cards (Emerging Talent League + Franchise League)                */
+/* ---------------------------------------------------------------------- */
+.td-squad-card {
+  cursor: default;
+}
+.td-squad-card:hover {
+  transform: none;
+  border-color: var(--glass-border);
+  box-shadow: none;
+}
+
+.td-squad-card__players {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--ioc-text-dim);
+}
+
+.td-squad-card__toggle {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 640px) {
+  .td-banner {
+    padding: 18px;
+    gap: 20px;
+  }
+  .td-fixture-row__result {
+    margin-left: 0;
+  }
+}

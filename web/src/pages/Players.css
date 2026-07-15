@@ -1,0 +1,112 @@
+/* Players module — flattened board rosters, searchable + filterable grid */
+
+.players-search {
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text);
+  font-size: 0.85rem;
+  min-width: 240px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.players-search::placeholder {
+  color: var(--ioc-text-faint);
+}
+.players-search:focus {
+  border-color: var(--ioc-neon);
+  box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Board filter chip row                                                  */
+/* ---------------------------------------------------------------------- */
+.players-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.players-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text-dim);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.players-chip:hover {
+  border-color: var(--ioc-neon);
+  color: var(--ioc-text);
+}
+.players-chip.is-active {
+  background: rgba(212, 175, 55, 0.16);
+  border-color: var(--ioc-gold);
+  color: var(--ioc-gold-bright);
+}
+
+.players-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Player card grid                                                       */
+/* ---------------------------------------------------------------------- */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.players-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  transition: transform 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+.players-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ioc-gold);
+}
+
+.players-card__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.players-card__name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.players-card__board {
+  font-size: 0.74rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.players-card__board:hover {
+  color: var(--ioc-neon);
+}
+
+@media (max-width: 640px) {
+  .players-search {
+    width: 100%;
+    min-width: 0;
+  }
+  .players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}

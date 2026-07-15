@@ -1,0 +1,53 @@
+/* Tournaments module — category/status filter chips + card grid */
+
+.tournaments-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.tournaments-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tournaments-chip {
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.tournaments-chip:hover {
+  border-color: var(--ioc-neon);
+  color: var(--ioc-text);
+}
+.tournaments-chip.is-active {
+  background: rgba(212, 175, 55, 0.14);
+  border-color: var(--ioc-gold);
+  color: var(--ioc-gold-bright);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.18);
+}
+
+.tournaments-card__cta {
+  margin-top: auto;
+  align-self: flex-start;
+  padding: 8px 20px;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .tournaments-filter-row {
+    gap: 8px;
+  }
+  .tournaments-chip {
+    padding: 7px 14px;
+    font-size: 0.76rem;
+  }
+}

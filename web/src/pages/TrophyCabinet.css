@@ -1,0 +1,73 @@
+/* Trophy Cabinet module — recent champions recap + board trophy leaderboard */
+
+.trophy-card__rank {
+  font-family: 'Rajdhani', var(--sans);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ioc-text-faint);
+  flex-shrink: 0;
+}
+
+.trophy-card__name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ioc-text);
+  text-decoration: none;
+}
+.trophy-card__name:hover {
+  color: var(--ioc-gold);
+}
+
+.trophy-card__count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ioc-gold-bright);
+}
+
+.trophy-card__count-label {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.trophy-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 18px;
+  font-size: 0.78rem;
+  color: var(--ioc-text-dim);
+  list-style: disc;
+}
+
+.trophy-card__list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trophy-card__more {
+  color: var(--ioc-neon);
+  list-style: none;
+  margin-left: -18px;
+  padding-left: 18px;
+}
+
+.trophy-card__none {
+  font-size: 0.8rem;
+}
+
+/* De-emphasize boards with zero trophies without hiding them */
+.trophy-card--empty {
+  opacity: 0.55;
+}
+.trophy-card--empty .trophy-card__count {
+  color: var(--ioc-text-faint);
+}
+.trophy-card--empty:hover {
+  transform: none;
+  border-color: var(--glass-border);
+  box-shadow: none;
+}
