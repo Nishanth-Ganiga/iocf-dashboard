@@ -15,6 +15,115 @@
   padding: 40px 20px 88px;
 }
 
+/* Held briefly while the WebGL hero's JS chunk downloads (see
+   Landing.jsx's Suspense fallback) - plain darkness matches the hero's
+   own "start with darkness" opening beat, so there's no flash. */
+.landing--boot {
+  padding: 0;
+  background: #05070d;
+}
+
+/* ---------------------------------------------------------------------- */
+/* WebGL hero experience (HeroExperience.jsx)                            */
+/* ---------------------------------------------------------------------- */
+.hero-exp {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #05070d;
+  cursor: none;
+}
+.hero-exp__canvas-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* Soft dark falloff toward the edges, on top of the 3D scene's own
+   postprocessing vignette, so the DOM text always sits on a readable
+   background regardless of what's happening behind it. Deepens further
+   during launch, standing in for the "hero zooms inward" darkening beat. */
+.hero-exp__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 7, 13, 0.55) 100%);
+  transition: opacity 1s ease-out;
+}
+.hero-exp__vignette.is-launching {
+  background: radial-gradient(ellipse at center, transparent 10%, rgba(5, 7, 13, 0.92) 100%);
+}
+
+.hero-exp__content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 88px;
+  transition: opacity 0.5s ease-out, filter 0.5s ease-out;
+}
+.hero-exp__content.is-launching {
+  opacity: 0;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Muted-by-default ambience toggle, top-right corner. */
+.hero-sound-toggle {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s var(--ease-out);
+}
+.hero-sound-toggle:hover {
+  border-color: var(--ioc-gold);
+  box-shadow: var(--shadow-glow-gold);
+  transform: scale(1.08);
+}
+
+/* Custom cursor: small glowing dot + a softly-lagging outer ring. Both
+   fixed/pointer-events:none so they never intercept clicks - actual hit
+   testing still happens on the real (hidden) cursor position. */
+.hero-cursor-dot,
+.hero-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 50%;
+  will-change: transform;
+}
+.hero-cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--ioc-gold);
+  box-shadow: 0 0 10px var(--ioc-gold);
+}
+.hero-cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+}
+
 /* ---------------------------------------------------------------------- */
 /* Background stack                                                       */
 /* ---------------------------------------------------------------------- */
@@ -314,11 +423,23 @@
   padding: 16px 38px;
   overflow: hidden;
   background-size: 200% 100%;
-  animation: ctaGradientDrift 6s ease-in-out infinite;
+  /* Idle float + magnetic-hover offset are both applied as a single
+     JS-driven `translate` (see GetStartedButton.jsx) rather than CSS
+     keyframes - framer-motion writes its own inline `transform` for this
+     button's entrance animation, and CSS keyframes animating `transform`
+     would silently out-prioritize that inline style. Using the separate
+     `translate` property (which composes with `transform` rather than
+     replacing it) and driving it entirely from one rAF loop avoids two
+     different systems fighting over the same property. */
+  animation: ctaGradientDrift 6s ease-in-out infinite, ctaBreathe 4.5s ease-in-out infinite;
 }
 @keyframes ctaGradientDrift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+@keyframes ctaBreathe {
+  0%, 100% { box-shadow: 0 6px 22px rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 10px 34px rgba(212, 175, 55, 0.65); }
 }
 
 .landing__cta-arrow {
@@ -344,6 +465,7 @@
 /* Instagram community CTA                                                */
 /* ---------------------------------------------------------------------- */
 .landing__insta {
+  position: relative;
   margin-top: 8px;
   padding: 28px 32px;
   width: 100%;
@@ -353,6 +475,40 @@
   align-items: center;
   gap: 18px;
   text-align: center;
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+}
+.landing__insta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 50px rgba(221, 42, 123, 0.22), var(--shadow-card);
+}
+/* Animated conic-gradient border that traces around the card on hover -
+   same masking technique as .landing__badge::before, cycling through the
+   Instagram brand gradient instead of gold. */
+.landing__insta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  opacity: 0;
+  background: conic-gradient(from var(--insta-angle, 0deg), #f58529, #dd2a7b, #8134af, #515bd4, #f58529);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: instaBorderSpin 4s linear infinite;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+.landing__insta:hover::before {
+  opacity: 1;
+}
+@keyframes instaBorderSpin {
+  to { --insta-angle: 360deg; }
+}
+@property --insta-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
 .landing__insta-head {
@@ -376,22 +532,9 @@
   margin-top: 2px;
 }
 
-.landing__insta-count {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.landing__insta-count-num {
+.landing__insta-count-inline {
   font-family: 'Rajdhani', var(--sans);
   font-weight: 700;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1;
-}
-.landing__insta-count-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .landing__insta-list {

@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion'
-import useCountUp from '../../lib/useCountUp'
+import useCountUp from '../../../lib/useCountUp'
 
 const INSTAGRAM_URL = 'https://www.instagram.com/iocf_official?igsh=dHBzcGFsYnJ2YTc='
 
 const HIGHLIGHTS = [
-  'Official Tournament Updates',
-  'Player Announcements',
-  'League Highlights',
+  'Official Tournaments',
+  'Player Rankings',
   'Auction News',
+  'League Announcements',
   'Daily Cricket Content',
 ]
 
@@ -27,16 +27,11 @@ export default function InstagramCta({ onRipple, ...motionProps }) {
           📸
         </span>
         <div>
-          <p className="landing__insta-title">Follow IOCF Official on Instagram</p>
-          <p className="landing__insta-sub text-dim">
-            🏏 Join our growing global cricket community
+          <p className="landing__insta-title">
+            Join <span className="landing__insta-count-inline gradient-heading">{followers}+</span> Cricket Fans
           </p>
+          <p className="landing__insta-sub text-dim">Follow IOCF Official</p>
         </div>
-      </div>
-
-      <div className="landing__insta-count">
-        <span className="landing__insta-count-num gradient-heading">{followers}+</span>
-        <span className="landing__insta-count-label text-dim">Followers</span>
       </div>
 
       <ul className="landing__insta-list">
@@ -51,8 +46,9 @@ export default function InstagramCta({ onRipple, ...motionProps }) {
         target="_blank"
         rel="noopener noreferrer"
         onPointerDown={onRipple}
+        data-cursor-hover
       >
-        <span className="landing__insta-btn-label">📸 Follow IOCF Official</span>
+        <span className="landing__insta-btn-label">Follow IOCF Official</span>
         <span className="landing__insta-btn-arrow" aria-hidden="true">
           →
         </span>
