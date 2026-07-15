@@ -8,8 +8,10 @@ cached at IOCF_ALL_BOARDS.xlsx; that local copy is what actually gets
 parsed (data.py is unchanged). Re-pulls the sheet at most once every
 GOOGLE_REFRESH_SECONDS, and re-parses whenever the pulled file's content
 changes, so edits made in the Google Sheet show up automatically without
-restarting anything. If the pull fails (offline, sharing revoked, etc.)
-the server keeps serving the last good cached copy.
+restarting anything. IOCF_ALL_BOARDS.xlsx is checked into the repo (not
+gitignored) so a fresh deploy always has *something* to serve even if the
+very first live pull fails - it just gets overwritten by the next
+successful pull.
 
 Run:
     python3 server.py
@@ -103,15 +105,19 @@ def _default_json(o):
     return str(o)
 
 
-def get_dashboard_payload(force=False):
-    _pull_google_sheet(force=force)
+def _refresh(force_pull=False):
+    """Pull the sheet (network I/O) and re-parse if the on-disk file
+    changed (CPU work) - both potentially slow, so this must never run on
+    a request-handling thread except for an explicit refresh=1."""
+    _pull_google_sheet(force=force_pull)
     with _cache_lock:
         try:
             mtime = os.path.getmtime(XLSX_PATH)
         except OSError as e:
-            return {"error": f"Workbook not found at {XLSX_PATH}: {e}"}, 500
+            _cache["error"] = f"Workbook not found at {XLSX_PATH}: {e}"
+            return
 
-        if force or _cache["mtime"] != mtime or _cache["payload"] is None:
+        if _cache["mtime"] != mtime or _cache["payload"] is None:
             try:
                 payload = data_module.build_dashboard(XLSX_PATH)
                 payload["generatedAt"] = datetime.fromtimestamp(
@@ -122,10 +128,23 @@ def get_dashboard_payload(force=False):
                 _cache["error"] = None
             except Exception as e:  # keep serving the last good payload if re-parse fails
                 _cache["error"] = str(e)
-                if _cache["payload"] is None:
-                    return {"error": str(e)}, 500
 
-        return _cache["payload"], 200
+
+def _refresh_loop():
+    """Runs on its own daemon thread so the Google Sheet pull + workbook
+    parse never blocks an incoming /api/dashboard request."""
+    while True:
+        time.sleep(GOOGLE_REFRESH_SECONDS)
+        _refresh(force_pull=True)
+
+
+def get_dashboard_payload(force=False):
+    if force:  # ?refresh=1 - the one case where the caller explicitly wants to wait
+        _refresh(force_pull=True)
+    with _cache_lock:
+        if _cache["payload"] is not None:
+            return _cache["payload"], 200
+        return {"error": _cache["error"] or "still loading initial data"}, 500
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -198,13 +217,17 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     print(f"[iocf-server] Google Sheet source: {GOOGLE_EXPORT_URL}")
     print(f"[iocf-server] local cache: {XLSX_PATH}")
-    # warm the cache & fail fast with a clear error if the workbook is missing/broken
+    # warm the cache once synchronously so the very first request has data
     payload, status = get_dashboard_payload(force=True)
     if status != 200:
         print(f"[iocf-server] WARNING on startup: {payload.get('error')}")
     else:
         print(f"[iocf-server] loaded {payload['stats']['totalBoards']} boards, "
               f"{payload['stats']['totalPlayers']} players")
+
+    # from here on, refreshing happens on its own thread - request handlers
+    # only ever read the cache, so page loads never wait on Google
+    threading.Thread(target=_refresh_loop, daemon=True).start()
 
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"[iocf-server] listening on http://{HOST}:{PORT}")

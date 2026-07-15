@@ -1,5 +1,4 @@
 web/node_modules
 web/dist
 server/__pycache__
-server/IOCF_ALL_BOARDS.xlsx
 .git
