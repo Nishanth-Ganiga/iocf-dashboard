@@ -1,5 +1,6 @@
 # Stage 1: build the React frontend into static files
 FROM node:20-slim AS frontend-build
+ENV CI=true
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
 RUN npm install --no-audit --no-fund
