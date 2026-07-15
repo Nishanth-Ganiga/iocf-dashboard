@@ -24,6 +24,30 @@ The server keeps a local cache of the last successful pull at
 also acts as a fallback if the machine is offline or the sheet becomes
 temporarily unreachable.
 
+## Hosting (production)
+
+The whole app (API + built frontend) runs as a **single Docker service** —
+see the root `Dockerfile`. It multi-stage builds the React app with Node,
+then copies the static build into a Python image that runs `server.py`,
+which serves both `/api/*` and the frontend from one process on one port
+(`$PORT`, provided by the host).
+
+Deploying on **Render** (free tier):
+1. Push this repo to GitHub (already done if you're reading this from there).
+2. On [render.com](https://render.com): **New** → **Web Service** → connect
+   this GitHub repo.
+3. Render auto-detects the root `Dockerfile` — leave Environment as
+   **Docker**, Root Directory blank.
+4. No environment variables are required (defaults to the Google Sheet ID
+   baked into `server.py`); optionally set `IOCF_SHEET_ID` to point at a
+   different sheet.
+5. Click **Create Web Service**. First build takes a few minutes (installs
+   Node deps, runs `vite build`, installs `openpyxl`). Render gives you a
+   public URL like `https://iocf-dashboard.onrender.com` when it's live.
+
+Any other Docker-based host (Railway, Fly.io, a VPS with `docker run`)
+works the same way, since it's just a standard `Dockerfile`.
+
 ## Running it locally
 
 You need two processes running at once: the Python data server (pulls the

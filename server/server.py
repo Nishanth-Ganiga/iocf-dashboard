@@ -19,6 +19,7 @@ The Vite dev server proxies /api requests to this server (see vite.config.js).
 """
 import hashlib
 import json
+import mimetypes
 import os
 import sys
 import threading
@@ -30,8 +31,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import data as data_module
 
-XLSX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "IOCF_ALL_BOARDS.xlsx")
-PORT = int(os.environ.get("IOCF_PORT", "8787"))
+SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+XLSX_PATH = os.path.join(SERVER_DIR, "IOCF_ALL_BOARDS.xlsx")
+STATIC_DIR = os.path.normpath(os.path.join(SERVER_DIR, "..", "web", "dist"))
+HOST = os.environ.get("IOCF_HOST", "0.0.0.0")
+PORT = int(os.environ.get("PORT", os.environ.get("IOCF_PORT", "8787")))
 
 # The Google Sheet is the live database now; IOCF_ALL_BOARDS.xlsx is just a
 # local cache of the last successful pull (used as a fallback if the pull
@@ -143,6 +147,33 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
         self.end_headers()
 
+    def _serve_static(self):
+        rel_path = self.path.split("?", 1)[0].lstrip("/") or "index.html"
+        file_path = os.path.normpath(os.path.join(STATIC_DIR, rel_path))
+        # HashRouter means the server never sees /dashboard, /boards, etc -
+        # only "/" - but fall back to index.html for any unknown path
+        # (and guard against escaping STATIC_DIR via "..").
+        if not file_path.startswith(STATIC_DIR) or not os.path.isfile(file_path):
+            file_path = os.path.join(STATIC_DIR, "index.html")
+
+        if not os.path.isfile(file_path):
+            self._send_json(
+                {"error": "frontend build not found - run 'npm run build' in web/"}, 500
+            )
+            return
+
+        with open(file_path, "rb") as f:
+            body = f.read()
+        content_type, _ = mimetypes.guess_type(file_path)
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", content_type or "application/octet-stream")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
     def do_GET(self):
         if self.path.startswith("/api/dashboard"):
             force = "refresh=1" in self.path
@@ -155,8 +186,10 @@ class Handler(BaseHTTPRequestHandler):
                 "googleSheetUrl": f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/edit",
                 "lastPullError": _cache.get("pullError"),
             })
-        else:
+        elif self.path.startswith("/api/"):
             self._send_json({"error": "not found"}, 404)
+        else:
+            self._serve_static()
 
     def log_message(self, fmt, *args):
         sys.stderr.write("[iocf-server] " + (fmt % args) + "\n")
@@ -173,8 +206,8 @@ def main():
         print(f"[iocf-server] loaded {payload['stats']['totalBoards']} boards, "
               f"{payload['stats']['totalPlayers']} players")
 
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print(f"[iocf-server] listening on http://127.0.0.1:{PORT}")
+    server = ThreadingHTTPServer((HOST, PORT), Handler)
+    print(f"[iocf-server] listening on http://{HOST}:{PORT}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
