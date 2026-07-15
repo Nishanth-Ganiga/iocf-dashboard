@@ -1,15 +1,23 @@
-/* Landing page — animated stadium-inspired hero with Get Started CTA */
+/* Landing page — cinematic animated hero with Get Started CTA + Instagram
+   community section. Layout/typography/branding tokens are unchanged from
+   the original (same colors, fonts, spacing scale) — everything below is
+   additive motion and background layering.
+   ========================================================================== */
 
 .landing {
   position: relative;
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 40px 20px;
+  padding: 40px 20px 88px;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Background stack                                                       */
+/* ---------------------------------------------------------------------- */
 .landing__bg {
   position: absolute;
   inset: 0;
@@ -17,27 +25,89 @@
   overflow: hidden;
 }
 
+.landing__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Slow-drifting mesh gradients — large, heavily blurred blobs that add
+   depth without ever reading as a distinct "shape". */
+.landing__mesh {
+  position: absolute;
+  width: 90vw;
+  height: 90vw;
+  max-width: 1100px;
+  max-height: 1100px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+  will-change: transform;
+}
+.landing__mesh--1 {
+  top: -20%;
+  left: -15%;
+  background: radial-gradient(circle at 30% 30%, rgba(52, 224, 255, 0.28), transparent 65%);
+  animation: meshDrift1 42s ease-in-out infinite;
+}
+.landing__mesh--2 {
+  bottom: -25%;
+  right: -20%;
+  background: radial-gradient(circle at 70% 70%, rgba(212, 175, 55, 0.24), transparent 65%);
+  animation: meshDrift2 50s ease-in-out infinite;
+}
+
+@keyframes meshDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, 3%) scale(1.08); }
+}
+@keyframes meshDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-3%, -4%) scale(1.05); }
+}
+
+/* Light fog: a soft, slowly-shifting low-opacity haze layer */
+.landing__fog {
+  position: absolute;
+  inset: -10%;
+  background: linear-gradient(120deg, rgba(238, 242, 251, 0.02), transparent 40%, rgba(52, 224, 255, 0.015) 70%);
+  mix-blend-mode: screen;
+  animation: fogDrift 60s ease-in-out infinite;
+}
+
+@keyframes fogDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-2%, 2%); }
+}
+
 .landing__stadium-ring {
   position: absolute;
   top: 50%;
   left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: spinSlow 120s linear infinite, breathe 8s ease-in-out infinite;
+}
+.landing__stadium-ring--outer {
   width: 1400px;
   height: 1400px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
   border: 1px solid rgba(212, 175, 55, 0.12);
   box-shadow:
     0 0 0 60px rgba(52, 224, 255, 0.02),
     0 0 0 120px rgba(212, 175, 55, 0.02),
     inset 0 0 120px rgba(212, 175, 55, 0.05);
-  animation: spinSlow 90s linear infinite;
 }
-.landing__stadium-ring::before {
-  content: '';
-  position: absolute;
-  inset: 90px;
-  border-radius: 50%;
+.landing__stadium-ring--inner {
+  width: 1220px;
+  height: 1220px;
   border: 1px dashed rgba(52, 224, 255, 0.14);
+  animation: spinSlow 150s linear infinite reverse, breathe 10s ease-in-out infinite 1s;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 .landing__floodlight {
@@ -100,19 +170,72 @@
   }
 }
 
+/* Floating cricket-themed glyphs (max 15, positioned/randomized in JS) */
+.landing__floaters {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.landing__floater {
+  position: absolute;
+  opacity: 0.35;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.35));
+  animation: floatDrift linear infinite;
+  will-change: transform;
+}
+@keyframes floatDrift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(var(--drift), -34px) rotate(8deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cricket ball                                                           */
+/* ---------------------------------------------------------------------- */
+.landing__ball-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 900px);
+  height: min(80vw, 900px);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  perspective: 1200px;
+}
+.landing__ball-wrap {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.landing__ball-spin {
+  width: 100%;
+  height: 100%;
+  animation: spinSlow 60s linear infinite;
+  opacity: 0.1;
+}
+.landing__ball-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Content                                                                */
+/* ---------------------------------------------------------------------- */
 .landing__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   text-align: center;
   max-width: 720px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  animation: pageFadeIn 0.8s var(--ease-out) both;
 }
 
 .landing__badge {
+  position: relative;
   padding: 8px 18px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--glass-border);
@@ -121,6 +244,47 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ioc-gold);
+  overflow: hidden;
+  animation: badgeGlow 4s ease-in-out infinite;
+}
+.landing__badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--badge-angle, 0deg),
+    transparent 0%,
+    var(--ioc-gold) 12%,
+    transparent 24%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: badgeBorderSpin 5s linear infinite;
+}
+.landing__badge-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3.5s ease-in-out infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+@keyframes badgeBorderSpin {
+  to { --badge-angle: 360deg; }
+}
+@property --badge-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes badgeGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+  50% { box-shadow: 0 0 18px rgba(212, 175, 55, 0.35); }
 }
 
 .landing__title {
@@ -128,6 +292,10 @@
   font-weight: 700;
   font-size: clamp(2.4rem, 6vw, 4.2rem);
   line-height: 1.08;
+  transition: filter 0.6s ease-out, text-shadow 0.6s ease-out;
+}
+.landing__title.is-glowing {
+  filter: drop-shadow(0 0 22px rgba(212, 175, 55, 0.45));
 }
 
 .landing__subtitle {
@@ -136,8 +304,242 @@
   line-height: 1.6;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Get Started CTA                                                        */
+/* ---------------------------------------------------------------------- */
 .landing__cta {
+  position: relative;
   margin-top: 12px;
   font-size: 1.05rem;
   padding: 16px 38px;
+  overflow: hidden;
+  background-size: 200% 100%;
+  animation: ctaGradientDrift 6s ease-in-out infinite;
+}
+@keyframes ctaGradientDrift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.landing__cta-arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--ease-out);
+}
+.landing__cta:hover .landing__cta-arrow {
+  transform: translateX(5px);
+}
+
+/* Click-ripple burst, spawned at the pointer position and animated by
+   GSAP (see useRipple.js) rather than CSS keyframes — it needs a concrete
+   start position per click, which a static :active keyframe can't express. */
+.gsap-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 60%);
+  pointer-events: none;
+  transform: scale(0.15);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Instagram community CTA                                                */
+/* ---------------------------------------------------------------------- */
+.landing__insta {
+  margin-top: 8px;
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.landing__insta-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+.landing__insta-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.35));
+}
+.landing__insta-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ioc-text);
+}
+.landing__insta-sub {
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.landing__insta-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.landing__insta-count-num {
+  font-family: 'Rajdhani', var(--sans);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1;
+}
+.landing__insta-count-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing__insta-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 8px 20px;
+  font-size: 0.82rem;
+  color: var(--ioc-text-dim);
+}
+.landing__insta-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.landing__insta-list li::before {
+  content: '✓';
+  color: var(--ioc-neon);
+  font-weight: 700;
+}
+
+.landing__insta-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 30px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+  background-size: 250% 250%;
+  background-position: 0% 50%;
+  box-shadow: 0 8px 26px rgba(221, 42, 123, 0.35);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), background-position 0.6s ease-out;
+}
+.landing__insta-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 36px rgba(221, 42, 123, 0.5);
+  background-position: 100% 50%;
+}
+.landing__insta-btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+.landing__insta-btn-arrow {
+  transition: transform 0.3s var(--ease-out);
+}
+.landing__insta-btn:hover .landing__insta-btn-arrow {
+  transform: translateX(5px);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scroll indicator                                                       */
+/* ---------------------------------------------------------------------- */
+.landing__scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: scrollCueFade 3s ease-in-out infinite;
+}
+.landing__scroll-cue-text {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.landing__scroll-cue-mouse {
+  width: 22px;
+  height: 36px;
+  border: 2px solid var(--glass-border);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+.landing__scroll-cue-wheel {
+  width: 3px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--ioc-gold);
+  animation: scrollWheelBounce 1.8s ease-in-out infinite;
+}
+.landing__scroll-cue-arrow {
+  color: var(--ioc-text-faint);
+  font-size: 1rem;
+  animation: scrollArrowBounce 1.8s ease-in-out infinite;
+}
+
+@keyframes scrollCueFade {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes scrollWheelBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(8px); opacity: 0.4; }
+}
+@keyframes scrollArrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Responsive                                                             */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .landing__insta-list {
+    grid-template-columns: 1fr;
+  }
+  .landing__insta-head {
+    flex-direction: column;
+    text-align: center;
+  }
+  .landing__scroll-cue {
+    bottom: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reduced motion                                                         */
+/* ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .landing__mesh,
+  .landing__fog,
+  .landing__stadium-ring,
+  .landing__floodlight,
+  .landing__particles span,
+  .landing__floater,
+  .landing__ball-spin,
+  .landing__badge,
+  .landing__badge::before,
+  .landing__badge-shimmer,
+  .landing__cta,
+  .landing__scroll-cue,
+  .landing__scroll-cue-wheel,
+  .landing__scroll-cue-arrow {
+    animation: none !important;
+  }
 }
