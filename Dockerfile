@@ -2,7 +2,7 @@
 FROM node:20-slim AS frontend-build
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund
 COPY web/ ./
 RUN npm run build
 
