@@ -51,9 +51,15 @@ export default function HeroCanvas({ phase, pointer, launchProgress, dpr }) {
       <color attach="background" args={['#05070d']} />
       <fog attach="fog" args={['#05070d', 8, 26]} />
 
-      <ambientLight intensity={0.15} />
-      <hemisphereLight args={['#1c8fa8', '#05070d', 0.25]} />
-      <directionalLight position={[6, 8, 4]} intensity={0.3} color="#f5cf5c" />
+      {/* Three.js uses physically-correct (inverse-square) falloff for
+          point lights by default, so a naive intensity like 8 barely
+          registers ~12 units away at the pitch - bumped ambient/hemisphere/
+          directional here (and the floodlight intensity in Stadium.jsx)
+          so the grass/pitch textures are actually visible rather than
+          reading as a near-black plain. */}
+      <ambientLight intensity={0.45} />
+      <hemisphereLight args={['#1c8fa8', '#05070d', 0.4]} />
+      <directionalLight position={[6, 8, 4]} intensity={0.6} color="#f5cf5c" />
 
       <Suspense fallback={null}>
         <Stadium reveal={stadiumReveal} />
