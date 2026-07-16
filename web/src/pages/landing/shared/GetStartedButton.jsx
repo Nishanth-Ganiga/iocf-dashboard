@@ -19,7 +19,7 @@ const MAGNET_RANGE = 14
 const FLOAT_AMPLITUDE = 4
 const FLOAT_PERIOD_MS = 5000
 
-export default function GetStartedButton({ onClick, onRipple, ...motionProps }) {
+export default function GetStartedButton({ onClick, onRipple, isLaunching, ...motionProps }) {
   const buttonRef = useRef(null)
   const magnetRef = useRef({ x: 0, y: 0 })
   const prefersReducedMotion = useReducedMotion()
@@ -40,7 +40,7 @@ export default function GetStartedButton({ onClick, onRipple, ...motionProps }) 
   }
 
   useEffect(() => {
-    if (prefersReducedMotion) return undefined
+    if (prefersReducedMotion || isLaunching) return undefined
     let raf = null
     let currentX = 0
     let currentY = 0
@@ -57,16 +57,17 @@ export default function GetStartedButton({ onClick, onRipple, ...motionProps }) 
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, isLaunching])
 
   return (
     <motion.button
       ref={buttonRef}
-      className="btn btn-primary landing__cta"
+      className={`btn btn-primary landing__cta${isLaunching ? ' is-dissolving' : ''}`}
       onClick={onClick}
       onPointerDown={onRipple}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
+      disabled={isLaunching}
       data-cursor-hover
       {...motionProps}
     >

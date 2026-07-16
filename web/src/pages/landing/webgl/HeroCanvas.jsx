@@ -1,83 +1,92 @@
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
-import Stadium from './Stadium'
-import CricketBallMesh from './CricketBallMesh'
-import EnergyParticles from './EnergyParticles'
-import HoloNetwork from './HoloNetwork'
+import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, Noise, Vignette } from '@react-three/postprocessing'
+import { BlendFunction } from 'postprocessing'
+import * as THREE from 'three'
+
+import VoidParticles from './VoidParticles'
+import SpaceScene from './SpaceScene'
+import Portal from './Portal'
+import PortalDebris from './PortalDebris'
+import WarpStreaks from './WarpStreaks'
+import Earth from './Earth'
+import NationNetwork from './NationNetwork'
+import FloatingIslands from './FloatingIslands'
+import LionArrival from './LionArrival'
 import CameraRig from './CameraRig'
+import { QUALITY_SETTINGS } from './detectQualityTier'
 
-// Composes the whole WebGL scene: fog + volumetric-feeling lighting,
-// stadium, glass cricket ball, energy particles, holographic network, and
-// the drone camera rig - then a light bloom/vignette pass on top so the
-// floodlights and gold/blue emissives actually read as "glowing" rather
-// than flat-shaded.
-//
-// `phase` (from useIntroSequence) drives per-layer reveal amounts so nothing
-// pops in - stadium/particles/network all ease their own opacity/intensity
-// based on how far the intro has progressed. `pointer` and `launchProgress`
-// are refs (not state) so mouse movement and the launch tween never trigger
-// a React re-render of the overlay - only the R3F frame loop reads them.
-const PHASE_REVEAL = {
-  dark: 0,
-  particles: 0,
-  stadium: 0,
-  logo: 1,
-  ready: 1,
-  launching: 1,
-  done: 1,
-}
-const PARTICLE_REVEAL = {
-  dark: 0,
-  particles: 1,
-  stadium: 1,
-  logo: 1,
-  ready: 1,
-  launching: 1,
-  done: 1,
-}
+// Composes the entire cinematic journey: void particles, space dressing,
+// the portal + its debris, warp streaks, and (once through) the
+// holographic Earth/nations/islands/lion universe - each layer reading
+// the same `phase` from useIntroSequence so nothing pops in out of sync
+// with anything else. `qualityTier` scales particle counts and switches
+// off the heaviest postprocessing passes (DepthOfField in particular) on
+// lower-end hardware while every other layer stays present, per the
+// brief's "preserving the overall visual experience" rather than a blunt
+// quality slider.
+const VOID_REVEAL = { void: 0.4, space: 1, portal: 1, warp: 1, universe: 1, ready: 1, launching: 1, done: 1 }
+const SPACE_REVEAL = { void: 0, space: 1, portal: 1, warp: 1, universe: 1, ready: 1, launching: 1, done: 1 }
+const PORTAL_REVEAL = { void: 0, space: 0, portal: 1, warp: 1, universe: 0, ready: 0, launching: 0, done: 0 }
+const UNIVERSE_REVEAL = { void: 0, space: 0, portal: 0, warp: 0, universe: 1, ready: 1, launching: 0.3, done: 0 }
+const LION_REVEAL = { void: 0, space: 0, portal: 0, warp: 0, universe: 0, ready: 1, launching: 1, done: 1 }
 
-export default function HeroCanvas({ phase, pointer, launchProgress, dpr }) {
-  const stadiumReveal = PHASE_REVEAL[phase] ?? 1
-  const particleReveal = PARTICLE_REVEAL[phase] ?? 1
+export default function HeroCanvas({ phase, pointer, pointerWorld, launchProgress, phaseStartRef, qualityTier = 'high' }) {
+  const settings = QUALITY_SETTINGS[qualityTier] ?? QUALITY_SETTINGS.high
+  const pp = settings.postProcessing
+
+  const voidReveal = VOID_REVEAL[phase] ?? 1
+  const spaceReveal = SPACE_REVEAL[phase] ?? 1
+  const portalReveal = PORTAL_REVEAL[phase] ?? 0
+  const universeReveal = UNIVERSE_REVEAL[phase] ?? 0
+  const lionReveal = LION_REVEAL[phase] ?? 0
+  const showWarpStreaks = phase === 'warp' || phase === 'launching' || phase === 'done'
+
+  const dpr = useMemo(() => settings.dpr, [settings.dpr])
 
   return (
     <Canvas
       dpr={dpr}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      camera={{ position: [0, 0.6, 6.5], fov: 50, near: 0.1, far: 60 }}
+      camera={{ position: [0, 0, 4], fov: 50, near: 0.1, far: 80 }}
       style={{ position: 'absolute', inset: 0 }}
     >
-      <color attach="background" args={['#05070d']} />
-      <fog attach="fog" args={['#05070d', 8, 26]} />
+      <color attach="background" args={['#020208']} />
+      <fog attach="fog" args={['#020208', 14, 40]} />
 
-      {/* Three.js uses physically-correct (inverse-square) falloff for
-          point lights by default, so a naive intensity like 8 barely
-          registers ~12 units away at the pitch - bumped ambient/hemisphere/
-          directional here (and the floodlight intensity in Stadium.jsx)
-          so the grass/pitch textures are actually visible rather than
-          reading as a near-black plain. */}
-      <ambientLight intensity={0.45} />
-      <hemisphereLight args={['#1c8fa8', '#05070d', 0.4]} />
-      <directionalLight position={[6, 8, 4]} intensity={0.6} color="#f5cf5c" />
+      <ambientLight intensity={0.25} />
+      <hemisphereLight args={['#1c8fa8', '#020208', 0.3]} />
 
       <Suspense fallback={null}>
-        <Stadium reveal={stadiumReveal} />
-        <CricketBallMesh pointer={pointer} opacity={0.15} />
-        <EnergyParticles reveal={particleReveal} launchProgress={launchProgress} />
-        <HoloNetwork reveal={stadiumReveal} />
+        <VoidParticles reveal={voidReveal} pointerWorld={pointerWorld} count={settings.voidParticleCount} />
+        <SpaceScene reveal={spaceReveal} starCount={settings.starCount} />
+
+        <Portal reveal={portalReveal} position={[0, 0, -3]} />
+        <PortalDebris reveal={portalReveal} position={[0, 0, -3]} />
+        {showWarpStreaks && (
+          <WarpStreaks phase={phase} phaseStartRef={phaseStartRef} launchProgress={launchProgress} />
+        )}
+
+        <Earth reveal={universeReveal} position={[0, 0, -6]} />
+        <NationNetwork reveal={universeReveal} earthPosition={[0, 0, -6]} />
+        <FloatingIslands reveal={universeReveal} earthPosition={[0, 0, -6]} />
+        <LionArrival reveal={lionReveal} position={[2.6, -1.1, -1.5]} />
       </Suspense>
 
-      <CameraRig pointer={pointer} phase={phase} launchProgress={launchProgress} />
+      <CameraRig pointer={pointer} phase={phase} launchProgress={launchProgress} phaseStartRef={phaseStartRef} />
 
       <EffectComposer multisampling={0}>
-        <Bloom
-          intensity={0.55}
-          luminanceThreshold={0.25}
-          luminanceSmoothing={0.35}
-          mipmapBlur
-        />
-        <Vignette eskil={false} offset={0.25} darkness={0.65} />
+        {pp.bloom && <Bloom intensity={0.65} luminanceThreshold={0.2} luminanceSmoothing={0.35} mipmapBlur />}
+        {pp.chromaticAberration && (
+          <ChromaticAberration
+            offset={new THREE.Vector2(0.0006, 0.0006)}
+            radialModulation={false}
+            modulationOffset={0}
+          />
+        )}
+        {pp.depthOfField && <DepthOfField focusDistance={0.02} focalLength={0.05} bokehScale={2.5} />}
+        {pp.noise && <Noise opacity={0.025} blendFunction={BlendFunction.OVERLAY} />}
+        {pp.vignette && <Vignette eskil={false} offset={0.25} darkness={0.75} />}
       </EffectComposer>
     </Canvas>
   )
