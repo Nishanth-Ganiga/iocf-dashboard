@@ -265,10 +265,13 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
             headers[c] = v
 
     stadium_col = None
+    umpire_col = None
     for c, h in headers.items():
-        if "stadium" in h.lower():
+        low = h.lower()
+        if "stadium" in low and stadium_col is None:
             stadium_col = c
-            break
+        if "umpire" in low and umpire_col is None:
+            umpire_col = c
 
     stadiums = []
     stadium_tier = None
@@ -283,6 +286,34 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
             if v.lower() == "none":
                 continue
             stadiums.append(v)
+
+    # Umpires: row 6 of the umpire column is always a single "total
+    # credits earned by every umpire on this board" figure; rows 7+ are a
+    # numbered list of umpire names, each followed by an unspecified
+    # number of unnumbered "Category: appearances" lines describing which
+    # series/tournaments/franchise leagues they officiated. Those activity
+    # lines are kept verbatim rather than parsed into structured
+    # numbers - several mix appearance counts with credit amounts in the
+    # same line ("International Series(ODI): 3000: 2") with no reliable
+    # way to tell which number means what, so summarizing them would risk
+    # fabricating a total the source doesn't actually state. Two boards
+    # (Italy, UAE) have no umpire column at all - umpires stays [].
+    umpires = []
+    umpire_credits = None
+    if umpire_col:
+        total_cell = ws.cell(row=6, column=umpire_col).value
+        if isinstance(total_cell, (int, float)):
+            umpire_credits = total_cell
+        current = None
+        for v in _read_column_block(ws, umpire_col, 7, max_row):
+            if not isinstance(v, str):
+                continue
+            m = NUMBERED_RE.match(v)
+            if m:
+                current = {"name": m.group(1), "appearances": []}
+                umpires.append(current)
+            elif current is not None:
+                current["appearances"].append(v)
 
     # Trophy cabinets + player-trade lists can appear as secondary inline
     # sub-headers anywhere in the sheet (not just row 5), e.g. a cell reading
@@ -336,6 +367,9 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
         "stadiums": stadiums,
         "trophies": trophies,
         "trophiesCount": len(trophies),
+        "umpires": umpires,
+        "umpiresCount": len(umpires),
+        "umpireCredits": umpire_credits,
         "transfers": transfers,
     }
 
