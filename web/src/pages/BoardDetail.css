@@ -50,6 +50,11 @@
   color: var(--ioc-gold);
 }
 
+.board-detail__mascot-pill {
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+}
+
 .board-detail__hero-stats {
   display: flex;
   gap: 12px;

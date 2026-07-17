@@ -4,6 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import { knownBoardIdentity } from '../lib/boardIdentity'
 import './Boards.css'
 
 // Cricket Boards module — every active national board as a clickable card,
@@ -42,31 +43,41 @@ export default function Boards() {
             <div className="empty-state">No boards match "{query}".</div>
           ) : (
             <div className="card-grid">
-              {filteredBoards.map((b) => (
-                <div key={b.id} className="entity-card glass-panel">
-                  <div className="entity-card__top">
-                    <Badge name={b.name} size={56} />
-                    <div>
-                      <p className="entity-card__title">{b.name}</p>
-                      <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
-                      <p className="entity-card__meta">CEO: {b.ceo || '—'}</p>
+              {filteredBoards.map((b) => {
+                const identity = knownBoardIdentity(b.name)
+                return (
+                  <div key={b.id} className="entity-card glass-panel">
+                    <div className="entity-card__top">
+                      <Badge name={b.name} size={56} />
+                      <div>
+                        <p className="entity-card__title">
+                          {identity?.flag} {b.name}
+                        </p>
+                        <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
+                        <p className="entity-card__meta">CEO: {b.ceo || '—'}</p>
+                        {identity?.mascotName && (
+                          <p className="entity-card__meta text-faint">
+                            {identity.mascot} {identity.mascotName}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    <div className="entity-card__stats">
+                      <div className="entity-card__stat">
+                        <span className="text-faint">Credits</span>
+                        <b>{formatCredits(b.credits)}</b>
+                      </div>
+                      <div className="entity-card__stat">
+                        <span className="text-faint">Ranking</span>
+                        <b>#{b.ranking}</b>
+                      </div>
+                    </div>
+                    <Link to={`/boards/${b.id}`} className="btn btn-outline-gold boards-card__cta">
+                      View Board
+                    </Link>
                   </div>
-                  <div className="entity-card__stats">
-                    <div className="entity-card__stat">
-                      <span className="text-faint">Credits</span>
-                      <b>{formatCredits(b.credits)}</b>
-                    </div>
-                    <div className="entity-card__stat">
-                      <span className="text-faint">Ranking</span>
-                      <b>#{b.ranking}</b>
-                    </div>
-                  </div>
-                  <Link to={`/boards/${b.id}`} className="btn btn-outline-gold boards-card__cta">
-                    View Board
-                  </Link>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>

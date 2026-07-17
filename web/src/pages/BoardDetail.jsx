@@ -3,6 +3,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import { knownBoardIdentity } from '../lib/boardIdentity'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -39,6 +40,7 @@ export default function BoardDetail() {
   const stadiums = board.stadiums || []
   const trophies = board.trophies || []
   const transfers = board.transfers || []
+  const identity = knownBoardIdentity(board.name)
 
   return (
     <div className="page-enter">
@@ -50,12 +52,19 @@ export default function BoardDetail() {
         <section className="board-detail__hero glass-panel">
           <Badge name={board.name} size={72} />
           <div className="board-detail__hero-info">
-            <h1 className="board-detail__name gradient-heading">{board.name}</h1>
+            <h1 className="board-detail__name gradient-heading">
+              {identity?.flag} {board.name}
+            </h1>
             <div className="board-detail__meta-row">
               <span className="text-dim">Chairman: {board.chairman || '—'}</span>
               <span className="text-dim">CEO: {board.ceo || '—'}</span>
               {board.stadiumTier && (
                 <span className="pill board-detail__tier-pill">{board.stadiumTier}</span>
+              )}
+              {identity?.mascotName && (
+                <span className="pill board-detail__mascot-pill">
+                  {identity.mascot} {identity.mascotName}
+                </span>
               )}
             </div>
           </div>
