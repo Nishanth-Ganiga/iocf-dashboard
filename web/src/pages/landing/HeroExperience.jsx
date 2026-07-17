@@ -4,24 +4,30 @@ import { motion, useReducedMotion } from 'framer-motion'
 
 import useIntroSequence from './useIntroSequence'
 import useRipple from '../../lib/useRipple'
+import useParallaxMouse from '../../lib/useParallaxMouse'
 import CustomCursor from './CustomCursor'
 import SoundToggle from './SoundToggle'
 import HeroCanvas from './webgl/HeroCanvas'
+import HeroBackdrop from './shared/HeroBackdrop'
 import usePointerRef from './webgl/usePointerRef'
 import usePointerWorld from './webgl/usePointerWorld'
 import detectQualityTier from './webgl/detectQualityTier'
 import AnimatedHeading from './shared/AnimatedHeading'
-import InstagramCta from './shared/InstagramCta'
+import FeatureCards from './shared/FeatureCards'
+import SocialPanel from './shared/SocialPanel'
 import ScrollIndicator from './shared/ScrollIndicator'
 import GetStartedButton from './shared/GetStartedButton'
 
 // The full cinematic "World Cricket Portal" experience: void -> space ->
 // portal -> warp -> holographic Earth/nations/islands/lion universe (see
-// webgl/HeroCanvas.jsx), behind a scroll-locked glass UI overlay. The
-// visitor can't scroll the page until they either click Get Started or
-// perform one committed scroll/swipe gesture - both trigger the launch
-// sequence (a second portal opens, the camera warps through it, the
-// screen floods with light) before navigating to /dashboard.
+// webgl/HeroCanvas.jsx), behind a scroll-locked glass UI overlay. A thin,
+// low-opacity HeroBackdrop layer (orbit rings/aurora/polygons) sits behind
+// the 3D canvas purely for extra depth at the edges the 3D scene doesn't
+// fill - it never competes with the WebGL scene for visual attention. The
+// visitor can't scroll the page until they either click the CTA or perform
+// one committed scroll/swipe gesture - both trigger the launch sequence (a
+// second portal opens, the camera warps through it, the screen floods with
+// light) before navigating to /dashboard.
 const EASE_OUT = [0.16, 1, 0.3, 1]
 const LAUNCH_WARP_DURATION = 1800
 
@@ -39,6 +45,7 @@ export default function HeroExperience() {
   const { phase, isAtLeast, triggerLaunch, phaseStartRef } = useIntroSequence({ reducedMotion: prefersReducedMotion })
   const pointer = usePointerRef()
   const pointerWorld = usePointerWorld(pointer)
+  const { x: mouseX, y: mouseY } = useParallaxMouse()
   const qualityTier = useMemo(() => detectQualityTier(), [])
   const launchProgress = useRef(0)
   const onRipple = useRipple()
@@ -66,7 +73,7 @@ export default function HeroExperience() {
   }, [navigate, prefersReducedMotion, triggerLaunch])
 
   // Scroll-lock: the hero owns the viewport until launch. A single
-  // committed downward wheel/touch gesture counts as "Get Started" too -
+  // committed downward wheel/touch gesture counts as the CTA too -
   // a permanently inert scroll would just confuse anyone who tries it.
   useEffect(() => {
     const preventScroll = (e) => {
@@ -88,6 +95,10 @@ export default function HeroExperience() {
   return (
     <div className="hero-exp">
       <CustomCursor />
+
+      <div className="hero-exp__backdrop" aria-hidden="true">
+        <HeroBackdrop mouseX={mouseX} mouseY={mouseY} />
+      </div>
 
       <motion.div
         className="hero-exp__canvas-wrap"
@@ -122,7 +133,7 @@ export default function HeroExperience() {
         <h1 className={`landing__title gradient-heading${headingGlowing ? ' is-glowing' : ''}`}>
           {isAtLeast('ready') ? (
             <AnimatedHeading
-              text={'Welcome to the\nIOCF Universe'}
+              text={'WELCOME TO THE\nIOCF UNIVERSE'}
               delay={0}
               onDone={handleHeadingDone}
             />
@@ -131,19 +142,21 @@ export default function HeroExperience() {
 
         {isAtLeast('ready') && (
           <>
-            <motion.p className="landing__subtitle text-dim" {...fadeUpProps(0.5)}>
-              One Federation. One Cricket World. Boards, Players, Stadiums, Tournaments
-              &amp; Rankings — every nation, connected.
+            <motion.p className="landing__subtitle" {...fadeUpProps(0.5)}>
+              One Federation. One Cricket World. Boards, Players, Stadiums, Rankings, Tournaments
+              and Cricket Intelligence — Every Nation Connected.
             </motion.p>
 
             <GetStartedButton onClick={launch} onRipple={onRipple} isLaunching={isLaunching} {...fadeUpProps(1.0)} />
 
-            <InstagramCta {...fadeUpProps(1.4)} onRipple={onRipple} />
+            <FeatureCards {...fadeUpProps(1.35)} />
+
+            <SocialPanel {...fadeUpProps(1.7)} onRipple={onRipple} />
           </>
         )}
       </div>
 
-      {isAtLeast('ready') && <ScrollIndicator {...fadeUpProps(1.8, 10)} />}
+      {isAtLeast('ready') && <ScrollIndicator {...fadeUpProps(2.1, 10)} />}
     </div>
   )
 }

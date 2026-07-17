@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 // The hero's primary CTA: idle breathing glow (CSS keyframes on box-shadow,
-// see .landing__cta) plus a gentle idle float and a "magnetic" hover pull,
+// see .hero-cta) plus a gentle idle float and a "magnetic" hover pull,
 // both driven from a single requestAnimationFrame loop here rather than
 // CSS keyframes/framer-motion's animate props.
 //
@@ -62,7 +62,7 @@ export default function GetStartedButton({ onClick, onRipple, isLaunching, ...mo
   return (
     <motion.button
       ref={buttonRef}
-      className={`btn btn-primary landing__cta${isLaunching ? ' is-dissolving' : ''}`}
+      className={`hero-cta${isLaunching ? ' is-dissolving' : ''}`}
       onClick={onClick}
       onPointerDown={onRipple}
       onPointerMove={handlePointerMove}
@@ -71,8 +71,10 @@ export default function GetStartedButton({ onClick, onRipple, isLaunching, ...mo
       data-cursor-hover
       {...motionProps}
     >
-      <span className="landing__cta-label">Get Started</span>
-      <span className="landing__cta-arrow" aria-hidden="true">→</span>
+      <span className="hero-cta__fill" aria-hidden="true" />
+      <span className="hero-cta__border" aria-hidden="true" />
+      <span className="hero-cta__label">Explore IOCF Universe</span>
+      <span className="hero-cta__arrow" aria-hidden="true">→</span>
     </motion.button>
   )
 }
