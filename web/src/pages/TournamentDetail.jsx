@@ -3,8 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
-import { formatCredits } from '../lib/badges'
-import { IconChampion, IconMedal, IconMatch, IconCalendar } from '../lib/icons'
+import { IconChampion, IconMedal, IconMatch, IconCalendar, IconPurse, IconCaptain, IconCancelled, IconTrophy } from '../lib/icons'
+import { colorsFor, formatCredits } from '../lib/badges'
 import './TournamentDetail.css'
 
 // Tournament detail — dispatches to a different renderer depending on which
@@ -375,28 +375,221 @@ function ContinentalCupDetail({ cup }) {
 /* Franchise League — players grouped by home national board           */
 /* ------------------------------------------------------------------ */
 function FranchiseLeagueDetail({ league }) {
-  const boards = Object.keys(league.boards || {})
+  const teamNames = Object.keys(league.teams || {})
+  const boardNames = Object.keys(league.boards || {})
+  const matches = league.matches || []
+  const awards = league.awards || []
+  const isCancelled = league.status === 'Cancelled'
+
+  // The auction-style team rosters carry real per-player credit
+  // valuations - a total-purse-spent figure per team is a natural,
+  // genuinely meaningful stat this data supports that a plain player list
+  // doesn't, so it's computed here rather than left implicit in the table.
+  const teamsWithSpend = teamNames.map((name) => {
+    const team = league.teams[name]
+    const players = team.players || []
+    const spent = players.reduce((sum, p) => sum + (p.credits || 0), 0)
+    return { name, ...team, spent }
+  })
+  const highestSpend = Math.max(1, ...teamsWithSpend.map((t) => t.spent))
+
   return (
     <>
-      <ChampionBanner champion={league.champion} runnerUp={league.runnerUp} />
-      <p className="text-faint td-caption">
-        Note: the workbook doesn't record per-franchise-team names — the groups below are the
-        players registered for this league, grouped by their home national board, not the
-        franchise teams themselves.
-      </p>
-      <div className="td-subsection">
-        <h3 className="td-subsection__title">Registered Players by Board</h3>
-        {boards.length === 0 ? (
-          <div className="empty-state">No registered players on record.</div>
-        ) : (
+      <ChampionBanner champion={league.champion} runnerUp={league.runnerUp} totalMatches={league.totalMatches || null} />
+
+      {isCancelled && (
+        <div className="td-cancelled-banner glass-panel">
+          <IconCancelled className="td-cancelled-banner__icon" aria-hidden="true" />
+          <div>
+            <p className="td-cancelled-banner__title">Season Cancelled</p>
+            <p className="text-dim td-cancelled-banner__sub">
+              This season was called off partway through — the roster and match results below
+              are exactly as far as the source record goes, not a complete season.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {teamNames.length > 0 && (
+        <div className="td-subsection">
+          <h3 className="td-subsection__title">Franchise Teams</h3>
+          <div className="card-grid td-franchise-grid">
+            {teamsWithSpend.map((team) => (
+              <FranchiseTeamCard key={team.name} team={team} highestSpend={highestSpend} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {matches.length > 0 && <FranchiseMatchTimeline matches={matches} />}
+
+      {awards.length > 0 && <FranchiseAwardsShowcase awards={awards} />}
+
+      {boardNames.length > 0 && (
+        <div className="td-subsection">
+          <h3 className="td-subsection__title">Registered Players by Board</h3>
+          <p className="text-faint td-caption">
+            Every player who registered for this league's national-board draft pool — not every
+            registrant was picked up by a franchise team at auction, so this list runs larger
+            than the rosters above.
+          </p>
           <div className="card-grid">
-            {boards.map((b) => (
+            {boardNames.map((b) => (
               <SquadCard key={b} board={b} players={league.boards[b]} />
             ))}
           </div>
+        </div>
+      )}
+
+      {teamNames.length === 0 && matches.length === 0 && awards.length === 0 && boardNames.length === 0 && (
+        <div className="empty-state">No franchise league data recorded for this season yet.</div>
+      )}
+    </>
+  )
+}
+
+// One franchise team's auction roster: captain/mentor called out up top,
+// a spend bar (this team's total credits spent vs. the league's biggest
+// spender) for an at-a-glance "how this squad was built" read, then the
+// full paid roster collapsed behind a toggle like every other squad list
+// in this file.
+function FranchiseTeamCard({ team, highestSpend }) {
+  const [expanded, setExpanded] = useState(false)
+  const [c1] = colorsFor(team.name)
+  const players = team.players || []
+  const leadership = players.filter((p) => p.role)
+  const roster = players.filter((p) => !p.role)
+  const shown = expanded ? roster : roster.slice(0, 5)
+  const spendPct = Math.round((team.spent / highestSpend) * 100)
+
+  return (
+    <div className="entity-card glass-panel td-franchise-card" style={{ '--team-color': c1 }}>
+      <div className="td-franchise-card__top">
+        <Badge name={team.name} size={48} />
+        <div>
+          <p className="entity-card__title">{team.name}</p>
+          <p className="entity-card__meta">{players.length} player{players.length === 1 ? '' : 's'} signed</p>
+        </div>
+      </div>
+
+      {leadership.length > 0 && (
+        <div className="td-franchise-card__leadership">
+          {leadership.map((p) => (
+            <span key={p.name} className="pill td-franchise-card__role-pill">
+              <IconCaptain aria-hidden="true" /> {p.name} · {p.role}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="td-franchise-card__spend">
+        <div className="td-franchise-card__spend-label">
+          <span className="text-faint">
+            <IconPurse aria-hidden="true" /> Credits Spent
+          </span>
+          <b>{formatCredits(team.spent)}</b>
+        </div>
+        <div className="td-franchise-card__spend-bar">
+          <div className="td-franchise-card__spend-fill" style={{ width: `${spendPct}%` }} />
+        </div>
+        {team.remainingPurse != null && (
+          <p className="text-faint td-franchise-card__purse-left">
+            {formatCredits(team.remainingPurse)} remaining purse
+          </p>
         )}
       </div>
-    </>
+
+      {roster.length > 0 && (
+        <>
+          <ul className="td-squad-card__players td-franchise-card__players">
+            {shown.map((p) => (
+              <li key={p.name}>
+                <span>{p.name}</span>
+                {p.credits != null && <span className="td-franchise-card__player-credits">{formatCredits(p.credits)}</span>}
+              </li>
+            ))}
+          </ul>
+          {roster.length > 5 && (
+            <button
+              type="button"
+              className="btn btn-ghost td-squad-card__toggle"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? 'Show less' : `Show all ${roster.length}`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// Full match schedule as a vertical timeline rather than a flat table -
+// franchise leagues run 20-45+ matches, so a timeline with the eventual
+// knockout stages (Qualifier/Eliminator/Final) visually distinguished
+// reads much better than one more giant scrollable table.
+const KNOCKOUT_RE = /qualifier|eliminator|final/i
+
+function FranchiseMatchTimeline({ matches }) {
+  return (
+    <div className="td-subsection">
+      <h3 className="td-subsection__title">Match Timeline ({matches.length})</h3>
+      <div className="glass-panel td-timeline">
+        {matches.map((m, i) => {
+          const schedule = m.Schedule || ''
+          const isKnockout = KNOCKOUT_RE.test(schedule)
+          return (
+            <div key={i} className={`td-timeline__row${isKnockout ? ' td-timeline__row--knockout' : ''}`}>
+              <span className="td-timeline__dot" aria-hidden="true" />
+              <div className="td-timeline__body">
+                <p className="td-timeline__schedule">
+                  <IconMatch className="td-timeline__icon" aria-hidden="true" />
+                  {schedule}
+                </p>
+                <p className="text-faint td-timeline__meta">
+                  {[m.Date, m.Venue].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+              {m.Winner && <span className="pill pill-status-completed td-timeline__winner">{m.Winner}</span>}
+              {(m['Man of the Match'] || m['Best Batsman'] || m['Best Bowler']) && (
+                <div className="td-timeline__standouts text-faint">
+                  {m['Man of the Match'] && <span>MOTM: {m['Man of the Match']}</span>}
+                  {m['Best Batsman'] && <span>Bat: {m['Best Batsman']}</span>}
+                  {m['Best Bowler'] && <span>Ball: {m['Best Bowler']}</span>}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Awards as a showcase grid (medal-style cards) instead of a plain table -
+// franchise league awards carry real credit prize values and a franchise
+// team + national board per winner, which reads much better as a card
+// than crammed into table cells.
+function FranchiseAwardsShowcase({ awards }) {
+  return (
+    <div className="td-subsection">
+      <h3 className="td-subsection__title">Awards</h3>
+      <div className="card-grid td-award-grid">
+        {awards.map((a, i) => (
+          <div key={i} className="entity-card glass-panel td-award-card">
+            <IconTrophy className="td-award-card__icon" aria-hidden="true" />
+            <p className="td-award-card__name">{a.award}</p>
+            <p className="td-award-card__winner">{a.winner}</p>
+            {(a.team || a.board) && (
+              <p className="text-faint td-award-card__sub">{[a.team, a.board].filter(Boolean).join(' · ')}</p>
+            )}
+            {a.credits != null && (
+              <span className="pill td-award-card__credits">{formatCredits(a.credits)} credits</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

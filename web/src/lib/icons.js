@@ -18,6 +18,9 @@ export {
   GiPerson as IconPlayer,
   GiShield as IconBoard,
   GiCrown as IconCrown,
+  GiWallet as IconPurse,
+  GiCaptainHatProfile as IconCaptain,
+  GiCancel as IconCancelled,
 } from 'react-icons/gi'
 export { MdStadium as IconStadium } from 'react-icons/md'
 export { FaNewspaper as IconNews } from 'react-icons/fa6'

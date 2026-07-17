@@ -645,39 +645,259 @@ FRANCHISE_DISPLAY_NAMES = {
     "CPL 2026": "Caribbean Premier League 2026",
 }
 
-# links a franchise sheet's display name to its "Champions" entry inside the
-# credits sheet's tournament-updates table (names don't always match exactly)
-CHAMPION_LOOKUP_ALIASES = {
-    "The Hundred 2026": "THE HUNDRED 2026",
-    "Pakistan Super League 2026": "PAKISTAN SUPER LEAGUE 2026",
-    "Big Bash League 2026": "BIG BASH LEAGUE 2026",
-    "Kiwi Crown League 2026": "KIWI CROWN LEAGUE 2026",
-}
+FRANCHISE_ALL_TEAMS_RE = re.compile(r"all\s*teams\s*$", re.I)
+FRANCHISE_AWARDS_TITLE_RE = re.compile(r"\bawards\b", re.I)
+FRANCHISE_CANCELLED_RE = re.compile(r"cancelled", re.I)
+
+# Player-roster lines in a franchise team's own column look like
+# "1. Shibasis (c) - 8000", "4. Manish Indoria - Aus - 2500", or (CPL only)
+# "1. Shibil (WI-C)" with no credits at all for the top few slots. This one
+# regex + a bit of post-processing below covers every variant actually
+# found in the workbook rather than assuming one clean format.
+PLAYER_LINE_RE = re.compile(r"^\s*\d+\.\s*(.+?)\s*$")
+TRAILING_CREDITS_RE = re.compile(r"(\d[\d,]*)\s*([kK])?\s*$")
+REPLACED_NOTE_RE = re.compile(r"\(\s*replaced[^)]*\)\s*$", re.I)
+ROLE_TAG_RE = re.compile(r"\((c|vc|m|dc|ds)\)\s*$", re.I)
+# Role can appear on either side of the hyphen - "(WI-C)" (board-role) or
+# "(DS-Ind)" (role-board) both occur in the workbook, so both groups are
+# checked against ROLE_ABBRS rather than assuming a fixed position.
+ROLE_PAIR_RE = re.compile(r"\(([a-z]{1,5})-([a-z]{1,5})\)\s*$", re.I)
+ROLE_ABBRS = {"c", "vc", "m", "dc", "ds"}
+ROLE_NAMES = {"c": "Captain", "vc": "Vice-Captain", "m": "Mentor", "dc": "Designated Coach", "ds": "Designated Support"}
 
 
-def get_franchise_leagues(wb, tournament_updates):
+def _parse_franchise_player_line(raw):
+    """Parses one numbered roster line from a "Franchise League ... All
+    TEAMS" block into {name, credits, role, note}. Deliberately tolerant:
+    the source workbook mixes several hand-typed formats (see the sampled
+    variants above PLAYER_LINE_RE) rather than one consistent template, so
+    this extracts what it confidently can and leaves the rest as None
+    instead of guessing.
+    """
+    m = PLAYER_LINE_RE.match(raw)
+    text = m.group(1) if m else raw.strip()
+
+    note = None
+    note_m = REPLACED_NOTE_RE.search(text)
+    if note_m:
+        note = _clean(note_m.group(0))
+        text = text[: note_m.start()].rstrip()
+
+    # Credits are stripped before the role tag: most lines put the role
+    # tag right after the name and the credits at the very end
+    # ("Shibasis (c) - 8000"), so a role check anchored to end-of-string
+    # would miss it if it ran before the trailing credits were removed.
+    credits = None
+    credits_m = TRAILING_CREDITS_RE.search(text)
+    if credits_m:
+        num = int(credits_m.group(1).replace(",", ""))
+        if credits_m.group(2):
+            num *= 1000
+        credits = num
+        text = text[: credits_m.start()].rstrip(" -").strip()
+
+    role = None
+    pair_m = ROLE_PAIR_RE.search(text)
+    if pair_m:
+        a, b = pair_m.group(1).lower(), pair_m.group(2).lower()
+        if a in ROLE_ABBRS:
+            role = ROLE_NAMES[a]
+            text = text[: pair_m.start()].rstrip()
+        elif b in ROLE_ABBRS:
+            role = ROLE_NAMES[b]
+            text = text[: pair_m.start()].rstrip()
+    if role is None:
+        role_m = ROLE_TAG_RE.search(text)
+        if role_m:
+            role = ROLE_NAMES.get(role_m.group(1).lower())
+            text = text[: role_m.start()].rstrip()
+
+    name = _clean(text) or _clean(raw)
+    return {"name": name, "credits": credits, "role": role, "note": note}
+
+
+def _find_row_with_text(ws, pattern, start_row=1, end_row=None, column=1):
+    """Returns the first row number (>= start_row) whose given column value
+    matches `pattern` (a compiled regex tested against the cleaned string
+    value), or None."""
+    end_row = end_row or ws.max_row
+    for r in range(start_row, end_row + 1):
+        v = _clean(ws.cell(row=r, column=column).value)
+        if isinstance(v, str) and pattern.search(v):
+            return r
+    return None
+
+
+def _read_franchise_teams(ws, header_row, end_row):
+    """Reads the "Franchise League X All TEAMS" block starting at
+    `header_row` (the row holding each team's name across columns) through
+    `end_row` (exclusive) - one column per team, one numbered player-line
+    per row below the header. The very first non-numbered row right below
+    the header (if present) is the "Remaining Purse - N" line some sheets
+    include per team.
+    """
+    teams = {}
+    for c in range(1, ws.max_column + 1):
+        team_name = _clean(ws.cell(row=header_row, column=c).value)
+        if not team_name:
+            continue
+
+        remaining_purse = None
+        roster = []
+        for r in range(header_row + 1, end_row):
+            raw = _clean(ws.cell(row=r, column=c).value)
+            if raw is None:
+                continue
+            if isinstance(raw, str) and raw.lower().startswith("remaining purse"):
+                purse_m = TRAILING_CREDITS_RE.search(raw)
+                if purse_m:
+                    remaining_purse = int(purse_m.group(1).replace(",", ""))
+                continue
+            if isinstance(raw, str) and PLAYER_LINE_RE.match(raw):
+                roster.append(_parse_franchise_player_line(raw))
+
+        if roster:
+            teams[team_name] = {
+                "players": roster,
+                "remainingPurse": remaining_purse,
+            }
+    return teams
+
+
+def _read_franchise_matches(ws, header_row, end_row):
+    """Reads a "Schedule / Date / [Venue] / Winner / Umpire / Man of the
+    Match / Best Batsman / [Best Bowler]" table - column layout genuinely
+    varies between franchise sheets (some have a Venue column, some have a
+    separate Best Bowler column, some don't), so headers are read directly
+    from `header_row` rather than assumed."""
+    headers = {}
+    for c in range(1, ws.max_column + 1):
+        h = _clean(ws.cell(row=header_row, column=c).value)
+        if h:
+            headers[c] = h.strip().rstrip(":").strip()
+
+    matches = []
+    for r in range(header_row + 1, end_row):
+        schedule = _clean(ws.cell(row=r, column=1).value)
+        if not schedule:
+            continue
+        row = {}
+        for c, h in headers.items():
+            v = _jsonify_scalar(_clean(ws.cell(row=r, column=c).value))
+            if v is not None:
+                row[h] = v
+        if row:
+            matches.append(row)
+    return matches
+
+
+def _read_franchise_awards(ws, header_row, end_row):
+    """Reads the "Award Name / Award Winner / Franchise Team / National
+    Board / Award Credits" table. The final couple of rows are usually
+    "Runners up" / "Champions" (no franchise/board columns, just a winner
+    name + credits) - those are captured the same way as any other award
+    row rather than special-cased, and pulled back out by name below for
+    champion/runnerUp."""
+    awards = []
+    for r in range(header_row + 1, end_row):
+        award_name = _clean(ws.cell(row=r, column=1).value)
+        if not award_name:
+            continue
+        awards.append(
+            {
+                "award": award_name,
+                "winner": _clean(ws.cell(row=r, column=2).value),
+                "team": _clean(ws.cell(row=r, column=3).value),
+                "board": _clean(ws.cell(row=r, column=4).value),
+                "credits": _num_or_none(ws.cell(row=r, column=5).value),
+            }
+        )
+    return awards
+
+
+def get_franchise_leagues(wb):
     leagues = []
-    sections = tournament_updates.get("sections", {})
     for sheet_name in FRANCHISE_SHEETS:
         if sheet_name not in wb.sheetnames:
             continue
         ws = wb[sheet_name]
+        max_row = ws.max_row
         title = _clean(ws.cell(row=1, column=1).value) or sheet_name
         display_name = FRANCHISE_DISPLAY_NAMES.get(sheet_name, sheet_name)
 
-        boards = {}
-        for c in range(1, ws.max_column + 1):
-            board = _clean(ws.cell(row=2, column=c).value)
-            if not board:
-                continue
-            players = _collect_numbered_list(ws, c, 3, ws.max_row)
-            if players:
-                boards[board] = players
+        # National-board player registrations: every "<Board name>" header
+        # row followed by a numbered list, before the "All TEAMS" section.
+        # A sheet can have more than one such header row side by side in
+        # time (e.g. The Hundred lists 6 boards, then 6 more starting a
+        # further 14 rows down) - so this scans every row rather than
+        # assuming a single fixed header row.
+        all_teams_row = _find_row_with_text(ws, FRANCHISE_ALL_TEAMS_RE, start_row=2)
+        registration_end = all_teams_row or max_row
 
-        alias = CHAMPION_LOOKUP_ALIASES.get(display_name)
-        info = sections.get(alias, {}) if alias else {}
-        champion = info.get("champion")
-        runner_up = info.get("runnerUp")
+        boards = {}
+        for r in range(2, registration_end):
+            next_row_first_cell = _clean(ws.cell(row=r + 1, column=1).value)
+            if not (isinstance(next_row_first_cell, str) and next_row_first_cell.strip().startswith("1.")):
+                continue
+            for c in range(1, ws.max_column + 1):
+                board = _clean(ws.cell(row=r, column=c).value)
+                if not board or (isinstance(board, str) and board[0].isdigit()):
+                    continue
+                players = [p["name"] for p in (
+                    _parse_franchise_player_line(v)
+                    for v in _read_column_block(ws, c, r + 1, registration_end - 1)
+                    if isinstance(v, str) and PLAYER_LINE_RE.match(v)
+                )]
+                if players:
+                    boards.setdefault(board, players)
+
+        # Franchise team rosters, match schedule, awards - each section
+        # runs from its own title row to the next title row (or end of
+        # sheet). Any section whose title isn't found is simply empty
+        # rather than raising - several leagues are missing one or more
+        # sections because the season itself is incomplete/cancelled in
+        # the source workbook (see `status` below).
+        teams = {}
+        matches = []
+        awards = []
+        if all_teams_row:
+            match_title_row = _find_row_with_text(ws, re.compile(r"all match updates", re.I), start_row=all_teams_row)
+            awards_title_row = _find_row_with_text(ws, FRANCHISE_AWARDS_TITLE_RE, start_row=all_teams_row)
+            cancelled_row = _find_row_with_text(ws, FRANCHISE_CANCELLED_RE, start_row=all_teams_row)
+
+            teams_end = match_title_row or awards_title_row or cancelled_row or (max_row + 1)
+            teams = _read_franchise_teams(ws, all_teams_row + 1, teams_end)
+
+            if match_title_row:
+                matches_end = awards_title_row or cancelled_row or (max_row + 1)
+                matches = _read_franchise_matches(ws, match_title_row + 1, matches_end)
+
+            if awards_title_row:
+                awards = _read_franchise_awards(ws, awards_title_row + 1, max_row + 1)
+
+        # Champion/runner-up read straight out of this sheet's own awards
+        # table (the last two rows are always "Champions"/"Runners up" when
+        # present) rather than cross-referencing a separate credits-sheet
+        # summary table - self-contained per league and doesn't depend on
+        # display-name spelling matching across two sheets.
+        champion = None
+        runner_up = None
+        for a in awards:
+            name = (a["award"] or "").strip().lower()
+            if name == "champions":
+                champion = a["winner"]
+            elif name in ("runners up", "runner up", "runners-up"):
+                runner_up = a["winner"]
+
+        is_cancelled = _find_row_with_text(ws, FRANCHISE_CANCELLED_RE, start_row=2) is not None
+        if is_cancelled:
+            status = "Cancelled"
+        elif champion:
+            status = "Completed"
+        elif matches:
+            status = "Ongoing"
+        else:
+            status = "Upcoming"
 
         leagues.append(
             {
@@ -686,12 +906,17 @@ def get_franchise_leagues(wb, tournament_updates):
                 "title": title,
                 "season": "2026",
                 "boards": boards,
-                "teamCount": len(boards),
+                "teams": teams,
+                "teamCount": len(teams) or len(boards),
+                "matches": matches,
+                "totalMatches": len(matches),
+                "awards": awards,
                 "champion": champion,
                 "runnerUp": runner_up,
-                "status": "Completed" if champion else "Ongoing",
+                "status": status,
             }
         )
+    return leagues
     return leagues
 
 
@@ -845,7 +1070,7 @@ def build_dashboard(path):
     boards, dismantled, credits_data = get_boards(wb)
     t20wc = get_t20_world_cup(wb)
     fixtures = get_fixtures(wb)
-    franchise_leagues = get_franchise_leagues(wb, credits_data["tournamentUpdates"])
+    franchise_leagues = get_franchise_leagues(wb)
     hall_of_fame = get_hall_of_fame(wb)
     continental_cups = get_continental_cups(wb)
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
@@ -913,7 +1138,7 @@ def build_dashboard(path):
                 "status": lg["status"],
                 "champion": lg["champion"],
                 "runnerUp": lg["runnerUp"],
-                "totalMatches": None,
+                "totalMatches": lg["totalMatches"],
             }
         )
 
@@ -923,6 +1148,7 @@ def build_dashboard(path):
         (t20wc["totalMatches"] if t20wc else 0)
         + len(fixtures["series"].get("completedSeries", []))
         + len(fixtures["tests"].get("completedMatches", []))
+        + sum(lg["totalMatches"] for lg in franchise_leagues)
     )
     total_championships = len([t for t in tournaments if t.get("champion")])
     total_credits = sum(b["credits"] or 0 for b in boards)

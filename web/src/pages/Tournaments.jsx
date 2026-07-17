@@ -6,7 +6,7 @@ import Badge from '../components/Badge'
 import { IconChampion } from '../lib/icons'
 import './Tournaments.css'
 
-const STATUSES = ['Completed', 'Ongoing', 'Upcoming']
+const STATUSES = ['Completed', 'Ongoing', 'Upcoming', 'Cancelled']
 
 // Tournaments module — every T20 World Cup, franchise league, continental
 // cup and knockout in the workbook, filterable by category and status.
@@ -84,6 +84,11 @@ export default function Tournaments() {
                       <IconChampion className="tournaments-card__champion-icon" aria-hidden="true" />
                       Champion: {t.champion}
                       {t.runnerUp ? ` · Runner-up: ${t.runnerUp}` : ''}
+                    </p>
+                  )}
+                  {t.totalMatches != null && (
+                    <p className="entity-card__meta text-faint">
+                      {t.totalMatches} match{t.totalMatches === 1 ? '' : 'es'} recorded
                     </p>
                   )}
                   <Link to={`/tournaments/${t.id}`} className="btn btn-outline-gold tournaments-card__cta">

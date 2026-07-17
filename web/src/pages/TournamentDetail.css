@@ -303,6 +303,256 @@
   font-size: 0.76rem;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Cancelled-season banner (Franchise League)                             */
+/* ---------------------------------------------------------------------- */
+.td-cancelled-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  border-color: rgba(255, 84, 112, 0.35);
+}
+.td-cancelled-banner__icon {
+  font-size: 1.8rem;
+  color: var(--ioc-danger);
+  flex-shrink: 0;
+}
+.td-cancelled-banner__title {
+  font-weight: 700;
+  color: var(--ioc-danger);
+  margin-bottom: 2px;
+}
+.td-cancelled-banner__sub {
+  font-size: 0.85rem;
+  max-width: 640px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Franchise team cards (auction rosters, spend bar, leadership)          */
+/* ---------------------------------------------------------------------- */
+.td-franchise-grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.td-franchise-card {
+  border-top: 3px solid var(--team-color, var(--ioc-gold));
+  cursor: default;
+}
+.td-franchise-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--glass-border);
+  border-top-color: var(--team-color, var(--ioc-gold));
+}
+
+.td-franchise-card__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.td-franchise-card__leadership {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.td-franchise-card__role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--ioc-gold-bright);
+  font-size: 0.72rem;
+}
+
+.td-franchise-card__spend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.td-franchise-card__spend-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+.td-franchise-card__spend-label svg {
+  vertical-align: -0.15em;
+  margin-right: 4px;
+}
+.td-franchise-card__spend-bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.td-franchise-card__spend-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--team-color, var(--ioc-gold)), var(--ioc-gold-bright));
+  transition: width 0.6s var(--ease-out);
+}
+.td-franchise-card__purse-left {
+  font-size: 0.72rem;
+}
+
+.td-franchise-card__players {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 10px;
+}
+.td-franchise-card__players li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.td-franchise-card__player-credits {
+  color: var(--ioc-gold-bright);
+  font-size: 0.74rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Match timeline (Franchise League - full schedule)                     */
+/* ---------------------------------------------------------------------- */
+.td-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 20px 32px;
+  max-height: 640px;
+  overflow-y: auto;
+}
+.td-timeline::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--ioc-gold), transparent 95%);
+  opacity: 0.3;
+}
+
+.td-timeline__row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 12px 20px;
+  border-bottom: 1px solid var(--glass-border);
+  transition: background 0.2s;
+}
+.td-timeline__row:last-child {
+  border-bottom: none;
+}
+.td-timeline__row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.td-timeline__row--knockout {
+  background: rgba(212, 175, 55, 0.05);
+}
+.td-timeline__row--knockout:hover {
+  background: rgba(212, 175, 55, 0.09);
+}
+
+.td-timeline__dot {
+  position: absolute;
+  left: -32px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ioc-navy-900);
+  border: 2px solid var(--ioc-gold);
+}
+.td-timeline__row--knockout .td-timeline__dot {
+  background: var(--ioc-gold);
+  box-shadow: 0 0 8px var(--ioc-gold);
+}
+
+.td-timeline__body {
+  flex: 1;
+  min-width: 220px;
+}
+.td-timeline__schedule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.td-timeline__icon {
+  flex-shrink: 0;
+  color: var(--ioc-gold);
+}
+.td-timeline__meta {
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.td-timeline__winner {
+  flex-shrink: 0;
+}
+
+.td-timeline__standouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.72rem;
+  width: 100%;
+  padding-left: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Awards showcase (Franchise League)                                     */
+/* ---------------------------------------------------------------------- */
+.td-award-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.td-award-card {
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  cursor: default;
+}
+.td-award-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4), var(--shadow-glow-gold);
+}
+.td-award-card__icon {
+  font-size: 1.8rem;
+  color: var(--ioc-gold);
+  transition: transform 0.3s var(--ease-out);
+}
+.td-award-card:hover .td-award-card__icon {
+  transform: scale(1.15) rotate(-8deg);
+}
+.td-award-card__name {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ioc-text-faint);
+}
+.td-award-card__winner {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ioc-gold-bright);
+}
+.td-award-card__sub {
+  font-size: 0.76rem;
+}
+.td-award-card__credits {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--ioc-gold);
+}
+
 @media (max-width: 640px) {
   .td-banner {
     padding: 18px;

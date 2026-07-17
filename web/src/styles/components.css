@@ -330,6 +330,7 @@
 .pill-status-completed { background: rgba(52,224,161,0.15); color: var(--ioc-success); }
 .pill-status-ongoing { background: rgba(52,224,255,0.15); color: var(--ioc-neon); }
 .pill-status-upcoming { background: rgba(255,176,46,0.15); color: var(--ioc-warning); }
+.pill-status-cancelled { background: rgba(255,84,112,0.15); color: var(--ioc-danger); }
 
 .empty-state {
   text-align: center;
