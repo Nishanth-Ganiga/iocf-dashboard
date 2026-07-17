@@ -4,6 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import StatCard from '../components/StatCard'
 import Badge from '../components/Badge'
+import { IconBoard, IconPlayer, IconStadium, IconTrophy, IconChampion } from '../lib/icons'
 import './Contact.css'
 
 // Contact the Federation — static info page. There is no backend endpoint
@@ -49,7 +50,10 @@ export default function Contact() {
 
               {submitted ? (
                 <div className="contact-confirmation">
-                  <p>✅ Thanks, {form.name || 'friend'} — this is a demo form, no message was actually sent.</p>
+                  <p className="contact-confirmation__message">
+                    <IconChampion className="contact-confirmation__icon" /> Thanks, {form.name || 'friend'} — this is a
+                    demo form, no message was actually sent.
+                  </p>
                   <button type="button" className="btn btn-ghost" onClick={() => setSubmitted(false)}>
                     Send another
                   </button>
@@ -104,10 +108,10 @@ export default function Contact() {
                 <ErrorState message={error} />
               ) : stats ? (
                 <div className="stat-grid contact-stat-grid">
-                  <StatCard label="Total Boards" value={stats.totalBoards} icon="🏛️" accent="gold" />
-                  <StatCard label="Total Players" value={stats.totalPlayers} icon="🏏" accent="neon" />
-                  <StatCard label="Total Stadiums" value={stats.totalStadiums} icon="🏟️" accent="gold" />
-                  <StatCard label="Total Tournaments" value={stats.totalTournaments} icon="🏆" accent="neon" />
+                  <StatCard label="Total Boards" value={stats.totalBoards} icon={<IconBoard />} accent="gold" />
+                  <StatCard label="Total Players" value={stats.totalPlayers} icon={<IconPlayer />} accent="neon" />
+                  <StatCard label="Total Stadiums" value={stats.totalStadiums} icon={<IconStadium />} accent="gold" />
+                  <StatCard label="Total Tournaments" value={stats.totalTournaments} icon={<IconTrophy />} accent="neon" />
                 </div>
               ) : (
                 <div className="empty-state">No summary stats available.</div>

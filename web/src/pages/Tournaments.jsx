@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import { IconChampion } from '../lib/icons'
 import './Tournaments.css'
 
 const STATUSES = ['Completed', 'Ongoing', 'Upcoming']
@@ -79,7 +80,8 @@ export default function Tournaments() {
                   </div>
                   <span className={`pill pill-status-${t.status.toLowerCase()}`}>{t.status}</span>
                   {t.champion && (
-                    <p className="entity-card__meta">
+                    <p className="entity-card__meta tournaments-card__champion">
+                      <IconChampion className="tournaments-card__champion-icon" aria-hidden="true" />
                       Champion: {t.champion}
                       {t.runnerUp ? ` · Runner-up: ${t.runnerUp}` : ''}
                     </p>
@@ -104,7 +106,7 @@ function FilterChip({ label, active, onClick }) {
       className={`tournaments-chip${active ? ' is-active' : ''}`}
       onClick={onClick}
     >
-      {label}
+      <span className="tournaments-chip__label">{label}</span>
     </button>
   )
 }

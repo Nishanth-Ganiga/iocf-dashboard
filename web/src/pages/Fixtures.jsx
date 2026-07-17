@@ -3,6 +3,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import { IconTrophy, IconCalendar } from '../lib/icons'
 import './Fixtures.css'
 
 // Fixtures & Results module — upcoming series/tests with best-effort
@@ -113,13 +114,14 @@ function FixtureCard({ row, mode, typeLabel }) {
 
       <div className="fixture-card__body">
         <div className="fixture-card__dates">
+          <IconCalendar className="fixture-card__date-icon" />
           <span className="text-faint">{dates || 'Date TBD'}</span>
           {countdown && <span className="pill pill-status-upcoming">{countdown}</span>}
         </div>
 
         {showWinner && (
           <p className="fixture-card__winner">
-            🏆 Winner: <b>{winners}</b>
+            <IconTrophy className="fixture-card__winner-icon" /> Winner: <b>{winners}</b>
           </p>
         )}
 
@@ -173,7 +175,9 @@ function NextUpStrip({ matches }) {
                 </p>
               </div>
               <div className="fixture-nextup__when">
-                <span className="text-faint">{m.dates}</span>
+                <span className="text-faint fixture-nextup__date">
+                  <IconCalendar className="fixture-nextup__date-icon" /> {m.dates}
+                </span>
                 {countdown && <span className="pill pill-status-upcoming">{countdown}</span>}
               </div>
             </div>
@@ -243,7 +247,8 @@ export default function Fixtures() {
               <p className="section-header__eyebrow">Fixtures & Results</p>
               <h2>Match Calendar</h2>
             </div>
-            <div className="fixture-tabs">
+            <div className="fixture-tabs" data-active={tab}>
+              <span className="fixture-tabs__indicator" aria-hidden="true" />
               <button
                 type="button"
                 className={`fixture-tab ${tab === 'upcoming' ? 'is-active' : ''}`}

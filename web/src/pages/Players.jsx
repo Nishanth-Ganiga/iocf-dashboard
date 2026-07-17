@@ -100,7 +100,9 @@ export default function Players() {
             <div className="players-grid">
               {visible.map((p, i) => (
                 <div key={`${p.name}-${i}`} className="players-card glass-panel">
-                  <Badge name={p.name} size={40} rounded="square" />
+                  <span className="players-card__badge">
+                    <Badge name={p.name} size={44} rounded="square" />
+                  </span>
                   <div className="players-card__text">
                     <p className="players-card__name">{p.name}</p>
                     <Link to={`/boards/${p.boardId}`} className="players-card__board text-faint">

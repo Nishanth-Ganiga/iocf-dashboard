@@ -1,6 +1,7 @@
 /* Fixtures & Results module — upcoming/results tabs, next-up strip, WTC grid */
 
 .fixture-tabs {
+  position: relative;
   display: inline-flex;
   gap: 6px;
   padding: 4px;
@@ -9,7 +10,25 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+.fixture-tabs__indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 7px);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(120deg, var(--ioc-gold-bright), var(--ioc-gold) 60%, var(--ioc-gold-dim));
+  box-shadow: var(--shadow-glow-gold);
+  transition: transform 0.35s var(--ease-out);
+  z-index: 0;
+}
+.fixture-tabs[data-active='results'] .fixture-tabs__indicator {
+  transform: translateX(calc(100% + 6px));
+}
+
 .fixture-tab {
+  position: relative;
+  z-index: 1;
   padding: 8px 20px;
   border-radius: var(--radius-pill);
   border: none;
@@ -18,13 +37,12 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.25s;
 }
 .fixture-tab:hover {
   color: var(--ioc-text);
 }
 .fixture-tab.is-active {
-  background: linear-gradient(120deg, var(--ioc-gold-bright), var(--ioc-gold) 60%, var(--ioc-gold-dim));
   color: #14100a;
 }
 
@@ -59,6 +77,28 @@
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.fixture-nextup__item:hover {
+  border-color: var(--ioc-gold);
+  box-shadow: var(--shadow-glow-gold);
+}
+.fixture-nextup__item .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.fixture-nextup__item:hover .ioc-badge {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.fixture-nextup__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fixture-nextup__date-icon {
+  color: var(--ioc-gold);
+  flex-shrink: 0;
 }
 
 .fixture-nextup__text {
@@ -93,7 +133,7 @@
 }
 
 .fixture-group__title {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--ioc-neon);
@@ -111,6 +151,18 @@
   flex-direction: column;
   gap: 12px;
   padding: 18px;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.fixture-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--glass-border-neon);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45), var(--shadow-glow-neon);
+}
+.fixture-card .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.fixture-card:hover .ioc-badge {
+  transform: scale(1.1) rotate(-4deg);
 }
 
 .fixture-card__top {
@@ -158,9 +210,25 @@
   font-size: 0.8rem;
 }
 
+.fixture-card__date-icon {
+  color: var(--ioc-gold);
+  flex-shrink: 0;
+}
+
 .fixture-card__winner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.85rem;
   color: var(--ioc-gold-bright);
+}
+
+.fixture-card__winner-icon {
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.fixture-card:hover .fixture-card__winner-icon {
+  transform: scale(1.15) rotate(-6deg);
 }
 
 .fixture-card__extra {
@@ -199,10 +267,21 @@
   gap: 14px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
   flex-wrap: wrap;
+  transition: background 0.2s;
 }
 .wtc-grid__row:last-child {
   border-bottom: none;
+}
+.wtc-grid__row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.wtc-grid__row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.015);
+}
+.wtc-grid__row:nth-child(odd):hover {
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .wtc-grid__teams {
@@ -211,6 +290,12 @@
   gap: 10px;
   flex: 1;
   min-width: 200px;
+}
+.wtc-grid__teams .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.wtc-grid__row:hover .ioc-badge {
+  transform: scale(1.1) rotate(-4deg);
 }
 
 .wtc-grid__vs {

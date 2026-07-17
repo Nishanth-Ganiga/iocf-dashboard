@@ -37,11 +37,15 @@
   color: var(--ioc-text-dim);
   font-size: 0.78rem;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s var(--ease-out);
 }
 .stadiums-chip:hover {
   border-color: var(--ioc-neon);
   color: var(--ioc-text);
+  transform: translateY(-1px);
+}
+.stadiums-chip:active {
+  transform: translateY(0) scale(0.96);
 }
 .stadiums-chip.is-active {
   background: rgba(212, 175, 55, 0.16);
@@ -64,20 +68,60 @@
   gap: 18px;
 }
 
+/* Reuse the shared .card-grid stagger-reveal keyframes (defined once in
+   index.css) — this grid keeps its own class name for its wider card
+   sizing/gap, so the delay ladder is mirrored here instead of renaming it
+   to .card-grid across the page. */
+.stadiums-grid > * {
+  animation: cardRiseIn 0.5s var(--ease-out) both;
+}
+.stadiums-grid > *:nth-child(1) { animation-delay: 0.02s; }
+.stadiums-grid > *:nth-child(2) { animation-delay: 0.06s; }
+.stadiums-grid > *:nth-child(3) { animation-delay: 0.1s; }
+.stadiums-grid > *:nth-child(4) { animation-delay: 0.14s; }
+.stadiums-grid > *:nth-child(5) { animation-delay: 0.18s; }
+.stadiums-grid > *:nth-child(6) { animation-delay: 0.22s; }
+.stadiums-grid > *:nth-child(7) { animation-delay: 0.26s; }
+.stadiums-grid > *:nth-child(8) { animation-delay: 0.3s; }
+.stadiums-grid > *:nth-child(9) { animation-delay: 0.34s; }
+.stadiums-grid > *:nth-child(10) { animation-delay: 0.38s; }
+.stadiums-grid > *:nth-child(11) { animation-delay: 0.42s; }
+.stadiums-grid > *:nth-child(n+12) { animation-delay: 0.46s; }
+
 .stadiums-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 20px;
-  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
 }
 .stadiums-card:hover {
   transform: translateY(-4px);
   border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.stadiums-card__badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.stadiums-card:hover .stadiums-card__badge {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.stadiums-card__title-icon {
+  color: var(--ioc-gold);
+  vertical-align: -2px;
+  transition: transform 0.3s var(--ease-out);
+}
+.stadiums-card:hover .stadiums-card__title-icon {
+  transform: scale(1.15) rotate(-4deg);
 }
 
 .stadiums-card__home {
   display: inline-block;
+  transition: color 0.2s;
 }
 .stadiums-card__home:hover {
   color: var(--ioc-neon);
@@ -93,11 +137,17 @@
    flags) — these aren't tournament-status pills so they get their own
    muted color rather than reusing pill-status-*. */
 .pill-stadium-tag {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--ioc-text-dim);
+  background: rgba(52, 224, 255, 0.1);
+  border: 1px solid rgba(52, 224, 255, 0.2);
+  color: var(--ioc-neon);
   text-transform: none;
   letter-spacing: 0;
   font-weight: 600;
+  transition: transform 0.2s var(--ease-out), background 0.2s;
+}
+.pill-stadium-tag:hover {
+  transform: translateY(-2px);
+  background: rgba(52, 224, 255, 0.18);
 }
 
 @media (max-width: 640px) {

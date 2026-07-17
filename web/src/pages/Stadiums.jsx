@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import { IconStadium } from '../lib/icons'
 import './Stadiums.css'
 
 // Stadiums module — like Players, there is no standalone "stadiums"
@@ -94,9 +95,13 @@ export default function Stadiums() {
               {filtered.map((s, i) => (
                 <div key={`${s.name}-${i}`} className="stadiums-card glass-panel">
                   <div className="entity-card__top">
-                    <Badge name={s.name} size={44} rounded="square" />
+                    <span className="stadiums-card__badge">
+                      <Badge name={s.name} size={44} rounded="square" />
+                    </span>
                     <div>
-                      <p className="entity-card__title">{s.name}</p>
+                      <p className="entity-card__title">
+                        <IconStadium className="stadiums-card__title-icon" aria-hidden="true" /> {s.name}
+                      </p>
                       <Link
                         to={`/boards/${s.boardId}`}
                         className="entity-card__meta stadiums-card__home"

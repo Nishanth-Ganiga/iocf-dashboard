@@ -1,5 +1,6 @@
 import { colorsFor, initialsFor } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
+import FlagIcon from './FlagIcon'
 
 // Generates a premium gold/neon initials badge in place of a missing
 // board/tournament/stadium logo image (the workbook has no image assets).
@@ -52,13 +53,16 @@ export default function Badge({ name, code, size = 48, rounded = 'circle', glow 
             style={{
               position: 'absolute',
               top: -size * 0.08,
-              right: -size * 0.08,
-              fontSize: size * 0.36,
+              right: -size * 0.1,
+              width: size * 0.4,
+              height: size * 0.3,
               lineHeight: 1,
-              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
+              borderRadius: 3,
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.25)',
             }}
           >
-            {identity.flag}
+            <FlagIcon identity={identity} />
           </span>
           <span
             aria-hidden="true"

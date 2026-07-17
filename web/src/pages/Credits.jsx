@@ -3,6 +3,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import { IconCredits } from '../lib/icons'
 import './Credits.css'
 
 // Credits economy view — deeper than Rankings: total federation credit
@@ -36,7 +37,9 @@ export default function Credits() {
             </div>
           </div>
           <div className="glass-panel credits-hero">
-            <div className="credits-hero__icon">💰</div>
+            <div className="credits-hero__icon">
+              <IconCredits />
+            </div>
             <div>
               <p className="credits-hero__label text-dim">Total Credits Across IOCF</p>
               <p className="credits-hero__value gradient-heading">

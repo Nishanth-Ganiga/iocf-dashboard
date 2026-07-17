@@ -4,6 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import { IconChampion, IconMedal, IconMatch, IconCalendar } from '../lib/icons'
 import './TournamentDetail.css'
 
 // Tournament detail — dispatches to a different renderer depending on which
@@ -93,7 +94,10 @@ function ChampionBanner({ champion, runnerUp, championBoard, runnerUpBoard, tota
         <div className="td-banner__slot">
           <Badge name={champion} size={56} />
           <div>
-            <p className="text-faint">Champion</p>
+            <p className="text-faint td-banner__label">
+              <IconChampion className="td-banner__icon td-banner__icon--champion" aria-hidden="true" />
+              Champion
+            </p>
             <p className="td-banner__name">{champion}</p>
             {championBoard && <p className="td-banner__sub text-dim">{championBoard}</p>}
           </div>
@@ -103,7 +107,10 @@ function ChampionBanner({ champion, runnerUp, championBoard, runnerUpBoard, tota
         <div className="td-banner__slot">
           <Badge name={runnerUp} size={48} />
           <div>
-            <p className="text-faint">Runner-up</p>
+            <p className="text-faint td-banner__label">
+              <IconMedal className="td-banner__icon" aria-hidden="true" />
+              Runner-up
+            </p>
             <p className="td-banner__name">{runnerUp}</p>
             {runnerUpBoard && <p className="td-banner__sub text-dim">{runnerUpBoard}</p>}
           </div>
@@ -111,7 +118,10 @@ function ChampionBanner({ champion, runnerUp, championBoard, runnerUpBoard, tota
       )}
       {totalMatches != null && (
         <div className="td-banner__slot td-banner__slot--stat">
-          <p className="text-faint">Total Matches</p>
+          <p className="text-faint td-banner__label">
+            <IconMatch className="td-banner__icon" aria-hidden="true" />
+            Total Matches
+          </p>
           <p className="td-banner__name">{totalMatches}</p>
         </div>
       )}
@@ -273,11 +283,14 @@ function EmergingTalentDetail({ etl }) {
                 <div className="td-fixture-row__teams">
                   <Badge name={m.host} size={32} />
                   <span>{m.host}</span>
-                  <span className="text-faint">vs</span>
+                  <span className="text-faint td-fixture-row__vs">
+                    <IconMatch className="td-fixture-row__vs-icon" aria-hidden="true" /> vs
+                  </span>
                   <Badge name={m.opponent} size={32} />
                   <span>{m.opponent}</span>
                 </div>
                 <div className="td-fixture-row__meta text-dim">
+                  <IconCalendar className="td-fixture-row__meta-icon" aria-hidden="true" />
                   {m.venue} · {m.date}
                 </div>
                 <div className="td-fixture-row__result">

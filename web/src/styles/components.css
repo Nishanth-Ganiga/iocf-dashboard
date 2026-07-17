@@ -2,6 +2,16 @@
    Shared components: search, stat cards, generic card grids, section headers
    ========================================================================== */
 
+/* flag-icons renders each flag as a `.fi.fi-<code>` span sized in em by
+   default (1.333em x 1em); inside Badge's absolutely-positioned corner
+   emblem wrapper it needs to fill that wrapper exactly instead. */
+.board-flag-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Global search                                                          */
 /* ---------------------------------------------------------------------- */
@@ -189,14 +199,20 @@
   justify-content: center;
   border-radius: var(--radius-md);
   background: rgba(212, 175, 55, 0.12);
+  color: var(--ioc-gold);
   flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.stat-card:hover .stat-card__icon {
+  transform: scale(1.1) rotate(-4deg);
 }
 .stat-card.accent-neon .stat-card__icon {
   background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
 }
 
 .stat-card__value {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-size: 1.7rem;
   font-weight: 700;
   color: var(--ioc-text);
@@ -229,7 +245,7 @@
 }
 
 .section-header h2 {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-size: clamp(1.5rem, 2.4vw, 2.1rem);
   font-weight: 700;
 }
@@ -317,8 +333,18 @@
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 48px 20px;
   color: var(--ioc-text-faint);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.015);
+}
+.empty-state::before {
+  content: '🏏';
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+  opacity: 0.5;
 }
 
 .loading-state {

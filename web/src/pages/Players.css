@@ -37,11 +37,15 @@
   color: var(--ioc-text-dim);
   font-size: 0.78rem;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s var(--ease-out);
 }
 .players-chip:hover {
   border-color: var(--ioc-neon);
   color: var(--ioc-text);
+  transform: translateY(-1px);
+}
+.players-chip:active {
+  transform: translateY(0) scale(0.96);
 }
 .players-chip.is-active {
   background: rgba(212, 175, 55, 0.16);
@@ -60,42 +64,73 @@
 /* ---------------------------------------------------------------------- */
 .players-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
+
+/* Reuse the shared .card-grid stagger-reveal keyframes (defined once in
+   index.css) — this grid keeps its own class name for its tighter card
+   sizing/gap, so the delay ladder is mirrored here instead of renaming it
+   to .card-grid across the page. */
+.players-grid > * {
+  animation: cardRiseIn 0.5s var(--ease-out) both;
+}
+.players-grid > *:nth-child(1) { animation-delay: 0.02s; }
+.players-grid > *:nth-child(2) { animation-delay: 0.06s; }
+.players-grid > *:nth-child(3) { animation-delay: 0.1s; }
+.players-grid > *:nth-child(4) { animation-delay: 0.14s; }
+.players-grid > *:nth-child(5) { animation-delay: 0.18s; }
+.players-grid > *:nth-child(6) { animation-delay: 0.22s; }
+.players-grid > *:nth-child(7) { animation-delay: 0.26s; }
+.players-grid > *:nth-child(8) { animation-delay: 0.3s; }
+.players-grid > *:nth-child(9) { animation-delay: 0.34s; }
+.players-grid > *:nth-child(10) { animation-delay: 0.38s; }
+.players-grid > *:nth-child(11) { animation-delay: 0.42s; }
+.players-grid > *:nth-child(n+12) { animation-delay: 0.46s; }
 
 .players-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  transition: transform 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+  gap: 14px;
+  padding: 16px 18px;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
 }
 .players-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.players-card__badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.players-card:hover .players-card__badge {
+  transform: scale(1.1) rotate(-4deg);
 }
 
 .players-card__text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .players-card__name {
-  font-weight: 600;
-  font-size: 0.88rem;
+  font-weight: 700;
+  font-size: 0.92rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .players-card__board {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s;
 }
 .players-card__board:hover {
   color: var(--ioc-neon);

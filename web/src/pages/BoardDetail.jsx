@@ -2,8 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import FlagIcon from '../components/FlagIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
+import { IconStadium, IconTrophy } from '../lib/icons'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -46,14 +48,16 @@ export default function BoardDetail() {
     <div className="page-enter">
       <div className="container">
         <Link to="/boards" className="board-detail__back">
-          ← Back to Boards
+          <span className="board-detail__back-arrow" aria-hidden="true">←</span> Back to Boards
         </Link>
 
         <section className="board-detail__hero glass-panel">
-          <Badge name={board.name} size={72} />
+          <span className="board-detail__hero-badge">
+            <Badge name={board.name} size={72} />
+          </span>
           <div className="board-detail__hero-info">
             <h1 className="board-detail__name gradient-heading">
-              {identity?.flag} {board.name}
+              {identity && <FlagIcon identity={identity} className="board-detail__flag" />} {board.name}
             </h1>
             <div className="board-detail__meta-row">
               <span className="text-dim">Chairman: {board.chairman || '—'}</span>
@@ -116,7 +120,9 @@ export default function BoardDetail() {
                 const [venue, ...tags] = entry.split('|').map((s) => s.trim())
                 return (
                   <div key={i} className="board-detail__stadium-card glass-panel">
-                    <p className="board-detail__stadium-name">🏟️ {venue}</p>
+                    <p className="board-detail__stadium-name">
+                      <IconStadium className="board-detail__stadium-icon" /> {venue}
+                    </p>
                     {tags.length > 0 && (
                       <div className="board-detail__stadium-tags">
                         {tags.map((tag, j) => (
@@ -135,7 +141,7 @@ export default function BoardDetail() {
           <div className="section-header">
             <div>
               <p className="section-header__eyebrow">Hall of Champions</p>
-              <h2>🏆 Trophy Cabinet ({board.trophiesCount ?? trophies.length})</h2>
+              <h2><IconTrophy className="board-detail__section-icon" /> Trophy Cabinet ({board.trophiesCount ?? trophies.length})</h2>
             </div>
           </div>
           {trophies.length === 0 ? (
@@ -144,7 +150,7 @@ export default function BoardDetail() {
             <div className="board-detail__trophy-grid">
               {trophies.map((trophy, i) => (
                 <div key={i} className="board-detail__trophy-card glass-panel">
-                  <span className="board-detail__trophy-icon">🏆</span>
+                  <span className="board-detail__trophy-icon"><IconTrophy /></span>
                   <span>{trophy}</span>
                 </div>
               ))}

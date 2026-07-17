@@ -26,31 +26,65 @@
 }
 
 .rankings-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--glass-border);
-  transition: background 0.2s;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: background 0.2s, transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  animation: cardRiseIn 0.45s var(--ease-out) both;
 }
+.rankings-table > *:nth-child(1) { animation-delay: 0.02s; }
+.rankings-table > *:nth-child(2) { animation-delay: 0.05s; }
+.rankings-table > *:nth-child(3) { animation-delay: 0.08s; }
+.rankings-table > *:nth-child(4) { animation-delay: 0.11s; }
+.rankings-table > *:nth-child(5) { animation-delay: 0.14s; }
+.rankings-table > *:nth-child(6) { animation-delay: 0.17s; }
+.rankings-table > *:nth-child(7) { animation-delay: 0.2s; }
+.rankings-table > *:nth-child(n+8) { animation-delay: 0.23s; }
 .rankings-row:last-child {
   border-bottom: none;
 }
 .rankings-row:hover {
   background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
+  box-shadow: -3px 0 0 var(--ioc-gold);
 }
 .rankings-row--top {
   background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
+}
+
+/* Credit-share bar: a faint gradient fill behind the row, sized to this
+   board's credits relative to the leaderboard's top score — a quick
+   "how dominant is #1 really" visual read the plain list didn't have. */
+.rankings-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));
+  transition: width 0.6s var(--ease-out);
+  pointer-events: none;
+}
+.rankings-row > *:not(.rankings-row__bar) {
+  position: relative;
+  z-index: 1;
 }
 
 .rankings-row__rank {
   width: 44px;
   flex-shrink: 0;
   text-align: center;
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--ioc-text-dim);
+  transition: transform 0.3s var(--ease-out);
+}
+.rankings-row:hover .rankings-row__rank {
+  transform: scale(1.12) rotate(-4deg);
 }
 .rankings-row__rank--1 {
   font-size: 1.6rem;

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import { IconTrophy } from '../lib/icons'
 import './TrophyCabinet.css'
 
 const TROPHY_PREVIEW_COUNT = 3
@@ -38,7 +39,11 @@ export default function TrophyCabinet() {
           ) : (
             <div className="card-grid">
               {champions.map((t) => (
-                <Link key={t.id} to={`/tournaments/${t.id}`} className="entity-card glass-panel">
+                <Link
+                  key={t.id}
+                  to={`/tournaments/${t.id}`}
+                  className="entity-card glass-panel trophy-champion-card"
+                >
                   <div className="entity-card__top">
                     <Badge name={t.champion} size={52} />
                     <div>
@@ -89,7 +94,8 @@ export default function TrophyCabinet() {
                       </div>
                     </div>
                     <div className="trophy-card__count">
-                      🏆 <span>{count}</span>
+                      <IconTrophy className="trophy-card__count-icon" aria-hidden="true" />
+                      <span>{count}</span>
                       <span className="text-faint trophy-card__count-label">
                         {count === 1 ? 'trophy' : 'trophies'}
                       </span>
@@ -97,9 +103,16 @@ export default function TrophyCabinet() {
                     {preview.length > 0 ? (
                       <ul className="trophy-card__list">
                         {preview.map((name, idx) => (
-                          <li key={idx}>{name}</li>
+                          <li key={idx}>
+                            <IconTrophy className="trophy-card__list-icon" aria-hidden="true" />
+                            <span className="trophy-card__list-text">{name}</span>
+                          </li>
                         ))}
-                        {extra > 0 && <li className="trophy-card__more">+{extra} more</li>}
+                        {extra > 0 && (
+                          <li className="trophy-card__more">
+                            <span className="pill trophy-card__more-pill">+{extra} more</span>
+                          </li>
+                        )}
                       </ul>
                     ) : (
                       <p className="trophy-card__none text-faint">No trophies won yet.</p>

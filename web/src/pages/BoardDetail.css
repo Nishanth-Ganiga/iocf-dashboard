@@ -11,6 +11,13 @@
 .board-detail__back:hover {
   color: var(--ioc-gold);
 }
+.board-detail__back-arrow {
+  display: inline-block;
+  transition: transform 0.25s var(--ease-out);
+}
+.board-detail__back:hover .board-detail__back-arrow {
+  transform: translateX(-4px);
+}
 
 /* ---------------------------------------------------------------------- */
 /* Hero                                                                    */
@@ -22,6 +29,17 @@
   gap: 24px;
   padding: 28px;
   margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+  animation: pageFadeIn 0.6s var(--ease-out) both;
+}
+
+.board-detail__hero-badge {
+  display: inline-flex;
+  transition: transform 0.35s var(--ease-out);
+}
+.board-detail__hero:hover .board-detail__hero-badge {
+  transform: scale(1.08) rotate(-4deg);
 }
 
 .board-detail__hero-info {
@@ -30,10 +48,19 @@
 }
 
 .board-detail__name {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-size: clamp(1.8rem, 3.2vw, 2.6rem);
   font-weight: 700;
   line-height: 1.1;
+}
+
+.board-detail__flag {
+  display: inline-block;
+  width: 0.72em;
+  height: 0.52em;
+  border-radius: 3px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), var(--shadow-card);
 }
 
 .board-detail__meta-row {
@@ -69,6 +96,9 @@
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
 }
+.board-detail__player-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
 
 .board-detail__player-chip {
   display: flex;
@@ -77,6 +107,18 @@
   padding: 10px 14px;
   font-size: 0.85rem;
   font-weight: 600;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.board-detail__player-chip:hover {
+  transform: translateY(-3px);
+  border-color: var(--ioc-neon);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.4), var(--shadow-glow-neon);
+}
+.board-detail__player-chip .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.board-detail__player-chip:hover .ioc-badge {
+  transform: scale(1.12) rotate(-4deg);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -87,17 +129,38 @@
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
 }
+.board-detail__stadium-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
 
 .board-detail__stadium-card {
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.board-detail__stadium-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
 }
 
 .board-detail__stadium-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.board-detail__stadium-icon {
+  flex-shrink: 0;
+  color: var(--ioc-gold);
+  transition: transform 0.3s var(--ease-out);
+}
+.board-detail__stadium-card:hover .board-detail__stadium-icon {
+  transform: scale(1.15) rotate(-4deg);
 }
 
 .board-detail__stadium-tags {
@@ -121,6 +184,9 @@
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
+.board-detail__trophy-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
 
 .board-detail__trophy-card {
   display: flex;
@@ -128,11 +194,28 @@
   gap: 12px;
   padding: 14px 16px;
   font-size: 0.85rem;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.board-detail__trophy-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
 }
 
 .board-detail__trophy-icon {
   font-size: 1.2rem;
   flex-shrink: 0;
+  color: var(--ioc-gold);
+  display: inline-flex;
+  transition: transform 0.3s var(--ease-out);
+}
+.board-detail__trophy-card:hover .board-detail__trophy-icon {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+.board-detail__section-icon {
+  color: var(--ioc-gold);
+  vertical-align: -0.1em;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -151,6 +234,11 @@
   padding: 12px 14px;
   border-bottom: 1px solid var(--glass-border);
   font-size: 0.85rem;
+  transition: background 0.2s var(--ease-out), padding-left 0.2s var(--ease-out);
+}
+.board-detail__transfer-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 18px;
 }
 .board-detail__transfer-row:last-child {
   border-bottom: none;
@@ -163,6 +251,7 @@
   background: var(--ioc-gold);
   box-shadow: 0 0 8px var(--ioc-gold);
   flex-shrink: 0;
+  animation: pulseGlow 2.6s ease-in-out infinite;
 }
 
 @media (max-width: 640px) {

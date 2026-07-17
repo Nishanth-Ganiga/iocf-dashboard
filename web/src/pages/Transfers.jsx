@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import { IconTransfer } from '../lib/icons'
 import './Transfers.css'
 
 // Auctions & Transfers module — there is no dedicated transfers/auction
@@ -88,7 +89,7 @@ export default function Transfers() {
                   <ul className="transfers-group__list">
                     {g.lines.map((line, i) => (
                       <li key={i} className="transfers-line">
-                        <span className="transfers-line__icon">🔁</span>
+                        <span className="transfers-line__icon"><IconTransfer /></span>
                         <span className="transfers-line__text">{line}</span>
                       </li>
                     ))}

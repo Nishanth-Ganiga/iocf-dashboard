@@ -20,6 +20,7 @@ export default function Rankings() {
 
   const { rankings = [], boards = [] } = data
   const boardById = new Map(boards.map((b) => [b.name, b]))
+  const maxCredits = Math.max(1, ...rankings.map((r) => r.credits ?? 0))
 
   const q = query.trim().toLowerCase()
   const filteredRankings = q
@@ -51,11 +52,17 @@ export default function Rankings() {
               {filteredRankings.map((r) => {
                 const board = boardById.get(r.board)
                 const medal = MEDALS[r.rank]
+                const share = Math.max(2, ((r.credits ?? 0) / maxCredits) * 100)
                 return (
                   <div
                     key={r.board}
                     className={`rankings-row${medal ? ' rankings-row--top' : ''}`}
                   >
+                    <div
+                      className="rankings-row__bar"
+                      style={{ width: `${share}%` }}
+                      aria-hidden="true"
+                    />
                     <div className={`rankings-row__rank${medal ? ` rankings-row__rank--${r.rank}` : ''}`}>
                       {medal || `#${r.rank}`}
                     </div>

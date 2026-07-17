@@ -48,10 +48,20 @@
   text-decoration: none;
   margin-bottom: 14px;
 }
+.transfers-group__header:hover .transfers-group__name {
+  color: var(--ioc-gold);
+}
+.transfers-group__header .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.transfers-group__header:hover .ioc-badge {
+  transform: scale(1.1) rotate(-4deg);
+}
 
 .transfers-group__name {
   font-weight: 700;
   font-size: 1rem;
+  transition: color 0.2s;
 }
 
 .transfers-group__meta {
@@ -71,14 +81,34 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 8px;
+  padding: 10px 12px 10px 14px;
   border-top: 1px solid var(--glass-border);
+  border-left: 2px solid transparent;
   font-size: 0.86rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transition: border-left-color 0.2s, background 0.2s;
+}
+.transfers-line:hover {
+  border-left-color: var(--ioc-gold);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .transfers-line__icon {
   flex-shrink: 0;
-  opacity: 0.8;
+  font-size: 0.95rem;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  transition: transform 0.3s var(--ease-out), background 0.3s;
+}
+.transfers-line:hover .transfers-line__icon {
+  transform: scale(1.15) rotate(-8deg);
+  background: rgba(52, 224, 255, 0.22);
 }
 
 .transfers-line__text {

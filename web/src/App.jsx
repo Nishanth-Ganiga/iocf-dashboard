@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-d
 import { DashboardProvider } from './context/DashboardContext'
 import TopNav from './components/TopNav'
 import Sidebar from './components/Sidebar'
+import DashboardBackdrop from './components/DashboardBackdrop'
 import ErrorBoundary from './components/ErrorBoundary'
 
 import Landing from './pages/Landing'
@@ -28,6 +29,7 @@ function AppShell() {
 
   return (
     <div className="app-shell">
+      <DashboardBackdrop />
       <TopNav
         onToggleSidebar={() => {
           if (window.innerWidth <= 1024) setMobileOpen((v) => !v)

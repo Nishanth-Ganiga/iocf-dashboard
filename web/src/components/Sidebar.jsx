@@ -1,17 +1,29 @@
 import { NavLink } from 'react-router-dom'
+import {
+  IconBoard,
+  IconPlayer,
+  IconStadium,
+  IconTrophy,
+  IconPodium,
+  IconCredits,
+  IconMedal,
+  IconCalendar,
+  IconTransfer,
+  IconNews,
+} from '../lib/icons'
 
 const MODULES = [
-  { label: 'Dashboard', to: '/dashboard', icon: '🏠' },
-  { label: 'Cricket Boards', to: '/boards', icon: '🛡️' },
-  { label: 'Players', to: '/players', icon: '🏏' },
-  { label: 'Stadiums', to: '/stadiums', icon: '🏟️' },
-  { label: 'Tournaments', to: '/tournaments', icon: '🏆' },
-  { label: 'Rankings', to: '/rankings', icon: '📊' },
-  { label: 'Credits', to: '/credits', icon: '💰' },
-  { label: 'Trophy Cabinet', to: '/trophy-cabinet', icon: '🥇' },
-  { label: 'Fixtures & Results', to: '/fixtures', icon: '📅' },
-  { label: 'Auctions & Transfers', to: '/transfers', icon: '🔁' },
-  { label: 'News & Announcements', to: '/news', icon: '📰' },
+  { label: 'Dashboard', to: '/dashboard', Icon: null, emoji: '🏠' },
+  { label: 'Cricket Boards', to: '/boards', Icon: IconBoard },
+  { label: 'Players', to: '/players', Icon: IconPlayer },
+  { label: 'Stadiums', to: '/stadiums', Icon: IconStadium },
+  { label: 'Tournaments', to: '/tournaments', Icon: IconTrophy },
+  { label: 'Rankings', to: '/rankings', Icon: IconPodium },
+  { label: 'Credits', to: '/credits', Icon: IconCredits },
+  { label: 'Trophy Cabinet', to: '/trophy-cabinet', Icon: IconMedal },
+  { label: 'Fixtures & Results', to: '/fixtures', Icon: IconCalendar },
+  { label: 'Auctions & Transfers', to: '/transfers', Icon: IconTransfer },
+  { label: 'News & Announcements', to: '/news', Icon: IconNews },
 ]
 
 // `collapsed` — desktop icon-only rail vs full-width rail.
@@ -31,7 +43,9 @@ export default function Sidebar({ collapsed, mobileOpen, onCloseMobile }) {
                 className={({ isActive }) => `sidebar__link${isActive ? ' is-active' : ''}`}
                 title={m.label}
               >
-                <span className="sidebar__icon">{m.icon}</span>
+                <span className="sidebar__icon">
+                  {m.Icon ? <m.Icon /> : m.emoji}
+                </span>
                 <span className="sidebar__label">{m.label}</span>
               </NavLink>
             ))}

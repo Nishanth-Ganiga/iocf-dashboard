@@ -1,11 +1,27 @@
 /* Trophy Cabinet module — recent champions recap + board trophy leaderboard */
 
+/* Recent-champions cards get the same badge "lift" wink as the leaderboard's
+   trophy icons on hover, so both grids read as one cohesive motion language. */
+.trophy-champion-card .entity-card__top {
+  position: relative;
+}
+.trophy-champion-card .entity-card__title {
+  transition: color 0.2s;
+}
+.trophy-champion-card:hover .entity-card__title {
+  color: var(--ioc-gold);
+}
+
 .trophy-card__rank {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   font-size: 1.05rem;
   color: var(--ioc-text-faint);
   flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.entity-card:hover .trophy-card__rank {
+  transform: scale(1.12) rotate(-4deg);
 }
 
 .trophy-card__name {
@@ -27,6 +43,16 @@
   color: var(--ioc-gold-bright);
 }
 
+.trophy-card__count-icon {
+  align-self: center;
+  font-size: 1.15rem;
+  color: var(--ioc-gold);
+  transition: transform 0.3s var(--ease-out);
+}
+.entity-card:hover .trophy-card__count-icon {
+  transform: scale(1.15) rotate(-6deg);
+}
+
 .trophy-card__count-label {
   font-size: 0.75rem;
   font-weight: 400;
@@ -35,24 +61,50 @@
 .trophy-card__list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-left: 18px;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
   font-size: 0.78rem;
   color: var(--ioc-text-dim);
-  list-style: disc;
+  list-style: none;
 }
 
 .trophy-card__list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trophy-card__list-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  color: var(--ioc-gold);
+  opacity: 0.85;
+  transition: transform 0.25s var(--ease-out), opacity 0.25s;
+}
+.trophy-card__list li:hover .trophy-card__list-icon {
+  transform: scale(1.2) rotate(-8deg);
+  opacity: 1;
+}
+
+.trophy-card__list-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .trophy-card__more {
+  margin-top: 2px;
+}
+.trophy-card__more-pill {
+  background: rgba(52, 224, 255, 0.12);
   color: var(--ioc-neon);
-  list-style: none;
-  margin-left: -18px;
-  padding-left: 18px;
+  font-size: 0.7rem;
+  transition: transform 0.2s var(--ease-out), background 0.2s;
+}
+.trophy-card__more:hover .trophy-card__more-pill {
+  transform: scale(1.06);
+  background: rgba(52, 224, 255, 0.2);
 }
 
 .trophy-card__none {

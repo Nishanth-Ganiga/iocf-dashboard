@@ -110,7 +110,7 @@
 }
 
 .dash-hero__title {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   font-size: clamp(1.7rem, 3.6vw, 2.6rem);
   line-height: 1.15;
@@ -138,7 +138,13 @@
   justify-content: center;
   border-radius: var(--radius-md);
   background: rgba(212, 175, 55, 0.12);
+  color: var(--ioc-gold);
   flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out), background 0.3s;
+}
+.dash-module:hover .dash-module__icon {
+  transform: scale(1.12) rotate(-3deg);
+  background: rgba(212, 175, 55, 0.2);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -253,13 +259,18 @@
   gap: 14px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
 }
 .dash-leaderboard__row:last-child {
   border-bottom: none;
 }
+.dash-leaderboard__row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
 
 .dash-leaderboard__rank {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   color: var(--ioc-gold);
   width: 28px;
@@ -273,6 +284,9 @@
 }
 
 .dash-leaderboard__trophies {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--ioc-gold-bright);

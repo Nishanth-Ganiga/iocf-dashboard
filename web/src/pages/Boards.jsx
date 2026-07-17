@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import FlagIcon from '../components/FlagIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import './Boards.css'
@@ -46,12 +47,14 @@ export default function Boards() {
               {filteredBoards.map((b) => {
                 const identity = knownBoardIdentity(b.name)
                 return (
-                  <div key={b.id} className="entity-card glass-panel">
+                  <div key={b.id} className="entity-card glass-panel boards-card">
                     <div className="entity-card__top">
-                      <Badge name={b.name} size={56} />
+                      <span className="boards-card__badge">
+                        <Badge name={b.name} size={56} />
+                      </span>
                       <div>
                         <p className="entity-card__title">
-                          {identity?.flag} {b.name}
+                          {identity && <FlagIcon identity={identity} className="boards-card__flag" />} {b.name}
                         </p>
                         <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
                         <p className="entity-card__meta">CEO: {b.ceo || '—'}</p>
@@ -74,6 +77,7 @@ export default function Boards() {
                     </div>
                     <Link to={`/boards/${b.id}`} className="btn btn-outline-gold boards-card__cta">
                       View Board
+                      <span className="boards-card__cta-arrow" aria-hidden="true">→</span>
                     </Link>
                   </div>
                 )

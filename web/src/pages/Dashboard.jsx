@@ -4,6 +4,19 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import StatCard from '../components/StatCard'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
+import {
+  IconBoard,
+  IconPlayer,
+  IconStadium,
+  IconTrophy,
+  IconCredits,
+  IconCalendar,
+  IconCrown,
+  IconPodium,
+  IconMedal,
+  IconTransfer,
+  IconNews,
+} from '../lib/icons'
 import './Dashboard.css'
 
 // The central hub — welcome hero, KPI overview, and a preview of every
@@ -60,13 +73,13 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="stat-grid">
-            <StatCard label="Total Cricket Boards" value={stats.totalBoards} icon="🏛️" accent="gold" />
-            <StatCard label="Total Players" value={stats.totalPlayers} icon="🏏" accent="neon" />
-            <StatCard label="Total Stadiums" value={stats.totalStadiums} icon="🏟️" accent="gold" />
-            <StatCard label="Total Tournaments" value={stats.totalTournaments} icon="🏆" accent="neon" />
-            <StatCard label="Total Credits" value={stats.totalCredits} icon="💰" accent="gold" suffix=" cr" />
-            <StatCard label="Total Matches" value={stats.totalMatches} icon="📅" accent="neon" />
-            <StatCard label="Total Championships" value={stats.totalChampionships} icon="👑" accent="gold" />
+            <StatCard label="Total Cricket Boards" value={stats.totalBoards} icon={<IconBoard />} accent="gold" />
+            <StatCard label="Total Players" value={stats.totalPlayers} icon={<IconPlayer />} accent="neon" />
+            <StatCard label="Total Stadiums" value={stats.totalStadiums} icon={<IconStadium />} accent="gold" />
+            <StatCard label="Total Tournaments" value={stats.totalTournaments} icon={<IconTrophy />} accent="neon" />
+            <StatCard label="Total Credits" value={stats.totalCredits} icon={<IconCredits />} accent="gold" suffix=" cr" />
+            <StatCard label="Total Matches" value={stats.totalMatches} icon={<IconCalendar />} accent="neon" />
+            <StatCard label="Total Championships" value={stats.totalChampionships} icon={<IconCrown />} accent="gold" />
           </div>
         </section>
 
@@ -81,7 +94,7 @@ export default function Dashboard() {
             {QUICK_MODULES.map((m) => (
               <Link key={m.to} to={m.to} className="entity-card glass-panel dash-module">
                 <div className="entity-card__top">
-                  <div className="dash-module__icon">{m.icon}</div>
+                  <div className="dash-module__icon"><m.Icon /></div>
                   <div>
                     <p className="entity-card__title">{m.title}</p>
                     <p className="entity-card__meta">{m.desc}</p>
@@ -225,7 +238,7 @@ export default function Dashboard() {
                   <Badge name={b.name} size={36} />
                   <span className="dash-leaderboard__name">{b.name}</span>
                   <span className="dash-leaderboard__trophies">
-                    🏆 {b.trophiesCount ?? 0}
+                    <IconTrophy /> {b.trophiesCount ?? 0}
                   </span>
                 </div>
               ))}
@@ -238,16 +251,16 @@ export default function Dashboard() {
 }
 
 const QUICK_MODULES = [
-  { to: '/boards', icon: '🏛️', title: 'Cricket Boards', desc: 'All 14 national boards & leadership' },
-  { to: '/players', icon: '🏏', title: 'Players', desc: 'Browse every registered player' },
-  { to: '/stadiums', icon: '🏟️', title: 'Stadiums', desc: 'Venues across every board' },
-  { to: '/tournaments', icon: '🏆', title: 'Tournaments', desc: 'World Cups, leagues & cups' },
-  { to: '/rankings', icon: '📊', title: 'Rankings', desc: 'Credits-based board leaderboard' },
-  { to: '/credits', icon: '💰', title: 'Credits', desc: 'Board finances & transactions' },
-  { to: '/trophy-cabinet', icon: '👑', title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
-  { to: '/fixtures', icon: '📅', title: 'Fixtures & Results', desc: 'Series, tests & schedules' },
-  { to: '/transfers', icon: '🔄', title: 'Auctions & Transfers', desc: 'Player movement log' },
-  { to: '/news', icon: '📰', title: 'News & Announcements', desc: 'Champions, transfers & results' },
+  { to: '/boards', Icon: IconBoard, title: 'Cricket Boards', desc: 'All 14 national boards & leadership' },
+  { to: '/players', Icon: IconPlayer, title: 'Players', desc: 'Browse every registered player' },
+  { to: '/stadiums', Icon: IconStadium, title: 'Stadiums', desc: 'Venues across every board' },
+  { to: '/tournaments', Icon: IconTrophy, title: 'Tournaments', desc: 'World Cups, leagues & cups' },
+  { to: '/rankings', Icon: IconPodium, title: 'Rankings', desc: 'Credits-based board leaderboard' },
+  { to: '/credits', Icon: IconCredits, title: 'Credits', desc: 'Board finances & transactions' },
+  { to: '/trophy-cabinet', Icon: IconMedal, title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
+  { to: '/fixtures', Icon: IconCalendar, title: 'Fixtures & Results', desc: 'Series, tests & schedules' },
+  { to: '/transfers', Icon: IconTransfer, title: 'Auctions & Transfers', desc: 'Player movement log' },
+  { to: '/news', Icon: IconNews, title: 'News & Announcements', desc: 'Champions, transfers & results' },
 ]
 
 const NEWS_TAGS = {

@@ -13,7 +13,7 @@
 }
 
 .contact-form-panel__title {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 10px;
@@ -59,10 +59,19 @@
 .contact-form__field textarea:focus {
   border-color: var(--ioc-neon);
   box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
+  animation: contactFocusPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes contactFocusPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(52, 224, 255, 0.2); }
+  50% { box-shadow: 0 0 22px rgba(52, 224, 255, 0.4); }
 }
 
 .contact-form button[type='submit'] {
   align-self: flex-start;
+}
+.contact-form button[type='submit']:hover {
+  transform: translateY(-2px) scale(1.03);
 }
 
 .contact-confirmation {
@@ -76,9 +85,29 @@
   color: var(--ioc-text);
   font-size: 0.88rem;
   line-height: 1.6;
+  animation: cardRiseIn 0.4s var(--ease-out) both;
 }
 .contact-confirmation button {
   align-self: flex-start;
+}
+
+.contact-confirmation__message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-confirmation__icon {
+  flex-shrink: 0;
+  color: var(--ioc-success);
+  font-size: 1.1rem;
+  animation: contactIconPop 0.5s var(--ease-out) both;
+}
+
+@keyframes contactIconPop {
+  0% { transform: scale(0.4) rotate(-20deg); opacity: 0; }
+  70% { transform: scale(1.15) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 .contact-stat-grid {
@@ -88,6 +117,12 @@
 
 .contact-board-card {
   cursor: pointer;
+}
+.contact-board-card .ioc-badge {
+  transition: transform 0.3s var(--ease-out);
+}
+.contact-board-card:hover .ioc-badge {
+  transform: scale(1.1) rotate(-4deg);
 }
 
 @media (max-width: 900px) {

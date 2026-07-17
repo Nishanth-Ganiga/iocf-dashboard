@@ -49,7 +49,69 @@
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
+  /* Referenced as a fallback after 'Rajdhani' in every heading font-family
+     stack across the app - was previously undefined (harmless only because
+     Rajdhani loads successfully in practice; defining it properly here so
+     the fallback chain actually works if a font ever fails to load). */
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
   color-scheme: dark;
+}
+
+/* ==========================================================================
+   Dashboard theme override — "Emerald & Gold" (cricket pitch)
+   Scoped to .app-shell only: the Landing page (`/`) renders outside the
+   shell entirely (see App.jsx) and reads these same tokens directly off
+   the root, so it's completely unaffected by this block - every dashboard
+   route repaints for free because every dashboard stylesheet already goes
+   through these custom properties instead of hardcoded colors.
+   ========================================================================== */
+.app-shell {
+  --ioc-black: #04120c;
+  --ioc-navy-950: #06170f;
+  --ioc-navy-900: #0a2318;
+  --ioc-navy-800: #0f3322;
+  --ioc-navy-700: #15452d;
+  --ioc-navy-600: #1c5c3a;
+
+  /* "Gold" tokens keep their name (huge surface area of existing CSS reads
+     var(--ioc-gold*)) but shift a touch warmer/deeper to sit against green
+     rather than navy. */
+  --ioc-gold: #d4af37;
+  --ioc-gold-bright: #f0c94f;
+  --ioc-gold-dim: #8f7020;
+
+  /* "Neon" tokens become the pitch's second accent - a fresh spring green
+     glow instead of cyan, still used everywhere the old neon was (links,
+     focus rings, secondary badges). */
+  --ioc-neon: #5cf29a;
+  --ioc-neon-dim: #229b5e;
+  --ioc-neon-glow: rgba(92, 242, 154, 0.35);
+  --ioc-gold-glow: rgba(212, 175, 55, 0.35);
+
+  --ioc-text: #eef7f0;
+  --ioc-text-dim: #a9c2b1;
+  --ioc-text-faint: #6d8677;
+
+  --ioc-success: #5cf29a;
+  --ioc-danger: #ff5470;
+  --ioc-warning: #ffb02e;
+
+  --glass-bg: rgba(10, 35, 24, 0.55);
+  --glass-bg-strong: rgba(10, 35, 24, 0.8);
+  --glass-border: rgba(212, 175, 55, 0.18);
+  --glass-border-neon: rgba(92, 242, 154, 0.24);
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-glow-gold: 0 0 24px var(--ioc-gold-glow);
+  --shadow-glow-neon: 0 0 24px var(--ioc-neon-glow);
+
+  /* New display font for dashboard headings only - Landing keeps Rajdhani. */
+  --font-display: 'Anton', 'Rajdhani', var(--sans);
+
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #0f3a26 0%, var(--ioc-navy-950) 45%, var(--ioc-black) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 * {
@@ -206,19 +268,48 @@ h1, h2, h3, h4, p {
 /* Page transition                                                        */
 /* ---------------------------------------------------------------------- */
 .page-enter {
-  animation: pageFadeIn 0.5s var(--ease-out) both;
+  animation: pageFadeIn 0.6s var(--ease-out) both;
 }
 
 @keyframes pageFadeIn {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(18px) scale(0.99);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Staggered grid reveal — applies to every .card-grid's direct children
+   (entity cards, stat cards, etc.) with zero per-page JSX changes: each
+   page already renders its cards through this one shared class, so the
+   nth-child stagger delay just works everywhere it's used. Capped at 12
+   items so a very long grid doesn't leave the last cards waiting several
+   seconds to appear. */
+.card-grid > * {
+  animation: cardRiseIn 0.5s var(--ease-out) both;
+}
+@keyframes cardRiseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card-grid > *:nth-child(1) { animation-delay: 0.02s; }
+.card-grid > *:nth-child(2) { animation-delay: 0.06s; }
+.card-grid > *:nth-child(3) { animation-delay: 0.1s; }
+.card-grid > *:nth-child(4) { animation-delay: 0.14s; }
+.card-grid > *:nth-child(5) { animation-delay: 0.18s; }
+.card-grid > *:nth-child(6) { animation-delay: 0.22s; }
+.card-grid > *:nth-child(7) { animation-delay: 0.26s; }
+.card-grid > *:nth-child(8) { animation-delay: 0.3s; }
+.card-grid > *:nth-child(9) { animation-delay: 0.34s; }
+.card-grid > *:nth-child(10) { animation-delay: 0.38s; }
+.card-grid > *:nth-child(11) { animation-delay: 0.42s; }
+.card-grid > *:nth-child(n+12) { animation-delay: 0.46s; }
 
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0); }
@@ -260,5 +351,22 @@ h1, h2, h3, h4, p {
 @media (max-width: 640px) {
   :root {
     --header-h: 64px;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reduced motion — dashboard-wide safety net. Landing has its own,        */
+/* separate handling for its cinematic hero; this covers every animation   */
+/* added across the rest of the app (page transitions, card stagger,       */
+/* nav/logo motion, and whatever each page's own CSS animates).            */
+/* ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

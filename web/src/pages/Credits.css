@@ -25,7 +25,13 @@
   justify-content: center;
   border-radius: var(--radius-md);
   background: rgba(212, 175, 55, 0.14);
+  color: var(--ioc-gold);
   flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out), background 0.3s;
+}
+.credits-hero:hover .credits-hero__icon {
+  transform: scale(1.1) rotate(-4deg);
+  background: rgba(212, 175, 55, 0.22);
 }
 
 .credits-hero__label {
@@ -36,7 +42,7 @@
 }
 
 .credits-hero__value {
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   font-size: clamp(2rem, 4.4vw, 3.2rem);
   line-height: 1.1;
@@ -60,18 +66,29 @@
   padding: 16px 20px;
   text-decoration: none;
   color: var(--ioc-text);
-  transition: transform 0.2s var(--ease-out), border-color 0.2s;
+  transition: transform 0.2s var(--ease-out), border-color 0.2s, box-shadow 0.2s var(--ease-out);
+  animation: cardRiseIn 0.5s var(--ease-out) both;
 }
 .credits-row:hover {
   transform: translateY(-2px);
   border-color: var(--ioc-gold);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), var(--shadow-glow-gold);
 }
+.credits-list > *:nth-child(1) { animation-delay: 0.02s; }
+.credits-list > *:nth-child(2) { animation-delay: 0.06s; }
+.credits-list > *:nth-child(3) { animation-delay: 0.1s; }
+.credits-list > *:nth-child(4) { animation-delay: 0.14s; }
+.credits-list > *:nth-child(5) { animation-delay: 0.18s; }
+.credits-list > *:nth-child(6) { animation-delay: 0.22s; }
+.credits-list > *:nth-child(7) { animation-delay: 0.26s; }
+.credits-list > *:nth-child(8) { animation-delay: 0.3s; }
+.credits-list > *:nth-child(n+9) { animation-delay: 0.34s; }
 
 .credits-row__rank {
   width: 32px;
   flex-shrink: 0;
   text-align: center;
-  font-family: 'Rajdhani', var(--sans);
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
   font-weight: 700;
   color: var(--ioc-text-faint);
 }
@@ -115,11 +132,32 @@
 }
 
 .credits-row__bar-fill {
+  position: relative;
   height: 100%;
   border-radius: var(--radius-pill);
   background: linear-gradient(90deg, var(--ioc-gold), var(--ioc-neon));
   box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
   transition: width 0.4s var(--ease-out);
+  overflow: hidden;
+}
+/* One-shot shimmer sweep across the fill on load — a bright diagonal
+   band that travels the width of the bar once, then stays put. */
+.credits-row__bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: creditsBarSweep 1.6s ease-out 0.3s both;
+}
+@keyframes creditsBarSweep {
+  from { background-position: 140% 0; }
+  to { background-position: -40% 0; }
 }
 
 .credits-row__ranking {
