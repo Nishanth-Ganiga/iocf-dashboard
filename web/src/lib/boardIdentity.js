@@ -12,24 +12,72 @@
 // sovereign state) — flagCode is null and Badge falls back to the palm
 // emoji for it.
 //
+// `crest` gives each board's procedurally-generated logo (see
+// BoardCrest.jsx) its own two-tone palette drawn from the board's actual
+// national/team colors, rather than the generic hash-based palette every
+// other badge (players, stadiums, tournaments) uses — a real team crest
+// wouldn't recolor itself based on a hash of its own name.
+//
 // Purely decorative/identity data — the mascot has no gameplay meaning,
 // it's what the board's supporters are known as, same idea as national
 // sports teams having an animal nickname.
 export const BOARD_IDENTITY = {
-  Australia: { flagCode: 'au', flagEmoji: '🇦🇺', mascot: '🦘', mascotName: 'Kangaroo' },
-  Bangladesh: { flagCode: 'bd', flagEmoji: '🇧🇩', mascot: '🐅', mascotName: 'Bengal Tiger' },
-  England: { flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascot: '🦁', mascotName: 'Lion' },
-  India: { flagCode: 'in', flagEmoji: '🇮🇳', mascot: '🐘', mascotName: 'Elephant' },
-  Italy: { flagCode: 'it', flagEmoji: '🇮🇹', mascot: '🐺', mascotName: 'Roman Wolf' },
-  Netherlands: { flagCode: 'nl', flagEmoji: '🇳🇱', mascot: '🦊', mascotName: 'Fox' },
-  Newzealand: { flagCode: 'nz', flagEmoji: '🇳🇿', mascot: '🥝', mascotName: 'Kiwi' },
-  Pakistan: { flagCode: 'pk', flagEmoji: '🇵🇰', mascot: '🦅', mascotName: 'Falcon' },
-  Qatar: { flagCode: 'qa', flagEmoji: '🇶🇦', mascot: '🐎', mascotName: 'Arabian Horse' },
-  Scotland: { flagCode: 'gb-sct', flagEmoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', mascot: '🦄', mascotName: 'Unicorn' },
-  'South Africa': { flagCode: 'za', flagEmoji: '🇿🇦', mascot: '🦏', mascotName: 'Rhino' },
-  Srilanka: { flagCode: 'lk', flagEmoji: '🇱🇰', mascot: '🐻', mascotName: 'Bear' },
-  UAE: { flagCode: 'ae', flagEmoji: '🇦🇪', mascot: '🐪', mascotName: 'Camel' },
-  'West Indies': { flagCode: null, flagEmoji: '🌴', mascot: '🦈', mascotName: 'Shark' },
+  Australia: {
+    flagCode: 'au', flagEmoji: '🇦🇺', mascot: '🦘', mascotName: 'Kangaroo',
+    crest: { primary: '#00843d', secondary: '#ffcd00' },
+  },
+  Bangladesh: {
+    flagCode: 'bd', flagEmoji: '🇧🇩', mascot: '🐅', mascotName: 'Bengal Tiger',
+    crest: { primary: '#006a4e', secondary: '#f42a41' },
+  },
+  England: {
+    flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascot: '🦁', mascotName: 'Lion',
+    crest: { primary: '#12225c', secondary: '#c8102e' },
+  },
+  India: {
+    flagCode: 'in', flagEmoji: '🇮🇳', mascot: '🐘', mascotName: 'Elephant',
+    crest: { primary: '#1a3fa0', secondary: '#ff9933' },
+  },
+  Italy: {
+    flagCode: 'it', flagEmoji: '🇮🇹', mascot: '🐺', mascotName: 'Roman Wolf',
+    crest: { primary: '#008C45', secondary: '#CD212A' },
+  },
+  Netherlands: {
+    flagCode: 'nl', flagEmoji: '🇳🇱', mascot: '🦊', mascotName: 'Fox',
+    crest: { primary: '#ff6c2f', secondary: '#21468b' },
+  },
+  Newzealand: {
+    flagCode: 'nz', flagEmoji: '🇳🇿', mascot: '🥝', mascotName: 'Kiwi Bird',
+    crest: { primary: '#0a0a0a', secondary: '#c0c0c0' },
+  },
+  Pakistan: {
+    flagCode: 'pk', flagEmoji: '🇵🇰', mascot: '🦅', mascotName: 'Falcon',
+    crest: { primary: '#01411c', secondary: '#f5f5f5' },
+  },
+  Qatar: {
+    flagCode: 'qa', flagEmoji: '🇶🇦', mascot: '🐎', mascotName: 'Arabian Horse',
+    crest: { primary: '#8a1538', secondary: '#f5f5f5' },
+  },
+  Scotland: {
+    flagCode: 'gb-sct', flagEmoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', mascot: '🦄', mascotName: 'Unicorn',
+    crest: { primary: '#0065bd', secondary: '#f5f5f5' },
+  },
+  'South Africa': {
+    flagCode: 'za', flagEmoji: '🇿🇦', mascot: '🦏', mascotName: 'Rhino',
+    crest: { primary: '#007749', secondary: '#ffb612' },
+  },
+  Srilanka: {
+    flagCode: 'lk', flagEmoji: '🇱🇰', mascot: '🐻', mascotName: 'Bear',
+    crest: { primary: '#8d153a', secondary: '#ffb700' },
+  },
+  UAE: {
+    flagCode: 'ae', flagEmoji: '🇦🇪', mascot: '🐪', mascotName: 'Camel',
+    crest: { primary: '#00732f', secondary: '#ff0000' },
+  },
+  'West Indies': {
+    flagCode: null, flagEmoji: '🌴', mascot: '🦈', mascotName: 'Shark',
+    crest: { primary: '#7b0028', secondary: '#ffd700' },
+  },
 }
 
 // Boards not in the map (e.g. a dismantled/archived board with an

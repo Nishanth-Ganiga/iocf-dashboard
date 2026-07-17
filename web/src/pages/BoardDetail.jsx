@@ -3,6 +3,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
+import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconStadium, IconTrophy } from '../lib/icons'
@@ -67,7 +68,7 @@ export default function BoardDetail() {
               )}
               {identity?.mascotName && (
                 <span className="pill board-detail__mascot-pill">
-                  {identity.mascot} {identity.mascotName}
+                  <MascotIcon identity={identity} /> {identity.mascotName}
                 </span>
               )}
             </div>

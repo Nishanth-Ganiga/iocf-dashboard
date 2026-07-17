@@ -13,6 +13,33 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Board crest badges (see BoardCrest.jsx)                                */
+/* ---------------------------------------------------------------------- */
+.ioc-badge--crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.3s var(--ease-out);
+}
+.board-crest {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Small real-flag emblem in the crest's top-right corner - same idea as
+   the flag chip on the old initials badge, just repositioned to sit
+   outside the shield's own silhouette instead of overlapping it. */
+.ioc-badge__flag {
+  position: absolute;
+  top: -6%;
+  right: -14%;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.3);
+}
+
+/* ---------------------------------------------------------------------- */
 /* Global search                                                          */
 /* ---------------------------------------------------------------------- */
 .gsearch-trigger {

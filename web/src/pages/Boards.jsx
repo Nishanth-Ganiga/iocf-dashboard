@@ -4,6 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
+import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import './Boards.css'
@@ -60,7 +61,7 @@ export default function Boards() {
                         <p className="entity-card__meta">CEO: {b.ceo || '—'}</p>
                         {identity?.mascotName && (
                           <p className="entity-card__meta text-faint">
-                            {identity.mascot} {identity.mascotName}
+                            <MascotIcon identity={identity} /> {identity.mascotName}
                           </p>
                         )}
                       </div>
