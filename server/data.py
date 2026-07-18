@@ -667,6 +667,7 @@ FRANCHISE_SHEETS = [
     "BPL 2026",
     "IPL 2026",
     "CPL 2026",
+    "SPL 2026",
 ]
 
 FRANCHISE_DISPLAY_NAMES = {
@@ -677,6 +678,7 @@ FRANCHISE_DISPLAY_NAMES = {
     "BPL 2026": "Bangladesh Premier League 2026",
     "IPL 2026": "Indian Premier League 2026",
     "CPL 2026": "Caribbean Premier League 2026",
+    "SPL 2026": "Scottish Premier League 2026",
 }
 
 FRANCHISE_ALL_TEAMS_RE = re.compile(r"all\s*teams\s*$", re.I)
@@ -697,7 +699,10 @@ ROLE_TAG_RE = re.compile(r"\((c|vc|m|dc|ds)\)\s*$", re.I)
 # checked against ROLE_ABBRS rather than assuming a fixed position.
 ROLE_PAIR_RE = re.compile(r"\(([a-z]{1,5})-([a-z]{1,5})\)\s*$", re.I)
 ROLE_ABBRS = {"c", "vc", "m", "dc", "ds"}
-ROLE_NAMES = {"c": "Captain", "vc": "Vice-Captain", "m": "Mentor", "dc": "Designated Coach", "ds": "Designated Support"}
+# Confirmed against the source workbook: (c) = Captain, (m) = Marquee (a
+# pre-selected marquee-category signing, not a mentor), (ds) = Direct
+# Signing (signed directly by the franchise outside the main auction).
+ROLE_NAMES = {"c": "Captain", "vc": "Vice-Captain", "m": "Marquee", "dc": "Designated Coach", "ds": "Direct Signing"}
 
 
 def _parse_franchise_player_line(raw):
