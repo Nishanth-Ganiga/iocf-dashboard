@@ -5,6 +5,7 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
+import BoardMascotSplash from '../components/BoardMascotSplash'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconStadium, IconTrophy, IconUmpire, IconCredits, IconInstagram } from '../lib/icons'
@@ -49,6 +50,9 @@ export default function BoardDetail() {
 
   return (
     <div className="page-enter">
+      {/* Keyed by board id so navigating from one board straight to another
+          (not just a fresh page load) remounts the splash and plays again. */}
+      <BoardMascotSplash key={board.id} identity={identity} boardName={board.name} />
       <div className="container">
         <Link to="/boards" className="board-detail__back">
           <span className="board-detail__back-arrow" aria-hidden="true">←</span> Back to Boards

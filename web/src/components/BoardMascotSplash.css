@@ -1,0 +1,136 @@
+/* Board Mascot Splash — a big, cinematic "mascot arrives" moment shown
+   once each time a board's detail page opens. Pure CSS keyframe timeline
+   (fly-in → hold/glow → dissolve) rather than framer-motion, since this is
+   a single fire-and-forget entrance with no scroll/pointer interaction to
+   orchestrate — a plain animation is simplest and lightest here.
+   Total animation duration below must match BoardMascotSplash.jsx's
+   SPLASH_DURATION_MS (2200ms) so the component unmounts right as the
+   dissolve finishes, not before/after. */
+
+.mascot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+  animation: mascotSplashContainer 2.2s ease-in forwards;
+}
+@keyframes mascotSplashContainer {
+  0%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.mascot-splash__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--splash-primary) 35%, transparent) 0%,
+    rgba(4, 6, 12, 0.88) 55%,
+    rgba(4, 6, 12, 0.96) 100%
+  );
+  animation: mascotBackdropFade 2.2s ease-in-out forwards;
+}
+@keyframes mascotBackdropFade {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* A quick radial energy ring that pulses outward right as the mascot
+   lands, giving the entrance some extra "impact". */
+.mascot-splash__burst {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px solid var(--splash-secondary);
+  opacity: 0;
+  animation: mascotBurst 1.4s ease-out 0.5s forwards;
+}
+@keyframes mascotBurst {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(9); opacity: 0; }
+}
+
+.mascot-splash__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  opacity: 0;
+  transform: scale(0.2) translateY(40px);
+  animation: mascotEntrance 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes mascotEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.15) translateY(60px) rotate(-8deg);
+    filter: blur(10px);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1.15) translateY(0) rotate(3deg);
+    filter: blur(0);
+  }
+  50% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3) translateY(-30px);
+    filter: blur(6px);
+  }
+}
+
+.mascot-splash__mascot {
+  font-size: min(40vw, 280px);
+  line-height: 1;
+  display: inline-flex;
+  filter:
+    drop-shadow(0 0 40px var(--splash-primary))
+    drop-shadow(0 0 90px var(--splash-secondary));
+  animation: mascotGlowPulse 1.6s ease-in-out 0.9s infinite;
+}
+@keyframes mascotGlowPulse {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 40px var(--splash-primary))
+      drop-shadow(0 0 90px var(--splash-secondary));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 60px var(--splash-primary))
+      drop-shadow(0 0 130px var(--splash-secondary));
+  }
+}
+
+.mascot-splash__label {
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 24px var(--splash-primary);
+  text-align: center;
+}
+.mascot-splash__label-sub {
+  color: var(--splash-secondary);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .mascot-splash__mascot {
+    font-size: min(55vw, 220px);
+  }
+}
