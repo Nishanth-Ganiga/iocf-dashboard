@@ -17,6 +17,7 @@ import TournamentDetail from './pages/TournamentDetail'
 import Rankings from './pages/Rankings'
 import Credits from './pages/Credits'
 import TrophyCabinet from './pages/TrophyCabinet'
+import HallOfFame from './pages/HallOfFame'
 import Fixtures from './pages/Fixtures'
 import Transfers from './pages/Transfers'
 import News from './pages/News'
@@ -56,6 +57,7 @@ function AppShell() {
             <Route path="/rankings" element={<Rankings />} />
             <Route path="/credits" element={<Credits />} />
             <Route path="/trophy-cabinet" element={<TrophyCabinet />} />
+            <Route path="/hall-of-fame" element={<HallOfFame />} />
             <Route path="/fixtures" element={<Fixtures />} />
             <Route path="/transfers" element={<Transfers />} />
             <Route path="/news" element={<News />} />

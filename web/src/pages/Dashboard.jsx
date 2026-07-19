@@ -14,6 +14,8 @@ import {
   IconCrown,
   IconPodium,
   IconMedal,
+  IconHallOfFame,
+  IconAward,
   IconTransfer,
   IconNews,
 } from '../lib/icons'
@@ -30,12 +32,13 @@ export default function Dashboard() {
   if (error) return <ErrorState message={error} />
   if (!data) return null
 
-  const { stats, boards, tournaments, news, upcomingMatches } = data
+  const { stats, boards, tournaments, news, upcomingMatches, hallOfFame } = data
 
   const featuredTournaments = (tournaments || []).slice(0, 6)
   const previewBoards = (boards || []).slice(0, 8)
   const latestNews = (news || []).slice(0, 9)
   const nextMatches = (upcomingMatches || []).slice(0, 6)
+  const featuredHallOfFame = (hallOfFame || []).slice(0, 3)
   const topTrophyBoards = [...(boards || [])]
     .sort((a, b) => (b.trophiesCount || 0) - (a.trophiesCount || 0))
     .slice(0, 5)
@@ -245,6 +248,38 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+
+        <section className="page-section">
+          <div className="section-header">
+            <div>
+              <p className="section-header__eyebrow">IOCF Legends</p>
+              <h2>Hall of Fame</h2>
+            </div>
+            <Link to="/hall-of-fame" className="btn btn-ghost">View full Hall of Fame</Link>
+          </div>
+          {featuredHallOfFame.length === 0 ? (
+            <div className="empty-state">No Hall of Fame cards recorded yet.</div>
+          ) : (
+            <div className="card-grid">
+              {featuredHallOfFame.map((card, i) => (
+                <Link key={i} to="/hall-of-fame" className="entity-card glass-panel dash-hof-card">
+                  <div className="entity-card__top">
+                    <div className="dash-module__icon"><IconHallOfFame /></div>
+                    <div>
+                      <p className="entity-card__title">{card.name}</p>
+                      {card.subtitle && <p className="entity-card__meta">{card.subtitle}</p>}
+                    </div>
+                  </div>
+                  {card.players?.[0] && (
+                    <p className="entity-card__meta dash-hof-card__player">
+                      <IconAward aria-hidden="true" /> {card.players[0].award}: {card.players[0].name}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )
@@ -258,6 +293,7 @@ const QUICK_MODULES = [
   { to: '/rankings', Icon: IconPodium, title: 'Rankings', desc: 'Credits-based board leaderboard' },
   { to: '/credits', Icon: IconCredits, title: 'Credits', desc: 'Board finances & transactions' },
   { to: '/trophy-cabinet', Icon: IconMedal, title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
+  { to: '/hall-of-fame', Icon: IconHallOfFame, title: 'Hall of Fame', desc: 'IOCF’s best players, period by period' },
   { to: '/fixtures', Icon: IconCalendar, title: 'Fixtures & Results', desc: 'Series, tests & schedules' },
   { to: '/transfers', Icon: IconTransfer, title: 'Auctions & Transfers', desc: 'Player movement log' },
   { to: '/news', Icon: IconNews, title: 'News & Announcements', desc: 'Champions, transfers & results' },

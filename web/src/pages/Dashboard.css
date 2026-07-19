@@ -293,6 +293,18 @@
   flex-shrink: 0;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Hall of Fame preview cards                                             */
+/* ---------------------------------------------------------------------- */
+.dash-hof-card {
+  text-decoration: none;
+}
+.dash-hof-card__player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 @media (max-width: 640px) {
   .dash-hero {
     padding: 40px 0 28px;

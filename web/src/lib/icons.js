@@ -22,6 +22,8 @@ export {
   GiWallet as IconPurse,
   GiCaptainHatProfile as IconCaptain,
   GiCancel as IconCancelled,
+  GiDiamondTrophy as IconHallOfFame,
+  GiStarMedal as IconAward,
 } from 'react-icons/gi'
 export { MdStadium as IconStadium } from 'react-icons/md'
 export { FaNewspaper as IconNews } from 'react-icons/fa6'

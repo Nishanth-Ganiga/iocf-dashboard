@@ -1,0 +1,82 @@
+/* Hall of Fame module — period-by-period "best players" honor cards */
+
+.hof-header-icon {
+  color: var(--ioc-gold);
+  vertical-align: -0.1em;
+}
+
+.hof-grid {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.hof-card {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: default;
+}
+.hof-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.hof-card__name {
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  color: var(--ioc-gold-bright);
+}
+
+.hof-card__subtitle {
+  font-size: 0.78rem;
+  margin-top: -8px;
+}
+
+.hof-card__players {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hof-card__player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+}
+.hof-card__player:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.hof-card__player-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.hof-card__player-meta {
+  font-size: 0.72rem;
+}
+
+.hof-card__player-award {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.hof-card__award-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--ioc-gold);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+.hof-card__achievement {
+  font-size: 0.7rem;
+}

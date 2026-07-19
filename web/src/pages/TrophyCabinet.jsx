@@ -9,6 +9,8 @@ const TROPHY_PREVIEW_COUNT = 3
 
 // Trophy Cabinet — recent champions recap (from data.tournaments) plus a
 // full trophy-count leaderboard across every board (from data.boards).
+// The IOCF Hall of Fame (period-by-period best-player cards) has its own
+// dedicated page/nav entry - see pages/HallOfFame.jsx.
 export default function TrophyCabinet() {
   const { data, loading, error } = useDashboard()
 
