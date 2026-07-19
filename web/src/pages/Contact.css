@@ -116,13 +116,28 @@
 }
 
 .contact-board-card {
+  cursor: default;
+  text-decoration: none;
+}
+.contact-board-card__link {
+  text-decoration: none;
+  color: inherit;
   cursor: pointer;
 }
 .contact-board-card .ioc-badge {
   transition: transform 0.3s var(--ease-out);
 }
-.contact-board-card:hover .ioc-badge {
+.contact-board-card__link:hover .ioc-badge {
   transform: scale(1.1) rotate(-4deg);
+}
+.contact-board-card__insta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+  font-size: 0.82rem;
+  padding: 9px 16px;
 }
 
 @media (max-width: 900px) {

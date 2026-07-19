@@ -11,6 +11,7 @@ import {
   IconCalendar,
   IconTransfer,
   IconNews,
+  IconContact,
 } from '../lib/icons'
 
 const MODULES = [
@@ -26,6 +27,7 @@ const MODULES = [
   { label: 'Fixtures & Results', to: '/fixtures', Icon: IconCalendar },
   { label: 'Auctions & Transfers', to: '/transfers', Icon: IconTransfer },
   { label: 'News & Announcements', to: '/news', Icon: IconNews },
+  { label: 'Contact', to: '/contact', Icon: IconContact },
 ]
 
 // `collapsed` — desktop icon-only rail vs full-width rail.

@@ -7,7 +7,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconStadium, IconTrophy, IconUmpire, IconCredits } from '../lib/icons'
+import { IconStadium, IconTrophy, IconUmpire, IconCredits, IconInstagram } from '../lib/icons'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -84,6 +84,16 @@ export default function BoardDetail() {
               <span className="text-faint">Credits</span>
               <b>{formatCredits(board.credits)}</b>
             </div>
+            {identity?.instagram && (
+              <a
+                href={identity.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline-gold board-detail__insta-btn"
+              >
+                <IconInstagram aria-hidden="true" /> Contact on Instagram
+              </a>
+            )}
           </div>
         </section>
 

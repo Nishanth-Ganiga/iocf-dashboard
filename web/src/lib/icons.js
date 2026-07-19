@@ -25,5 +25,5 @@ export {
   GiDiamondTrophy as IconHallOfFame,
   GiStarMedal as IconAward,
 } from 'react-icons/gi'
-export { MdStadium as IconStadium } from 'react-icons/md'
-export { FaNewspaper as IconNews } from 'react-icons/fa6'
+export { MdStadium as IconStadium, MdContactMail as IconContact } from 'react-icons/md'
+export { FaNewspaper as IconNews, FaInstagram as IconInstagram } from 'react-icons/fa6'

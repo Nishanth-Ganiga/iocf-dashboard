@@ -4,7 +4,8 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import StatCard from '../components/StatCard'
 import Badge from '../components/Badge'
-import { IconBoard, IconPlayer, IconStadium, IconTrophy, IconChampion } from '../lib/icons'
+import { knownBoardIdentity } from '../lib/boardIdentity'
+import { IconBoard, IconPlayer, IconStadium, IconTrophy, IconChampion, IconInstagram } from '../lib/icons'
 import './Contact.css'
 
 // Contact the Federation — static info page. There is no backend endpoint
@@ -136,18 +137,33 @@ export default function Contact() {
             <div className="empty-state">No boards recorded yet.</div>
           ) : (
             <div className="card-grid">
-              {boards.map((b) => (
-                <Link key={b.id} to={`/boards/${b.id}`} className="entity-card glass-panel contact-board-card">
-                  <div className="entity-card__top">
-                    <Badge name={b.name} size={44} />
-                    <div>
-                      <p className="entity-card__title">{b.name}</p>
-                      <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
-                      {b.ceo && <p className="entity-card__meta">CEO: {b.ceo}</p>}
-                    </div>
+              {boards.map((b) => {
+                const identity = knownBoardIdentity(b.name)
+                return (
+                  <div key={b.id} className="entity-card glass-panel contact-board-card">
+                    <Link to={`/boards/${b.id}`} className="contact-board-card__link">
+                      <div className="entity-card__top">
+                        <Badge name={b.name} size={44} />
+                        <div>
+                          <p className="entity-card__title">{b.name}</p>
+                          <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
+                          {b.ceo && <p className="entity-card__meta">CEO: {b.ceo}</p>}
+                        </div>
+                      </div>
+                    </Link>
+                    {identity?.instagram && (
+                      <a
+                        href={identity.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline-gold contact-board-card__insta"
+                      >
+                        <IconInstagram aria-hidden="true" /> Contact on Instagram
+                      </a>
+                    )}
                   </div>
-                </Link>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>

@@ -19,8 +19,14 @@
   box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
 }
 
-.boards-card__cta {
+.boards-card__cta-row {
   margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boards-card__cta {
   align-self: flex-start;
   padding: 8px 20px;
   font-size: 0.82rem;
@@ -32,6 +38,25 @@
 }
 .boards-card__cta:hover .boards-card__cta-arrow {
   transform: translateX(4px);
+}
+
+.boards-card__insta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  color: var(--ioc-text-dim);
+  flex-shrink: 0;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.boards-card__insta:hover {
+  transform: scale(1.1) translateY(-2px);
+  border-color: #dd2a7b;
+  color: #dd2a7b;
+  box-shadow: 0 0 16px rgba(221, 42, 123, 0.3);
 }
 
 .boards-card__flag {

@@ -7,7 +7,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconUmpire } from '../lib/icons'
+import { IconUmpire, IconInstagram } from '../lib/icons'
 import './Boards.css'
 
 // Cricket Boards module — every active national board as a clickable card,
@@ -81,10 +81,24 @@ export default function Boards() {
                         <b>{b.umpiresCount ?? 0}</b>
                       </div>
                     </div>
-                    <Link to={`/boards/${b.id}`} className="btn btn-outline-gold boards-card__cta">
-                      View Board
-                      <span className="boards-card__cta-arrow" aria-hidden="true">→</span>
-                    </Link>
+                    <div className="boards-card__cta-row">
+                      <Link to={`/boards/${b.id}`} className="btn btn-outline-gold boards-card__cta">
+                        View Board
+                        <span className="boards-card__cta-arrow" aria-hidden="true">→</span>
+                      </Link>
+                      {identity?.instagram && (
+                        <a
+                          href={identity.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="boards-card__insta"
+                          aria-label={`Contact ${b.name} on Instagram`}
+                          title="Contact on Instagram"
+                        >
+                          <IconInstagram aria-hidden="true" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )
               })}

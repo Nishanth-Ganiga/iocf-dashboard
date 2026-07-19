@@ -84,8 +84,17 @@
 
 .board-detail__hero-stats {
   display: flex;
+  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.board-detail__insta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 10px 18px;
 }
 
 /* ---------------------------------------------------------------------- */
