@@ -129,11 +129,33 @@
 }
 
 .players-card__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 700;
   font-size: 0.92rem;
+  min-width: 0;
+}
+
+.players-card__name-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.players-card__role-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
 }
 
 .players-card__board {

@@ -5,7 +5,7 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
 import { formatCredits } from '../lib/badges'
-import { IconAward } from '../lib/icons'
+import { IconAward, IconCrown } from '../lib/icons'
 import './Players.css'
 
 // Hard cap on rendered cards so a broad/empty search never dumps the full
@@ -16,12 +16,19 @@ const MAX_RESULTS = 200
 // Players module — there is no standalone "players" collection in the
 // workbook; every player only exists nested inside their board's roster
 // (`board.players`, plain name strings). This page flattens every board's
-// roster into one searchable directory of { name, board } rows. Clicking a
-// card expands it in place to show every achievement that player's exact
-// name matched elsewhere in the dashboard (T20 World Cup awards, franchise
-// league awards + match MOTM/Best Batsman/Best Bowler, Hall of Fame,
-// World Test Championship, Emerging Talent League, Lone Warrior) — see
-// lib/playerAchievements.js for how that cross-reference is built.
+// roster into one searchable directory of { name, board } rows, plus each
+// board's Chairman and CEO — they're stored as separate fields on the
+// board record (not inside `players`), but several of them do turn up
+// actually playing in the franchise leagues (as captains, marquee
+// signings, etc. - see lib/playerAchievements.js), so they belong in this
+// directory too. Each is tagged with a Chairman/CEO pill so it's clear
+// they're an office-holder first, not just hidden inside the roster count.
+// Clicking a card expands it in place to show every achievement that
+// player's exact name matched elsewhere in the dashboard (T20 World Cup
+// awards, franchise league awards + match MOTM/Best Batsman/Best Bowler,
+// Hall of Fame, World Test Championship, Emerging Talent League, Lone
+// Warrior) — see lib/playerAchievements.js for how that cross-reference is
+// built.
 export default function Players() {
   const { data, loading, error } = useDashboard()
   const location = useLocation()
@@ -43,8 +50,10 @@ export default function Players() {
 
   const allPlayers = []
   for (const b of boards) {
+    if (b.chairman) allPlayers.push({ name: b.chairman, board: b.name, boardId: b.id, role: 'Chairman' })
+    if (b.ceo) allPlayers.push({ name: b.ceo, board: b.name, boardId: b.id, role: 'CEO' })
     for (const name of b.players || []) {
-      allPlayers.push({ name, board: b.name, boardId: b.id })
+      allPlayers.push({ name, board: b.name, boardId: b.id, role: null })
     }
   }
 
@@ -99,7 +108,8 @@ export default function Players() {
               ? `${allPlayers.length} players`
               : `${filtered.length} matching ${query ? `"${query}"` : boardFilter}`}
             {' · '}Rosters are sourced from IOCF Boards (board.players is the source of truth —
-            not cross-referenced against franchise league / emerging talent squads).
+            not cross-referenced against franchise league / emerging talent squads), plus each
+            board's Chairman and CEO — several of whom also play in the franchise leagues.
             {truncated && ` Showing first ${MAX_RESULTS} — narrow your search to see more.`}
             {' '}Click a player to see their achievements.
           </p>
@@ -133,7 +143,14 @@ export default function Players() {
                         <Badge name={p.name} size={44} rounded="square" />
                       </span>
                       <div className="players-card__text">
-                        <p className="players-card__name">{p.name}</p>
+                        <p className="players-card__name">
+                          <span className="players-card__name-text">{p.name}</span>
+                          {p.role && (
+                            <span className="pill players-card__role-pill">
+                              <IconCrown aria-hidden="true" /> {p.role}
+                            </span>
+                          )}
+                        </p>
                         <Link
                           to={`/boards/${p.boardId}`}
                           className="players-card__board text-faint"
