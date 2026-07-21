@@ -28,7 +28,7 @@
 export const BOARD_IDENTITY = {
   Australia: {
     flagCode: 'au', flagEmoji: '🇦🇺', mascot: '🦘', mascotName: 'Kangaroo',
-    crest: { primary: '#00843d', secondary: '#ffcd00' },
+    crest: { primary: '#006B3C', secondary: '#FFCC00' },
     instagram: 'https://www.instagram.com/cricketaustralia_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Bangladesh: {
