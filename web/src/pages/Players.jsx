@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
+import { formatCredits } from '../lib/badges'
+import { IconAward } from '../lib/icons'
 import './Players.css'
 
 // Hard cap on rendered cards so a broad/empty search never dumps the full
@@ -13,16 +16,24 @@ const MAX_RESULTS = 200
 // Players module — there is no standalone "players" collection in the
 // workbook; every player only exists nested inside their board's roster
 // (`board.players`, plain name strings). This page flattens every board's
-// roster into one searchable directory of { name, board } rows.
+// roster into one searchable directory of { name, board } rows. Clicking a
+// card expands it in place to show every achievement that player's exact
+// name matched elsewhere in the dashboard (T20 World Cup awards, franchise
+// league awards + match MOTM/Best Batsman/Best Bowler, Hall of Fame,
+// World Test Championship, Emerging Talent League, Lone Warrior) — see
+// lib/playerAchievements.js for how that cross-reference is built.
 export default function Players() {
   const { data, loading, error } = useDashboard()
   const location = useLocation()
   const [query, setQuery] = useState('')
   const [boardFilter, setBoardFilter] = useState('All')
+  const [expanded, setExpanded] = useState(null)
 
   useEffect(() => {
     if (location.state?.query) setQuery(location.state.query)
   }, [location.state])
+
+  const achievementsIndex = useMemo(() => buildAchievementsIndex(data), [data])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} />
@@ -90,6 +101,7 @@ export default function Players() {
             {' · '}Rosters are sourced from IOCF Boards (board.players is the source of truth —
             not cross-referenced against franchise league / emerging talent squads).
             {truncated && ` Showing first ${MAX_RESULTS} — narrow your search to see more.`}
+            {' '}Click a player to see their achievements.
           </p>
 
           {filtered.length === 0 ? (
@@ -98,19 +110,74 @@ export default function Players() {
             </div>
           ) : (
             <div className="players-grid">
-              {visible.map((p, i) => (
-                <div key={`${p.name}-${i}`} className="players-card glass-panel">
-                  <span className="players-card__badge">
-                    <Badge name={p.name} size={44} rounded="square" />
-                  </span>
-                  <div className="players-card__text">
-                    <p className="players-card__name">{p.name}</p>
-                    <Link to={`/boards/${p.boardId}`} className="players-card__board text-faint">
-                      {p.board}
-                    </Link>
+              {visible.map((p, i) => {
+                const cardKey = `${p.name}-${i}`
+                const isOpen = expanded === cardKey
+                const achievements = getAchievementsFor(achievementsIndex, p.name)
+                return (
+                  <div
+                    key={cardKey}
+                    className={`players-card glass-panel${isOpen ? ' is-expanded' : ''}${achievements.length > 0 ? ' has-achievements' : ''}`}
+                    onClick={() => setExpanded(isOpen ? null : cardKey)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setExpanded(isOpen ? null : cardKey)
+                      }
+                    }}
+                  >
+                    <div className="players-card__top">
+                      <span className="players-card__badge">
+                        <Badge name={p.name} size={44} rounded="square" />
+                      </span>
+                      <div className="players-card__text">
+                        <p className="players-card__name">{p.name}</p>
+                        <Link
+                          to={`/boards/${p.boardId}`}
+                          className="players-card__board text-faint"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {p.board}
+                        </Link>
+                      </div>
+                      {achievements.length > 0 && (
+                        <span className="pill players-card__achv-pill">
+                          <IconAward aria-hidden="true" /> {achievements.length}
+                        </span>
+                      )}
+                    </div>
+                    {isOpen && (
+                      <div className="players-card__achievements">
+                        {achievements.length === 0 ? (
+                          <p className="text-faint players-card__no-achv">
+                            No achievements on record for this player yet.
+                          </p>
+                        ) : (
+                          <ul>
+                            {achievements.map((a, j) => (
+                              <li key={j}>
+                                <IconAward className="players-card__achv-icon" aria-hidden="true" />
+                                <span>
+                                  <b>{a.title}</b>
+                                  {a.detail && <> · {a.detail}</>}
+                                  <span className="text-faint players-card__achv-source"> — {a.source}</span>
+                                  {a.credits != null && (
+                                    <span className="pill players-card__achv-credits">
+                                      {formatCredits(a.credits)} credits
+                                    </span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
