@@ -111,7 +111,7 @@ export default function Players() {
             not cross-referenced against franchise league / emerging talent squads), plus each
             board's Chairman and CEO — several of whom also play in the franchise leagues.
             {truncated && ` Showing first ${MAX_RESULTS} — narrow your search to see more.`}
-            {' '}Click a player to see their achievements.
+            {' '}Click a name to open their profile, or the rest of the card to preview achievements here.
           </p>
 
           {filtered.length === 0 ? (
@@ -144,7 +144,13 @@ export default function Players() {
                       </span>
                       <div className="players-card__text">
                         <p className="players-card__name">
-                          <span className="players-card__name-text">{p.name}</span>
+                          <Link
+                            to={`/players/${encodeURIComponent(p.name)}`}
+                            className="players-card__name-text"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {p.name}
+                          </Link>
                           {p.role && (
                             <span className="pill players-card__role-pill">
                               <IconCrown aria-hidden="true" /> {p.role}

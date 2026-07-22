@@ -142,6 +142,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  transition: color 0.2s;
+}
+.players-card__name-text:hover {
+  color: var(--ioc-gold);
 }
 
 .players-card__role-pill {

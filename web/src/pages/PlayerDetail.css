@@ -1,0 +1,209 @@
+/* Player Detail — hero identity card, franchise-league squads, career
+   achievement list for a single player. */
+
+.pd-back {
+  display: inline-block;
+  margin: 24px 0 20px;
+  color: var(--ioc-text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pd-back:hover {
+  color: var(--ioc-gold);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Hero                                                                    */
+/* ---------------------------------------------------------------------- */
+.pd-hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 28px;
+  margin-bottom: 36px;
+  animation: pageFadeIn 0.6s var(--ease-out) both;
+}
+
+.pd-hero__badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  transition: transform 0.35s var(--ease-out);
+}
+.pd-hero:hover .pd-hero__badge {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.pd-hero__info {
+  flex: 1;
+  min-width: 220px;
+}
+
+.pd-hero__name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.pd-hero__role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 10px;
+}
+
+.pd-hero__board {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.pd-hero__board-link {
+  color: var(--ioc-gold);
+  font-weight: 600;
+}
+.pd-hero__board-link:hover {
+  color: var(--ioc-gold-bright);
+}
+
+.pd-hero__stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Franchise squads                                                        */
+/* ---------------------------------------------------------------------- */
+.pd-squad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.pd-squad-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
+
+.pd-squad-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.pd-squad-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.pd-squad-card__team {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.pd-squad-card__league {
+  font-size: 0.76rem;
+}
+
+.pd-squad-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pd-squad-card__role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--ioc-gold);
+  font-size: 0.68rem;
+}
+
+.pd-squad-card__credits-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  font-size: 0.68rem;
+}
+
+.pd-squad-card__note {
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Achievements                                                            */
+/* ---------------------------------------------------------------------- */
+.pd-section-icon {
+  color: var(--ioc-gold);
+  vertical-align: -0.1em;
+}
+
+.pd-achv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  list-style: none;
+}
+.pd-achv-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.pd-achv-list li:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pd-achv-list__icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--ioc-gold);
+}
+
+.pd-achv-list__source {
+  display: block;
+  font-size: 0.74rem;
+}
+
+.pd-achv-list__credits {
+  display: inline-flex;
+  margin-left: 8px;
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+
+@media (max-width: 640px) {
+  .pd-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .pd-hero__stats {
+    width: 100%;
+  }
+}

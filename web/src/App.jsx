@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import Boards from './pages/Boards'
 import BoardDetail from './pages/BoardDetail'
 import Players from './pages/Players'
+import PlayerDetail from './pages/PlayerDetail'
 import Stadiums from './pages/Stadiums'
 import Tournaments from './pages/Tournaments'
 import TournamentDetail from './pages/TournamentDetail'
@@ -51,6 +52,7 @@ function AppShell() {
             <Route path="/boards" element={<Boards />} />
             <Route path="/boards/:boardId" element={<BoardDetail />} />
             <Route path="/players" element={<Players />} />
+            <Route path="/players/:name" element={<PlayerDetail />} />
             <Route path="/stadiums" element={<Stadiums />} />
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/tournaments/:tournamentId" element={<TournamentDetail />} />
