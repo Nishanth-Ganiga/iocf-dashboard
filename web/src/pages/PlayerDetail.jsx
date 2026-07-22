@@ -2,9 +2,11 @@ import { Link, useParams } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
+import FlagIcon from '../components/FlagIcon'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
-import { findHomeBoard, findFranchiseSquads } from '../lib/playerProfile'
+import { findHomeBoard, findFranchiseSquads, representedBoards } from '../lib/playerProfile'
 import { formatCredits } from '../lib/badges'
+import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconAward, IconCrown, IconCaptain, IconPurse } from '../lib/icons'
 import './PlayerDetail.css'
 
@@ -45,6 +47,7 @@ export default function PlayerDetail() {
   const squads = findFranchiseSquads(data, name)
   const achievementsIndex = buildAchievementsIndex(data)
   const achievements = getAchievementsFor(achievementsIndex, name)
+  const boards = representedBoards(home, squads)
 
   return (
     <div className="page-enter">
@@ -70,6 +73,22 @@ export default function PlayerDetail() {
                 {board.name}
               </Link>
             </p>
+            {boards.length > 1 && (
+              <div className="pd-hero__flags">
+                <span className="text-faint pd-hero__flags-label">Teams played for</span>
+                <div className="pd-hero__flags-row">
+                  {boards.map((b) => {
+                    const identity = knownBoardIdentity(b)
+                    return (
+                      <span key={b} className="pd-hero__flag-chip" title={b}>
+                        {identity && <FlagIcon identity={identity} className="pd-hero__flag-icon" />}
+                        <span>{b}</span>
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="pd-hero__stats">
             <div className="entity-card__stat">
