@@ -7,22 +7,99 @@
 // match MOTMs, and the Lone Warrior's champion/runner-up — so this builds
 // one lookup index by scanning all of them once.
 //
-// Matching is exact-string only (case-insensitive, trimmed, with a
-// trailing "(XXX)" board/team-code suffix stripped) — never fuzzy. Several
-// award fields only give a first name ("Ram") rather than the full roster
-// name ("Ram Thakkar"), and a couple of spellings genuinely differ between
-// sheets ("Molly Stephan" vs "Molly Steephan"); fuzzy-matching those would
-// risk crediting the wrong player, so this deliberately under-counts
-// rather than guesses, consistent with the rest of this codebase's
-// "never fabricate — omit rather than guess" approach to messy source data.
+// Matching is exact-string by default (case-insensitive, trimmed, with a
+// trailing "(XXX)" board/team-code suffix stripped). Some award/Hall of
+// Fame rows spell or truncate a name differently than the board roster
+// does ("Molly Steephan" vs roster's "Molly Stephan", "Chappy" vs roster's
+// "Chappy MK") — but every one of those rows also names the single board
+// the honor belongs to (`award.board` / Hall of Fame's `country`). When
+// that's true, resolveNameOnBoard below is allowed to fuzzy-resolve the
+// name, but ONLY against that one board's own roster (+ chairman/CEO), and
+// only when exactly one candidate matches (substring containment, else
+// edit-distance <= 1) — never across boards, never with more than one
+// candidate. That keeps this codebase's "never fabricate — omit rather
+// than guess" rule intact while fixing genuine typos/nicknames instead of
+// silently dropping them.
 function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
   const stripped = value.replace(/\s*\([^)]*\)\s*$/, '').trim()
   return stripped ? stripped.toLowerCase() : null
 }
 
-function pushAchievement(index, name, achievement) {
-  const key = normalizeName(name)
+// Full Levenshtein edit distance — names here are short (a few words at
+// most) and each board roster only has a few dozen entries, so the plain
+// O(n*m) DP table is more than fast enough.
+function levenshtein(a, b) {
+  const la = a.length
+  const lb = b.length
+  if (la === 0) return lb
+  if (lb === 0) return la
+  let prev = Array.from({ length: lb + 1 }, (_, j) => j)
+  for (let i = 1; i <= la; i++) {
+    const cur = [i]
+    for (let j = 1; j <= lb; j++) {
+      cur[j] = a[i - 1] === b[j - 1]
+        ? prev[j - 1]
+        : 1 + Math.min(prev[j - 1], prev[j], cur[j - 1])
+    }
+    prev = cur
+  }
+  return prev[lb]
+}
+
+// One entry per board: normalized name -> canonical display name, built
+// from that board's roster plus its Chairman/CEO (who occasionally turn up
+// as award winners too).
+function buildBoardRosterIndex(boards) {
+  const index = new Map()
+  for (const b of boards || []) {
+    const boardKey = normalizeName(b.name)
+    if (!boardKey) continue
+    const members = new Map()
+    const add = (raw) => {
+      const key = normalizeName(raw)
+      if (key && !members.has(key)) members.set(key, raw.trim())
+    }
+    if (b.chairman) add(b.chairman)
+    if (b.ceo) add(b.ceo)
+    for (const p of b.players || []) add(p)
+    index.set(boardKey, members)
+  }
+  return index
+}
+
+// Resolves a raw award/achievement name to the board roster's canonical
+// spelling, scoped strictly to the single board the record itself names.
+// Returns null (leave unresolved) unless exactly one roster member
+// matches — never guesses across boards or between multiple candidates.
+function resolveNameOnBoard(boardRosterIndex, rawName, boardName) {
+  const key = normalizeName(rawName)
+  const boardKey = normalizeName(boardName)
+  if (!key || !boardKey) return null
+  const members = boardRosterIndex.get(boardKey)
+  if (!members) return null
+  if (members.has(key)) return members.get(key)
+
+  const contains = []
+  for (const [memberKey, display] of members) {
+    if (memberKey.includes(key) || key.includes(memberKey)) contains.push(display)
+  }
+  if (contains.length === 1) return contains[0]
+
+  const close = []
+  for (const [memberKey, display] of members) {
+    if (levenshtein(memberKey, key) <= 1) close.push(display)
+  }
+  if (close.length === 1) return close[0]
+
+  return null
+}
+
+function pushAchievement(index, name, achievement, boardRosterIndex, boardName) {
+  const resolved = boardRosterIndex && boardName
+    ? resolveNameOnBoard(boardRosterIndex, name, boardName)
+    : null
+  const key = normalizeName(resolved || name)
   if (!key) return
   if (!index.has(key)) index.set(key, [])
   index.get(key).push(achievement)
@@ -54,6 +131,8 @@ export function buildAchievementsIndex(data) {
   const index = new Map()
   if (!data) return index
 
+  const boardRosterIndex = buildBoardRosterIndex(data.boards)
+
   const wc = data.t20WorldCup
   if (wc) {
     for (const a of wc.awards || []) {
@@ -62,7 +141,7 @@ export function buildAchievementsIndex(data) {
         title: a.award,
         detail: a.board,
         credits: a.credits,
-      })
+      }, boardRosterIndex, a.board)
     }
     for (const [stage, matches] of Object.entries(wc.stages || {})) {
       for (const m of matches) {
@@ -73,12 +152,15 @@ export function buildAchievementsIndex(data) {
 
   for (const league of data.franchiseLeagues || []) {
     for (const a of league.awards || []) {
+      // Team-level trophies (Champions/Runners-up/Fair Play) carry a team
+      // name rather than a player name and have no `team` field of their
+      // own — only player awards get board-scoped resolution.
       pushAchievement(index, a.winner, {
         source: league.name,
         title: a.award,
         detail: a.team || a.board,
         credits: a.credits,
-      })
+      }, a.team ? boardRosterIndex : null, a.board)
     }
     for (const m of league.matches || []) {
       addMatchHonors(index, league.name, m, m.Schedule)
@@ -91,7 +173,7 @@ export function buildAchievementsIndex(data) {
         source: `Hall of Fame · ${card.name}`,
         title: p.award,
         detail: p.achievement,
-      })
+      }, boardRosterIndex, p.country)
     }
   }
 
