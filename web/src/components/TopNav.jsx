@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { label: 'Players', to: '/players' },
   { label: 'Stadiums', to: '/stadiums' },
   { label: 'Tournaments', to: '/tournaments' },
-  { label: 'Rankings', to: '/rankings' },
+  { label: 'Credits Ranking', to: '/rankings' },
   { label: 'News', to: '/news' },
   { label: 'Contact', to: '/contact' },
 ]

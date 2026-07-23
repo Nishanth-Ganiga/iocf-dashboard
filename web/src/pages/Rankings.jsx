@@ -34,7 +34,7 @@ export default function Rankings() {
           <div className="section-header">
             <div>
               <p className="section-header__eyebrow">Credits Leaderboard</p>
-              <h2>Rankings</h2>
+              <h2>Credits Ranking</h2>
             </div>
             <input
               type="text"
