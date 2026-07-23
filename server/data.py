@@ -1005,6 +1005,77 @@ def get_hall_of_fame(wb):
 
 
 # ---------------------------------------------------------------------------
+# Board Rankings — a genuine points-based performance ranking, one table per
+# format (T10/T20/Club/ODI/100 Balls/Test) plus an Overall table, separate
+# from the credits balance that powers the Credits Ranking page.
+# ---------------------------------------------------------------------------
+
+def _num_or_none_rankings(v):
+    """Like _num_or_none, but also treats Excel error strings
+    ("#DIV/0!" - a board with 0 matches played divides by zero computing
+    its winning rate/scores) as missing rather than fabricating a 0."""
+    if isinstance(v, (int, float)):
+        return v
+    return None
+
+
+def _parse_ranking_table(ws, header_row, max_row):
+    rows = []
+    r = header_row + 1
+    while r <= max_row:
+        board = _clean(ws.cell(row=r, column=1).value)
+        if board is None:
+            break
+        details = _clean(ws.cell(row=r, column=4).value)
+        rows.append(
+            {
+                "board": board,
+                "matchesPlayed": _num_or_none_rankings(ws.cell(row=r, column=2).value),
+                "matchesWon": _num_or_none_rankings(ws.cell(row=r, column=3).value),
+                "honors": None if details in (None, "NA") else details,
+                "winningRate": _num_or_none_rankings(ws.cell(row=r, column=5).value),
+                "leagueScore": _num_or_none_rankings(ws.cell(row=r, column=6).value),
+                "tournamentScore": _num_or_none_rankings(ws.cell(row=r, column=7).value),
+                "points": _num_or_none_rankings(ws.cell(row=r, column=8).value),
+            }
+        )
+        r += 1
+    # Already sorted by Points in the sheet, but assign explicit ranks
+    # rather than relying on row order alone.
+    rows.sort(key=lambda x: (x["points"] if x["points"] is not None else -1), reverse=True)
+    for i, row in enumerate(rows):
+        row["rank"] = i + 1
+    return rows, r
+
+
+def get_board_rankings(wb):
+    name = "Board Rankings"
+    if name not in wb.sheetnames:
+        return []
+    ws = wb[name]
+    max_row = ws.max_row
+    tables = []
+    r = 1
+    while r <= max_row:
+        title = _clean(ws.cell(row=r, column=1).value)
+        if isinstance(title, str) and title.lower().endswith("ranking"):
+            header = _clean(ws.cell(row=r + 1, column=1).value)
+            if isinstance(header, str) and header.strip().lower() == "board":
+                rows, next_r = _parse_ranking_table(ws, r + 1, max_row)
+                tables.append(
+                    {
+                        "id": title.lower().replace(" ", "-"),
+                        "name": title,
+                        "table": rows,
+                    }
+                )
+                r = next_r
+                continue
+        r += 1
+    return tables
+
+
+# ---------------------------------------------------------------------------
 # Continental cups + emerging talent + lone warrior (participant lists)
 # ---------------------------------------------------------------------------
 
@@ -1114,6 +1185,7 @@ def build_dashboard(path):
     continental_cups = get_continental_cups(wb)
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
+    board_rankings = get_board_rankings(wb)
 
     # ---- tournaments (unified list for Tournaments module / featured cards)
     tournaments = []
@@ -1266,6 +1338,7 @@ def build_dashboard(path):
         "boards": boards,
         "dismantledBoards": dismantled,
         "rankings": credits_data["rankings"],
+        "boardRankings": board_rankings,
         "tournaments": tournaments,
         "t20WorldCup": t20wc,
         "franchiseLeagues": franchise_leagues,

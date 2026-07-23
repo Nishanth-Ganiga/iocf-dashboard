@@ -1,30 +1,39 @@
-/* Board Rankings module — credits-ranked list with a full per-board
-   comparison (chairman, CEO, roster, trophies, umpires, stadium tier)
-   opened up on every row instead of hidden behind a click. */
-
-.board-rankings-search {
-  padding: 10px 18px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--ioc-text);
-  font-size: 0.85rem;
-  min-width: 240px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.board-rankings-search::placeholder {
-  color: var(--ioc-text-faint);
-}
-.board-rankings-search:focus {
-  border-color: var(--ioc-neon);
-  box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
-}
+/* Board Rankings module — official IOCF points-based performance ranking
+   (League Score + Tournament Score = Points), one tab per format plus
+   Overall, each row expanded into played/won/winning-rate/honors detail. */
 
 .board-rankings-caption {
   font-size: 0.78rem;
   margin-bottom: 20px;
   line-height: 1.5;
+}
+
+.board-rankings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.board-rankings-tab {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text-dim);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s var(--ease-out);
+}
+.board-rankings-tab:hover {
+  border-color: var(--ioc-neon);
+  color: var(--ioc-text);
+  transform: translateY(-1px);
+}
+.board-rankings-tab.is-active {
+  background: rgba(212, 175, 55, 0.16);
+  border-color: var(--ioc-gold);
+  color: var(--ioc-gold-bright);
 }
 
 .board-rankings-list {
@@ -60,9 +69,9 @@
   background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
 }
 
-/* Credit-share bar, same idea as the Credits Ranking page — a faint
-   gradient fill behind the whole row sized to this board's credits
-   relative to the top-ranked board. */
+/* Points-share bar — a faint gradient fill behind the whole row sized to
+   this board's points relative to the top-ranked board in the active
+   format's table. */
 .board-rankings-row__bar {
   position: absolute;
   inset: 0 auto 0 0;
@@ -144,12 +153,16 @@
   font-size: 0.9rem;
   color: var(--ioc-text);
 }
+.board-rankings-row__stat--honors {
+  flex: 1 1 100%;
+  min-width: 100%;
+}
+.board-rankings-row__stat--honors b {
+  color: var(--ioc-gold);
+  font-weight: 600;
+}
 
 @media (max-width: 640px) {
-  .board-rankings-search {
-    width: 100%;
-    min-width: 0;
-  }
   .board-rankings-row__details {
     gap: 12px;
   }

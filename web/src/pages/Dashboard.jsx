@@ -291,7 +291,7 @@ const QUICK_MODULES = [
   { to: '/stadiums', Icon: IconStadium, title: 'Stadiums', desc: 'Venues across every board' },
   { to: '/tournaments', Icon: IconTrophy, title: 'Tournaments', desc: 'World Cups, leagues & cups' },
   { to: '/rankings', Icon: IconPodium, title: 'Credits Ranking', desc: 'Credits-based board leaderboard' },
-  { to: '/board-rankings', Icon: IconBoard, title: 'Board Rankings', desc: 'Full board comparison table' },
+  { to: '/board-rankings', Icon: IconBoard, title: 'Board Rankings', desc: 'Official points-based performance ranking' },
   { to: '/credits', Icon: IconCredits, title: 'Credits', desc: 'Board finances & transactions' },
   { to: '/trophy-cabinet', Icon: IconMedal, title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
   { to: '/hall-of-fame', Icon: IconHallOfFame, title: 'Hall of Fame', desc: 'IOCF’s best players, period by period' },
