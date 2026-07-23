@@ -7,7 +7,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconUmpire, IconInstagram } from '../lib/icons'
+import { IconInstagram } from '../lib/icons'
 import './Boards.css'
 
 // Cricket Boards module — every active national board as a clickable card,
@@ -75,10 +75,6 @@ export default function Boards() {
                       <div className="entity-card__stat">
                         <span className="text-faint">Ranking</span>
                         <b>#{b.ranking}</b>
-                      </div>
-                      <div className="entity-card__stat">
-                        <span className="text-faint"><IconUmpire aria-hidden="true" /> Umpires</span>
-                        <b>{b.umpiresCount ?? 0}</b>
                       </div>
                     </div>
                     <div className="boards-card__cta-row">

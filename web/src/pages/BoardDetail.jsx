@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
@@ -7,7 +6,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconStadium, IconTrophy, IconUmpire, IconCredits, IconInstagram } from '../lib/icons'
+import { IconStadium, IconTrophy, IconInstagram } from '../lib/icons'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -44,7 +43,6 @@ export default function BoardDetail() {
   const stadiums = board.stadiums || []
   const trophies = board.trophies || []
   const transfers = board.transfers || []
-  const umpires = board.umpires || []
   const identity = knownBoardIdentity(board.name)
 
   return (
@@ -174,29 +172,6 @@ export default function BoardDetail() {
         <section className="page-section">
           <div className="section-header">
             <div>
-              <p className="section-header__eyebrow">On-Field Officials</p>
-              <h2><IconUmpire className="board-detail__section-icon" /> Umpires ({board.umpiresCount ?? umpires.length})</h2>
-            </div>
-            {board.umpireCredits != null && (
-              <span className="pill board-detail__umpire-credits-pill">
-                <IconCredits aria-hidden="true" /> {formatCredits(board.umpireCredits)} total
-              </span>
-            )}
-          </div>
-          {umpires.length === 0 ? (
-            <div className="empty-state">No umpires recorded for this board.</div>
-          ) : (
-            <div className="board-detail__umpire-grid">
-              {umpires.map((umpire, i) => (
-                <UmpireCard key={i} umpire={umpire} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="page-section">
-          <div className="section-header">
-            <div>
               <p className="section-header__eyebrow">Activity Log</p>
               <h2>Recent Transfers</h2>
             </div>
@@ -215,46 +190,6 @@ export default function BoardDetail() {
           )}
         </section>
       </div>
-    </div>
-  )
-}
-
-// One umpire's officiating record — name up top, appearance/activity lines
-// (kept verbatim, exactly as parsed from the workbook) collapsed behind a
-// toggle once there are more than a handful, matching the squad-card
-// expand pattern used elsewhere in the dashboard.
-function UmpireCard({ umpire }) {
-  const [expanded, setExpanded] = useState(false)
-  const appearances = umpire.appearances || []
-  const shown = expanded ? appearances : appearances.slice(0, 4)
-
-  return (
-    <div className="entity-card glass-panel board-detail__umpire-card">
-      <div className="entity-card__top">
-        <Badge name={umpire.name} size={44} rounded="square" />
-        <div>
-          <p className="entity-card__title">{umpire.name}</p>
-          <p className="entity-card__meta">
-            {appearances.length} record{appearances.length === 1 ? '' : 's'}
-          </p>
-        </div>
-      </div>
-      {appearances.length > 0 && (
-        <ul className="board-detail__umpire-card__appearances">
-          {shown.map((line, i) => (
-            <li key={i}>{line}</li>
-          ))}
-        </ul>
-      )}
-      {appearances.length > 4 && (
-        <button
-          type="button"
-          className="btn btn-ghost board-detail__umpire-card__toggle"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? 'Show less' : `Show all ${appearances.length}`}
-        </button>
-      )}
     </div>
   )
 }
