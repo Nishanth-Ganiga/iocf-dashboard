@@ -6,7 +6,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconStadium, IconTrophy, IconInstagram } from '../lib/icons'
+import { IconStadium, IconTrophy, IconUmpire, IconInstagram } from '../lib/icons'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -43,6 +43,7 @@ export default function BoardDetail() {
   const stadiums = board.stadiums || []
   const trophies = board.trophies || []
   const transfers = board.transfers || []
+  const umpires = board.umpires || []
   const identity = knownBoardIdentity(board.name)
 
   return (
@@ -172,6 +173,29 @@ export default function BoardDetail() {
         <section className="page-section">
           <div className="section-header">
             <div>
+              <p className="section-header__eyebrow">Officiating Corps</p>
+              <h2><IconUmpire className="board-detail__section-icon" /> Umpires ({board.umpiresCount ?? umpires.length})</h2>
+            </div>
+            {board.umpireCredits != null && (
+              <span className="pill board-detail__umpire-credits-pill">
+                Total Credits Earned: {formatCredits(board.umpireCredits)}
+              </span>
+            )}
+          </div>
+          {umpires.length === 0 ? (
+            <div className="empty-state">No umpires recorded for this board.</div>
+          ) : (
+            <div className="board-detail__umpire-grid">
+              {umpires.map((umpire, i) => (
+                <UmpireCard key={i} umpire={umpire} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="page-section">
+          <div className="section-header">
+            <div>
               <p className="section-header__eyebrow">Activity Log</p>
               <h2>Recent Transfers</h2>
             </div>
@@ -190,6 +214,37 @@ export default function BoardDetail() {
           )}
         </section>
       </div>
+    </div>
+  )
+}
+
+function UmpireCard({ umpire }) {
+  const activities = umpire.activities || []
+  return (
+    <div className="board-detail__umpire-card glass-panel">
+      <div className="board-detail__umpire-card__head">
+        <span className="board-detail__umpire-card__name">{umpire.name}</span>
+        {umpire.totalPoints != null && (
+          <span className="pill board-detail__umpire-card__points">{formatCredits(umpire.totalPoints)} pts</span>
+        )}
+      </div>
+      {umpire.totalCredits != null && (
+        <p className="entity-card__meta">Credits Earned: {formatCredits(umpire.totalCredits)}</p>
+      )}
+      {activities.length > 0 && (
+        <ul className="board-detail__umpire-card__activities">
+          {activities.map((a, i) => (
+            <li key={i}>
+              <span>{a.category}</span>
+              <span className="board-detail__umpire-card__activity-figures">
+                {a.matches != null && <span>{a.matches} matches</span>}
+                {a.credits != null && <span>{formatCredits(a.credits)} cr</span>}
+                {a.points != null && <span>{a.points} pts</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

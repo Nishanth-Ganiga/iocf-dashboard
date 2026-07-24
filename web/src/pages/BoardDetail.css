@@ -228,6 +228,85 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Umpires                                                                 */
+/* ---------------------------------------------------------------------- */
+.board-detail__umpire-credits-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--ioc-gold);
+}
+
+.board-detail__umpire-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.board-detail__umpire-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
+
+.board-detail__umpire-card {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.board-detail__umpire-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-neon);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-neon);
+}
+
+.board-detail__umpire-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.board-detail__umpire-card__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.board-detail__umpire-card__points {
+  flex-shrink: 0;
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--ioc-gold);
+  font-size: 0.72rem;
+}
+
+.board-detail__umpire-card__activities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--ioc-text-dim);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 8px;
+}
+.board-detail__umpire-card__activities li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.board-detail__umpire-card__activity-figures {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--ioc-text);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Transfer activity                                                       */
 /* ---------------------------------------------------------------------- */
 .board-detail__transfer-list {

@@ -18,6 +18,7 @@ import {
   IconAward,
   IconTransfer,
   IconNews,
+  IconUmpire,
 } from '../lib/icons'
 import './Dashboard.css'
 
@@ -292,6 +293,7 @@ const QUICK_MODULES = [
   { to: '/tournaments', Icon: IconTrophy, title: 'Tournaments', desc: 'World Cups, leagues & cups' },
   { to: '/rankings', Icon: IconPodium, title: 'Credits Ranking', desc: 'Credits-based board leaderboard' },
   { to: '/board-rankings', Icon: IconBoard, title: 'Board Rankings', desc: 'Official points-based performance ranking' },
+  { to: '/umpire-rankings', Icon: IconUmpire, title: 'Umpire Rankings', desc: 'Points-based officiating leaderboard' },
   { to: '/credits', Icon: IconCredits, title: 'Credits', desc: 'Board finances & transactions' },
   { to: '/trophy-cabinet', Icon: IconMedal, title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
   { to: '/hall-of-fame', Icon: IconHallOfFame, title: 'Hall of Fame', desc: 'IOCF’s best players, period by period' },

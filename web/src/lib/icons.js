@@ -15,6 +15,7 @@ export {
   GiCalendar as IconCalendar,
   GiSandsOfTime as IconCountdown,
   GiWhistle as IconMatch,
+  GiWhistle as IconUmpire,
   GiPerson as IconPlayer,
   GiShield as IconBoard,
   GiCrown as IconCrown,

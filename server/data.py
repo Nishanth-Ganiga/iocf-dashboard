@@ -287,17 +287,18 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
                 continue
             stadiums.append(v)
 
-    # Umpires: row 6 of the umpire column is always a single "total
-    # credits earned by every umpire on this board" figure; rows 7+ are a
-    # numbered list of umpire names, each followed by an unspecified
-    # number of unnumbered "Category: appearances" lines describing which
-    # series/tournaments/franchise leagues they officiated. Those activity
-    # lines are kept verbatim rather than parsed into structured
-    # numbers - several mix appearance counts with credit amounts in the
-    # same line ("International Series(ODI): 3000: 2") with no reliable
-    # way to tell which number means what, so summarizing them would risk
-    # fabricating a total the source doesn't actually state. Two boards
-    # (Italy, UAE) have no umpire column at all - umpires stays [].
+    # Umpires: row 6 of the umpire column is a single "total credits
+    # earned by every umpire on this board" figure. Row 7 is a header
+    # ("Umpire" / "Details" / "Total Matches" / "Credits" / "Points")
+    # across 5 columns starting at umpire_col. Rows 8+ are a numbered
+    # list of umpire names in the base column; each name is followed by
+    # one activity row per series/tournament/franchise-league they
+    # officiated (category label + matches/credits/points for that
+    # category), ending in a "Total Credits" row holding that umpire's
+    # totals. A "Franchise League" label with no matches/credits/points
+    # of its own is just a sub-header for the specific league rows right
+    # below it (e.g. "BBL", "IPL") and isn't itself an activity. Two
+    # boards (Italy, UAE) have no umpire column at all - umpires stays [].
     umpires = []
     umpire_credits = None
     if umpire_col:
@@ -305,15 +306,40 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
         if isinstance(total_cell, (int, float)):
             umpire_credits = total_cell
         current = None
-        for v in _read_column_block(ws, umpire_col, 7, max_row):
-            if not isinstance(v, str):
+        for r in range(8, max_row + 1):
+            name_cell = _clean(ws.cell(row=r, column=umpire_col).value)
+            label = ws.cell(row=r, column=umpire_col + 1).value
+            matches = _num_or_none(ws.cell(row=r, column=umpire_col + 2).value)
+            credits_v = _num_or_none(ws.cell(row=r, column=umpire_col + 3).value)
+            points_v = _num_or_none(ws.cell(row=r, column=umpire_col + 4).value)
+
+            if isinstance(name_cell, str):
+                m = NUMBERED_RE.match(name_cell)
+                if m:
+                    current = {
+                        "name": m.group(1),
+                        "totalCredits": None,
+                        "totalPoints": None,
+                        "activities": [],
+                    }
+                    umpires.append(current)
+
+            if current is None or label is None:
                 continue
-            m = NUMBERED_RE.match(v)
-            if m:
-                current = {"name": m.group(1), "appearances": []}
-                umpires.append(current)
-            elif current is not None:
-                current["appearances"].append(v)
+            # "100 Ball League" gets auto-converted to the number 100 by
+            # Excel since the sheet just writes the bare digits "100".
+            if isinstance(label, (int, float)):
+                label = "100 Balls" if float(label) == 100 else str(label)
+            label = label.strip()
+            if label.lower() == "total credits":
+                current["totalCredits"] = credits_v
+                current["totalPoints"] = points_v
+            elif label == "Franchise League" and matches is None and credits_v is None:
+                continue  # sub-header only - the specific leagues follow below
+            else:
+                current["activities"].append(
+                    {"category": label, "matches": matches, "credits": credits_v, "points": points_v}
+                )
 
     # Trophy cabinets + player-trade lists can appear as secondary inline
     # sub-headers anywhere in the sheet (not just row 5), e.g. a cell reading
@@ -1075,6 +1101,47 @@ def get_board_rankings(wb):
     return tables
 
 
+def get_umpire_rankings(boards):
+    """Global points-based umpire leaderboard, built from the per-board
+    umpire data every board sheet now carries. A handful of umpires
+    officiate for more than one board and appear on both boards' sheets
+    under the exact same spelling - those are merged into a single
+    ranked entry (summed credits/points, activities tagged with which
+    board they were earned for) rather than counted twice. Merging is by
+    exact name match only; anything not an exact match is kept separate
+    rather than guessed at.
+    """
+    by_name = {}
+    order = []
+    for board in boards:
+        for umpire in board.get("umpires", []):
+            name = umpire["name"]
+            entry = by_name.get(name)
+            if entry is None:
+                entry = {
+                    "name": name,
+                    "boards": [],
+                    "totalCredits": None,
+                    "totalPoints": None,
+                    "activities": [],
+                }
+                by_name[name] = entry
+                order.append(name)
+            entry["boards"].append(board["name"])
+            if umpire["totalCredits"] is not None:
+                entry["totalCredits"] = (entry["totalCredits"] or 0) + umpire["totalCredits"]
+            if umpire["totalPoints"] is not None:
+                entry["totalPoints"] = (entry["totalPoints"] or 0) + umpire["totalPoints"]
+            for activity in umpire["activities"]:
+                entry["activities"].append({**activity, "board": board["name"]})
+
+    rankings = [by_name[name] for name in order]
+    rankings.sort(key=lambda x: (x["totalPoints"] if x["totalPoints"] is not None else -1), reverse=True)
+    for i, entry in enumerate(rankings):
+        entry["rank"] = i + 1
+    return rankings
+
+
 # ---------------------------------------------------------------------------
 # Continental cups + emerging talent + lone warrior (participant lists)
 # ---------------------------------------------------------------------------
@@ -1186,6 +1253,7 @@ def build_dashboard(path):
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
     board_rankings = get_board_rankings(wb)
+    umpire_rankings = get_umpire_rankings(boards)
 
     # ---- tournaments (unified list for Tournaments module / featured cards)
     tournaments = []
@@ -1339,6 +1407,7 @@ def build_dashboard(path):
         "dismantledBoards": dismantled,
         "rankings": credits_data["rankings"],
         "boardRankings": board_rankings,
+        "umpireRankings": umpire_rankings,
         "tournaments": tournaments,
         "t20WorldCup": t20wc,
         "franchiseLeagues": franchise_leagues,

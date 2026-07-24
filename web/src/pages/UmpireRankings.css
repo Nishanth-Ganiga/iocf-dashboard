@@ -1,0 +1,141 @@
+/* Umpire Rankings module — global points-based officiating leaderboard,
+   aggregated from every board's umpire activity records. */
+
+.umpire-rankings-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.umpire-rankings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.umpire-rankings-list > * {
+  animation: cardRiseIn 0.45s var(--ease-out) both;
+}
+
+.umpire-rankings-row {
+  position: relative;
+  padding: 18px 20px;
+  overflow: hidden;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.umpire-rankings-row:hover {
+  transform: translateY(-3px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+.umpire-rankings-row--top {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
+}
+
+.umpire-rankings-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));
+  transition: width 0.6s var(--ease-out);
+  pointer-events: none;
+}
+.umpire-rankings-row > * {
+  position: relative;
+  z-index: 1;
+}
+
+.umpire-rankings-row__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.umpire-rankings-row__rank {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ioc-text-dim);
+}
+.umpire-rankings-row__rank--medal {
+  font-size: 1.5rem;
+}
+
+.umpire-rankings-row__icon {
+  flex-shrink: 0;
+  font-size: 1.3rem;
+  color: var(--ioc-gold);
+  display: inline-flex;
+}
+
+.umpire-rankings-row__title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.umpire-rankings-row__name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ioc-text);
+}
+
+.umpire-rankings-row__boards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.umpire-rankings-row__board-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+}
+
+.umpire-rankings-row__points {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.78rem;
+}
+.umpire-rankings-row__points b {
+  font-size: 1.1rem;
+  color: var(--ioc-gold);
+}
+
+.umpire-rankings-row__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.umpire-rankings-row__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.78rem;
+  min-width: 90px;
+}
+.umpire-rankings-row__stat b {
+  font-size: 0.9rem;
+  color: var(--ioc-text);
+}
+
+@media (max-width: 640px) {
+  .umpire-rankings-row__details {
+    gap: 12px;
+  }
+  .umpire-rankings-row__stat {
+    min-width: 45%;
+  }
+}
