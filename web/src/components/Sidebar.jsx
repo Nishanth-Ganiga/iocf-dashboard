@@ -13,6 +13,8 @@ import {
   IconNews,
   IconContact,
   IconUmpire,
+  IconChampion,
+  IconAward,
 } from '../lib/icons'
 
 const MODULES = [
@@ -24,8 +26,10 @@ const MODULES = [
   { label: 'Credits Ranking', to: '/rankings', Icon: IconPodium },
   { label: 'Board Rankings', to: '/board-rankings', Icon: IconBoard },
   { label: 'Umpire Rankings', to: '/umpire-rankings', Icon: IconUmpire },
+  { label: 'Board Comparator', to: '/compare', Icon: IconChampion },
   { label: 'Credits', to: '/credits', Icon: IconCredits },
   { label: 'Trophy Cabinet', to: '/trophy-cabinet', Icon: IconMedal },
+  { label: 'Records & Milestones', to: '/records', Icon: IconAward },
   { label: 'Hall of Fame', to: '/hall-of-fame', Icon: IconHallOfFame },
   { label: 'Fixtures & Results', to: '/fixtures', Icon: IconCalendar },
   { label: 'Auctions & Transfers', to: '/transfers', Icon: IconTransfer },

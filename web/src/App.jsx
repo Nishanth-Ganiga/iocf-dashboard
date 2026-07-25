@@ -18,6 +18,8 @@ import TournamentDetail from './pages/TournamentDetail'
 import Rankings from './pages/Rankings'
 import BoardRankings from './pages/BoardRankings'
 import UmpireRankings from './pages/UmpireRankings'
+import Compare from './pages/Compare'
+import Records from './pages/Records'
 import Credits from './pages/Credits'
 import TrophyCabinet from './pages/TrophyCabinet'
 import HallOfFame from './pages/HallOfFame'
@@ -61,6 +63,8 @@ function AppShell() {
             <Route path="/rankings" element={<Rankings />} />
             <Route path="/board-rankings" element={<BoardRankings />} />
             <Route path="/umpire-rankings" element={<UmpireRankings />} />
+            <Route path="/compare" element={<Compare />} />
+            <Route path="/records" element={<Records />} />
             <Route path="/credits" element={<Credits />} />
             <Route path="/trophy-cabinet" element={<TrophyCabinet />} />
             <Route path="/hall-of-fame" element={<HallOfFame />} />

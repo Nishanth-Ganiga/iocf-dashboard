@@ -1,5 +1,95 @@
 /* Boards module — card grid of national boards + dismantled boards archive */
 
+.boards-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boards-view-toggle {
+  display: flex;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.boards-view-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: var(--ioc-text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+}
+.boards-view-toggle__btn.is-active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--ioc-gold);
+}
+
+.boards-card__honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.boards-card__honor-pill {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--ioc-gold);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  font-size: 0.62rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Explorer view — stylized "globe wall" of flag tiles                    */
+/* ---------------------------------------------------------------------- */
+.boards-explorer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.boards-explorer__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 14px;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.boards-explorer__tile:hover {
+  transform: translateY(-6px) scale(1.03);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.5), var(--shadow-glow-gold);
+}
+
+.boards-explorer__flag-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 8px 20px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+
+.boards-explorer__name {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.boards-explorer__credits {
+  font-size: 0.72rem;
+}
+
 .boards-search {
   padding: 10px 18px;
   border-radius: var(--radius-pill);

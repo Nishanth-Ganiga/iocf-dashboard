@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
@@ -7,7 +7,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconInstagram, IconUmpire } from '../lib/icons'
+import { IconInstagram, IconUmpire, IconGlobe, IconBoard as IconGrid, IconTrophy, IconCredits, IconChampion } from '../lib/icons'
 import './Boards.css'
 
 // Cricket Boards module — every active national board as a clickable card,
@@ -15,12 +15,40 @@ import './Boards.css'
 export default function Boards() {
   const { data, loading, error } = useDashboard()
   const [query, setQuery] = useState('')
+  const [view, setView] = useState('cards')
+
+  const boards = data?.boards || []
+  const overallTable = useMemo(
+    () => (data?.boardRankings || []).find((t) => t.id === 'overall-board-ranking')?.table || [],
+    [data]
+  )
+
+  // Auto-computed honor pills per board — no fabricated data, just the
+  // current #1 in each ranking the site already tracks.
+  const honorsByBoard = useMemo(() => {
+    const honors = new Map()
+    const add = (name, label, Icon) => {
+      if (!name) return
+      const list = honors.get(name) || []
+      list.push({ label, Icon })
+      honors.set(name, list)
+    }
+    const mostCredits = [...boards].sort((a, b) => (b.credits || 0) - (a.credits || 0))[0]
+    add(mostCredits?.name, 'Most Credits', IconCredits)
+    const mostTrophies = [...boards].sort((a, b) => (b.trophiesCount || 0) - (a.trophiesCount || 0))[0]
+    add(mostTrophies?.name, 'Most Trophies', IconTrophy)
+    const bestWinRate = [...overallTable]
+      .filter((r) => r.winningRate != null)
+      .sort((a, b) => b.winningRate - a.winningRate)[0]
+    add(bestWinRate?.board, 'Best Winning Rate', IconChampion)
+    return honors
+  }, [boards, overallTable])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} />
   if (!data) return null
 
-  const { boards = [], dismantledBoards = [] } = data
+  const { dismantledBoards = [] } = data
   const q = query.trim().toLowerCase()
   const filteredBoards = q ? boards.filter((b) => b.name.toLowerCase().includes(q)) : boards
 
@@ -33,21 +61,55 @@ export default function Boards() {
               <p className="section-header__eyebrow">Governing Bodies</p>
               <h2>Cricket Boards</h2>
             </div>
-            <input
-              type="text"
-              className="boards-search"
-              placeholder="Search boards by name…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+            <div className="boards-controls">
+              <div className="boards-view-toggle">
+                <button
+                  className={`boards-view-toggle__btn${view === 'cards' ? ' is-active' : ''}`}
+                  onClick={() => setView('cards')}
+                  title="Card view"
+                >
+                  <IconGrid aria-hidden="true" />
+                </button>
+                <button
+                  className={`boards-view-toggle__btn${view === 'explorer' ? ' is-active' : ''}`}
+                  onClick={() => setView('explorer')}
+                  title="Explorer view"
+                >
+                  <IconGlobe aria-hidden="true" />
+                </button>
+              </div>
+              <input
+                type="text"
+                className="boards-search"
+                placeholder="Search boards by name…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
           </div>
 
           {filteredBoards.length === 0 ? (
             <div className="empty-state">No boards match "{query}".</div>
+          ) : view === 'explorer' ? (
+            <div className="boards-explorer">
+              {filteredBoards.map((b) => {
+                const identity = knownBoardIdentity(b.name)
+                return (
+                  <Link key={b.id} to={`/boards/${b.id}`} className="boards-explorer__tile glass-panel">
+                    <span className="boards-explorer__flag-frame">
+                      {identity && <FlagIcon identity={identity} />}
+                    </span>
+                    <span className="boards-explorer__name">{b.name}</span>
+                    <span className="text-faint boards-explorer__credits">{formatCredits(b.credits)}</span>
+                  </Link>
+                )
+              })}
+            </div>
           ) : (
             <div className="card-grid">
               {filteredBoards.map((b) => {
                 const identity = knownBoardIdentity(b.name)
+                const honors = honorsByBoard.get(b.name) || []
                 return (
                   <div key={b.id} className="entity-card glass-panel boards-card">
                     <div className="entity-card__top">
@@ -67,6 +129,15 @@ export default function Boards() {
                         )}
                       </div>
                     </div>
+                    {honors.length > 0 && (
+                      <div className="boards-card__honors">
+                        {honors.map((h) => (
+                          <span key={h.label} className="pill boards-card__honor-pill">
+                            <h.Icon aria-hidden="true" /> {h.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="entity-card__stats">
                       <div className="entity-card__stat">
                         <span className="text-faint">Credits</span>

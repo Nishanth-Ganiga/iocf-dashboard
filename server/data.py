@@ -681,6 +681,179 @@ def get_fixtures(wb):
     return {"series": series, "tests": tests}
 
 
+def _levenshtein(a, b):
+    if a == b:
+        return 0
+    la, lb = len(a), len(b)
+    if la == 0:
+        return lb
+    if lb == 0:
+        return la
+    prev = list(range(lb + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i] + [0] * lb
+        for j, cb in enumerate(b, 1):
+            cost = 0 if ca == cb else 1
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost)
+        prev = cur
+    return prev[lb]
+
+
+def _resolve_board_name(name):
+    """Resolve a free-text board name from a fixture sheet to one of the 14
+    known boards - exact match first, then a case-insensitive Levenshtein
+    distance of 1 (catches typos like "Netherland"). Multi-team strings
+    ("A, B & C") and boards that were never registered (e.g. "Afghanistan")
+    resolve to None rather than being guessed at.
+    """
+    if not isinstance(name, str):
+        return None
+    cleaned = name.strip()
+    if not cleaned:
+        return None
+    for board in BOARD_SHEETS:
+        if cleaned.lower() == board.lower():
+            return board
+    match = None
+    for board in BOARD_SHEETS:
+        if _levenshtein(cleaned.lower(), board.lower()) <= 1:
+            if match is not None:
+                return None
+            match = board
+    return match
+
+
+_SCORE_RE = re.compile(r"^(\d+)-(\d+)$")
+
+
+def get_head_to_head(wb):
+    """Every clean two-team meeting (series or Test) between two of the 14
+    known boards, for the board comparator / rivalry history page. Rows
+    naming a multi-team series ("A, B & C") or a host/opponent that is not
+    one of the 14 known boards are dropped rather than guessed at.
+    """
+    fixtures = get_fixtures(wb)
+    meetings = []
+
+    def _clean_pair(host_raw, opponents_raw):
+        if not isinstance(host_raw, str) or "," in host_raw or "&" in host_raw:
+            return None, None
+        if not isinstance(opponents_raw, str) or "," in opponents_raw or "&" in opponents_raw:
+            return None, None
+        host = _resolve_board_name(host_raw)
+        opponent = _resolve_board_name(opponents_raw)
+        if not host or not opponent or host == opponent:
+            return None, None
+        return host, opponent
+
+    for row in fixtures["series"].get("completedSeries", []):
+        host, opponent = _clean_pair(row.get("Hosting Board"), row.get("Opponents"))
+        if not host:
+            continue
+        host_score = opponent_score = None
+        result = row.get("Series Result")
+        if isinstance(result, str):
+            m = _SCORE_RE.match(result.replace(" ", ""))
+            if m:
+                host_score, opponent_score = int(m.group(1)), int(m.group(2))
+        meetings.append(
+            {
+                "format": "Series",
+                "name": row.get("Series Name"),
+                "dates": row.get("Dates"),
+                "hostBoard": host,
+                "opponentBoard": opponent,
+                "winner": _resolve_board_name(row.get("Winners")),
+                "hostScore": host_score,
+                "opponentScore": opponent_score,
+            }
+        )
+
+    for row in fixtures["tests"].get("completedMatches", []):
+        host, opponent = _clean_pair(row.get("Hosting Board"), row.get("Opponents"))
+        if not host:
+            continue
+        meetings.append(
+            {
+                "format": "Test",
+                "name": row.get("Test Name"),
+                "dates": row.get("Dates"),
+                "hostBoard": host,
+                "opponentBoard": opponent,
+                "winner": _resolve_board_name(row.get("Winners")),
+                "hostScore": None,
+                "opponentScore": None,
+            }
+        )
+
+    return meetings
+
+
+def get_records(wb):
+    """Biggest wins, whitewashes and most-decorated-player tallies pulled
+    straight from the completed Series/Test sheets - only rows with a clean
+    two-team, clean-numeric result count toward a margin, nothing guessed.
+    """
+    fixtures = get_fixtures(wb)
+    biggest_wins = []
+    whitewashes = []
+
+    for row in fixtures["series"].get("completedSeries", []):
+        opponents_raw = row.get("Opponents")
+        host_raw = row.get("Hosting Board")
+        if not isinstance(opponents_raw, str) or "," in opponents_raw or "&" in opponents_raw:
+            continue
+        if not isinstance(host_raw, str) or "," in host_raw or "&" in host_raw:
+            continue
+        result = row.get("Series Result")
+        if not isinstance(result, str):
+            continue
+        m = _SCORE_RE.match(result.replace(" ", ""))
+        if not m:
+            continue
+        host_score, opponent_score = int(m.group(1)), int(m.group(2))
+        entry = {
+            "seriesName": row.get("Series Name"),
+            "hostBoard": host_raw,
+            "opponentBoard": opponents_raw,
+            "winner": row.get("Winners"),
+            "loser": row.get("Runners"),
+            "result": result,
+            "margin": abs(host_score - opponent_score),
+            "dates": row.get("Dates"),
+        }
+        biggest_wins.append(entry)
+        if host_score == 0 or opponent_score == 0:
+            whitewashes.append(entry)
+
+    biggest_wins.sort(key=lambda e: e["margin"], reverse=True)
+    whitewashes.sort(key=lambda e: e["margin"], reverse=True)
+
+    def _tally(field):
+        counts = {}
+        order = []
+        for row in fixtures["tests"].get("completedMatches", []):
+            v = row.get(field)
+            if not isinstance(v, str) or not v.strip():
+                continue
+            v = v.strip()
+            if v not in counts:
+                counts[v] = 0
+                order.append(v)
+            counts[v] += 1
+        ranked = [{"player": name, "count": counts[name]} for name in order]
+        ranked.sort(key=lambda e: e["count"], reverse=True)
+        return ranked
+
+    return {
+        "biggestWins": biggest_wins[:10],
+        "whitewashes": whitewashes[:10],
+        "manOfTheMatch": _tally("Man of the Match")[:10],
+        "bestBatsman": _tally("Best Batsman")[:10],
+        "bestBowler": _tally("Best Bowler")[:10],
+    }
+
+
 # ---------------------------------------------------------------------------
 # Franchise league squad sheets
 # ---------------------------------------------------------------------------
@@ -1254,6 +1427,8 @@ def build_dashboard(path):
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
     board_rankings = get_board_rankings(wb)
     umpire_rankings = get_umpire_rankings(boards)
+    head_to_head = get_head_to_head(wb)
+    records = get_records(wb)
 
     # ---- tournaments (unified list for Tournaments module / featured cards)
     tournaments = []
@@ -1408,6 +1583,8 @@ def build_dashboard(path):
         "rankings": credits_data["rankings"],
         "boardRankings": board_rankings,
         "umpireRankings": umpire_rankings,
+        "headToHead": head_to_head,
+        "records": records,
         "tournaments": tournaments,
         "t20WorldCup": t20wc,
         "franchiseLeagues": franchise_leagues,

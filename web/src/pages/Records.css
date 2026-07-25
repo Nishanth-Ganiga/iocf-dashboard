@@ -1,0 +1,140 @@
+/* Records & Milestones module — biggest wins, whitewashes, decorated players. */
+
+.records-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.records-list > * {
+  animation: cardRiseIn 0.45s var(--ease-out) both;
+}
+
+.records-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+.records-row:hover {
+  transform: translateY(-3px);
+  border-color: var(--ioc-gold);
+}
+
+.records-row__margin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ioc-gold);
+  line-height: 1;
+}
+.records-row__margin-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.records-row__teams {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.records-row__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+.records-row__vs {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.records-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 160px;
+  font-size: 0.78rem;
+}
+.records-row__name {
+  font-weight: 600;
+  color: var(--ioc-text);
+}
+
+.records-row__winner {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.records-decorated-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.records-decorated {
+  padding: 20px;
+}
+
+.records-decorated__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  color: var(--ioc-gold);
+}
+
+.records-decorated__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  counter-reset: decorated;
+}
+.records-decorated__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.84rem;
+  counter-increment: decorated;
+}
+.records-decorated__list li::before {
+  content: counter(decorated) '.';
+  color: var(--ioc-text-faint);
+  margin-right: 8px;
+  font-weight: 700;
+}
+.records-decorated__player {
+  flex: 1;
+}
+.records-decorated__list li b {
+  color: var(--ioc-neon);
+}
+
+@media (max-width: 640px) {
+  .records-row {
+    gap: 12px;
+  }
+  .records-row__winner {
+    margin-left: 0;
+  }
+}

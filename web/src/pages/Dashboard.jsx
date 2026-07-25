@@ -3,7 +3,9 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import StatCard from '../components/StatCard'
 import Badge from '../components/Badge'
+import SpotlightWidget from '../components/SpotlightWidget'
 import { formatCredits } from '../lib/badges'
+import { parseCountdown, nextUpcomingMatch } from '../lib/countdown'
 import {
   IconBoard,
   IconPlayer,
@@ -19,6 +21,7 @@ import {
   IconTransfer,
   IconNews,
   IconUmpire,
+  IconChampion,
 } from '../lib/icons'
 import './Dashboard.css'
 
@@ -40,6 +43,7 @@ export default function Dashboard() {
   const latestNews = (news || []).slice(0, 9)
   const nextMatches = (upcomingMatches || []).slice(0, 6)
   const featuredHallOfFame = (hallOfFame || []).slice(0, 3)
+  const nextBigMatch = nextUpcomingMatch(upcomingMatches || [])
   const topTrophyBoards = [...(boards || [])]
     .sort((a, b) => (b.trophiesCount || 0) - (a.trophiesCount || 0))
     .slice(0, 5)
@@ -65,6 +69,15 @@ export default function Dashboard() {
           <p className="dash-hero__subtitle text-dim">
             The Ultimate Virtual Cricket Management Platform
           </p>
+          {nextBigMatch && (
+            <Link to="/fixtures" className="dash-hero__ticker">
+              <span className="pill pill-status-upcoming">Next Up</span>
+              <span>
+                {nextBigMatch.name}: {nextBigMatch.host} vs {nextBigMatch.opponents}
+                <b> · {nextBigMatch.countdown}</b>
+              </span>
+            </Link>
+          )}
         </div>
       </section>
 
@@ -85,6 +98,10 @@ export default function Dashboard() {
             <StatCard label="Total Matches" value={stats.totalMatches} icon={<IconCalendar />} accent="neon" />
             <StatCard label="Total Championships" value={stats.totalChampionships} icon={<IconCrown />} accent="gold" />
           </div>
+        </section>
+
+        <section className="page-section">
+          <SpotlightWidget data={data} />
         </section>
 
         <section className="page-section">
@@ -294,8 +311,10 @@ const QUICK_MODULES = [
   { to: '/rankings', Icon: IconPodium, title: 'Credits Ranking', desc: 'Credits-based board leaderboard' },
   { to: '/board-rankings', Icon: IconBoard, title: 'Board Rankings', desc: 'Official points-based performance ranking' },
   { to: '/umpire-rankings', Icon: IconUmpire, title: 'Umpire Rankings', desc: 'Points-based officiating leaderboard' },
+  { to: '/compare', Icon: IconChampion, title: 'Board Comparator', desc: 'Pick two boards, see head-to-head history' },
   { to: '/credits', Icon: IconCredits, title: 'Credits', desc: 'Board finances & transactions' },
   { to: '/trophy-cabinet', Icon: IconMedal, title: 'Trophy Cabinet', desc: 'Every trophy, every board' },
+  { to: '/records', Icon: IconAward, title: 'Records & Milestones', desc: 'Biggest wins, whitewashes & decorated players' },
   { to: '/hall-of-fame', Icon: IconHallOfFame, title: 'Hall of Fame', desc: 'IOCF’s best players, period by period' },
   { to: '/fixtures', Icon: IconCalendar, title: 'Fixtures & Results', desc: 'Series, tests & schedules' },
   { to: '/transfers', Icon: IconTransfer, title: 'Auctions & Transfers', desc: 'Player movement log' },
@@ -323,42 +342,8 @@ function FeedItem({ item }) {
   )
 }
 
-// Best-effort "in ~N days" label from free-text dates like "8th July" or
-// "6th - 10th Jan" — parses the FIRST day+month it finds against the
-// current real year. Never fabricates a countdown if parsing fails.
-const MONTHS = [
-  'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-  'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
-]
-
-function parseCountdown(dateText) {
-  try {
-    const match = dateText.match(/(\d{1,2})\w*\s*([A-Za-z]+)/)
-    if (!match) return null
-    const day = parseInt(match[1], 10)
-    const monthAbbrev = match[2].slice(0, 3).toLowerCase()
-    const monthIdx = MONTHS.indexOf(monthAbbrev)
-    if (monthIdx === -1 || day < 1 || day > 31) return null
-
-    const now = new Date()
-    let year = now.getFullYear()
-    let target = new Date(year, monthIdx, day)
-    // If that date already passed this year by more than a week, assume next year.
-    const diffDays = Math.round((target - now) / 86400000)
-    if (diffDays < -7) {
-      target = new Date(year + 1, monthIdx, day)
-    }
-    const finalDiff = Math.round((target - now) / 86400000)
-    if (finalDiff < 0) return 'happening now'
-    if (finalDiff === 0) return 'today'
-    return `in ~${finalDiff} day${finalDiff === 1 ? '' : 's'}`
-  } catch {
-    return null
-  }
-}
-
 function MatchRow({ match }) {
-  const countdown = parseCountdown(match.dates)
+  const countdown = parseCountdown(match.dates)?.label
   return (
     <div className="dash-feed__item">
       <Badge name={match.host} size={38} rounded="square" />

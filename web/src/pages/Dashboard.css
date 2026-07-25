@@ -122,6 +122,28 @@
   max-width: 520px;
 }
 
+.dash-hero__ticker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.8rem;
+  color: var(--ioc-text-dim);
+  text-decoration: none;
+  transition: border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+.dash-hero__ticker:hover {
+  border-color: var(--ioc-gold);
+  transform: translateY(-2px);
+}
+.dash-hero__ticker b {
+  color: var(--ioc-gold);
+}
+
 /* ---------------------------------------------------------------------- */
 /* Quick access module cards                                              */
 /* ---------------------------------------------------------------------- */

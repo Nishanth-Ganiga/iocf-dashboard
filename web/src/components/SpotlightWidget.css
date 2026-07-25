@@ -1,0 +1,68 @@
+/* Rotating Dashboard spotlight card — Board of the Moment / Top Umpire / Most Decorated Board. */
+
+.spotlight-widget {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.spotlight-widget:hover {
+  transform: translateY(-3px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.spotlight-widget__badge {
+  flex-shrink: 0;
+}
+
+.spotlight-widget__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.spotlight-widget__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ioc-neon);
+}
+
+.spotlight-widget__title {
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotlight-widget__stat {
+  font-size: 0.78rem;
+}
+
+.spotlight-widget__dots {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.spotlight-widget__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glass-border);
+  transition: background 0.25s var(--ease-out);
+}
+.spotlight-widget__dot.is-active {
+  background: var(--ioc-gold);
+}
