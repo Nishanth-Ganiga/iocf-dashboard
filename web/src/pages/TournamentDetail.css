@@ -379,6 +379,35 @@
   align-items: center;
   gap: 14px;
 }
+.td-franchise-card__top .entity-card__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.td-franchise-card__honor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+}
+.td-franchise-card__honor-pill--champion {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ioc-gold-bright);
+}
+.td-franchise-card__honor-pill--runner-up {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ioc-text-dim);
+}
+.td-franchise-card__honor-pill--fair-play {
+  background: rgba(124, 92, 255, 0.14);
+  color: #c084fc;
+}
 
 .td-franchise-card__leadership {
   display: flex;

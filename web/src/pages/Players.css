@@ -166,6 +166,34 @@
   height: 0.85em;
 }
 
+.players-card__honor-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.56rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+}
+.players-card__honor-pill svg {
+  width: 0.85em;
+  height: 0.85em;
+}
+.players-card__honor-pill--champion {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ioc-gold-bright);
+}
+.players-card__honor-pill--runner-up {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ioc-text-dim);
+}
+.players-card__honor-pill--fair-play {
+  background: rgba(124, 92, 255, 0.14);
+  color: #c084fc;
+}
+
 .players-card__board {
   font-size: 0.76rem;
   white-space: nowrap;

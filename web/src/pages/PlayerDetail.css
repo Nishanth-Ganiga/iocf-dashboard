@@ -63,6 +63,29 @@
   padding: 3px 10px;
 }
 
+.pd-hero__honor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 10px;
+}
+.pd-hero__honor-pill--champion {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ioc-gold-bright);
+}
+.pd-hero__honor-pill--runner-up {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ioc-text-dim);
+}
+.pd-hero__honor-pill--fair-play {
+  background: rgba(124, 92, 255, 0.14);
+  color: #c084fc;
+}
+
 .pd-hero__board {
   margin-top: 10px;
   font-size: 0.9rem;
@@ -154,8 +177,35 @@
 }
 
 .pd-squad-card__team {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-weight: 700;
   font-size: 0.92rem;
+}
+
+.pd-squad-card__honor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+}
+.pd-squad-card__honor-pill--champion {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ioc-gold-bright);
+}
+.pd-squad-card__honor-pill--runner-up {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ioc-text-dim);
+}
+.pd-squad-card__honor-pill--fair-play {
+  background: rgba(124, 92, 255, 0.14);
+  color: #c084fc;
 }
 
 .pd-squad-card__league {

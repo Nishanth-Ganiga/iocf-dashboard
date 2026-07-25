@@ -5,6 +5,7 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { IconChampion, IconMedal, IconMatch, IconCalendar, IconPurse, IconCaptain, IconCancelled, IconTrophy } from '../lib/icons'
 import { colorsFor, formatCredits } from '../lib/badges'
+import { sameTeam } from '../lib/playerBadges'
 import './TournamentDetail.css'
 
 // Tournament detail — dispatches to a different renderer depending on which
@@ -462,6 +463,20 @@ function ContinentalCupDetail({ cup }) {
   )
 }
 
+// The Fair Play trophy has no dedicated league field (unlike champion/
+// runnerUp) — it only shows up as a team-level award row (winner is the
+// team name, `team`/`board` both null). Title spelling varies per league.
+const FAIR_PLAY_TITLES = new Set(['Fair Play Award', 'Spirit of Crown (Fair Play Award)'])
+const TEAM_HONOR_LABELS = { champion: 'Champions', 'runner-up': 'Runners-up', 'fair-play': 'Fair Play' }
+
+function teamHonorFor(league, teamName) {
+  if (sameTeam(league.champion, teamName)) return 'champion'
+  if (sameTeam(league.runnerUp, teamName)) return 'runner-up'
+  const fairPlayWinner = (league.awards || []).find((a) => FAIR_PLAY_TITLES.has(a.award) && !a.team)?.winner
+  if (sameTeam(fairPlayWinner, teamName)) return 'fair-play'
+  return null
+}
+
 /* ------------------------------------------------------------------ */
 /* Franchise League — players grouped by home national board           */
 /* ------------------------------------------------------------------ */
@@ -480,7 +495,7 @@ function FranchiseLeagueDetail({ league }) {
     const team = league.teams[name]
     const players = team.players || []
     const spent = players.reduce((sum, p) => sum + (p.credits || 0), 0)
-    return { name, ...team, spent }
+    return { name, ...team, spent, honor: teamHonorFor(league, name) }
   })
   const highestSpend = Math.max(1, ...teamsWithSpend.map((t) => t.spent))
 
@@ -558,7 +573,14 @@ function FranchiseTeamCard({ team, highestSpend }) {
       <div className="td-franchise-card__top">
         <Badge name={team.name} size={48} />
         <div>
-          <p className="entity-card__title">{team.name}</p>
+          <p className="entity-card__title">
+            {team.name}
+            {team.honor && (
+              <span className={`pill td-franchise-card__honor-pill td-franchise-card__honor-pill--${team.honor}`}>
+                <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[team.honor]}
+              </span>
+            )}
+          </p>
           <p className="entity-card__meta">{players.length} player{players.length === 1 ? '' : 's'} signed</p>
         </div>
       </div>

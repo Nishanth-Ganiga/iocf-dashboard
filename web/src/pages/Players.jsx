@@ -4,14 +4,33 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
+import { findFranchiseSquads } from '../lib/playerProfile'
+import { teamHonorFor } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
-import { IconAward, IconCrown } from '../lib/icons'
+import { IconAward, IconCrown, IconTrophy } from '../lib/icons'
 import './Players.css'
 
 // Hard cap on rendered cards so a broad/empty search never dumps the full
 // ~335-row grid onto the DOM at once — narrowing the search (or picking a
 // board) always reveals more.
 const MAX_RESULTS = 200
+
+const TEAM_HONOR_LABELS = { champion: 'Champions', 'runner-up': 'Runners-up', 'fair-play': 'Fair Play' }
+const HONOR_RANK = { champion: 0, 'runner-up': 1, 'fair-play': 2 }
+
+// Best (highest-ranked) franchise-league trophy this player's squads have
+// won, if any — a player can be picked into several leagues, so this
+// surfaces just the standout honor on the compact directory card.
+function bestHonor(data, name) {
+  let best = null
+  for (const s of findFranchiseSquads(data, name)) {
+    const honor = teamHonorFor(data, s.leagueId, s.team)
+    if (honor && (!best || HONOR_RANK[honor] < HONOR_RANK[best.honor])) {
+      best = { honor, team: s.team, league: s.league }
+    }
+  }
+  return best
+}
 
 // Players module — there is no standalone "players" collection in the
 // workbook; every player only exists nested inside their board's roster
@@ -124,6 +143,7 @@ export default function Players() {
                 const cardKey = `${p.name}-${i}`
                 const isOpen = expanded === cardKey
                 const achievements = getAchievementsFor(achievementsIndex, p.name)
+                const honor = bestHonor(data, p.name)
                 return (
                   <div
                     key={cardKey}
@@ -154,6 +174,14 @@ export default function Players() {
                           {p.role && (
                             <span className="pill players-card__role-pill">
                               <IconCrown aria-hidden="true" /> {p.role}
+                            </span>
+                          )}
+                          {honor && (
+                            <span
+                              className={`pill players-card__honor-pill players-card__honor-pill--${honor.honor}`}
+                              title={`${honor.team} — ${honor.league}`}
+                            >
+                              <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[honor.honor]}
                             </span>
                           )}
                         </p>

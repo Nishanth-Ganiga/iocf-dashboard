@@ -13,14 +13,45 @@ function hasTitle(achievements, titles) {
   return countTitle(achievements, titles) > 0
 }
 
-// Builds leagueId -> champion team name, so franchise-championship badges
-// can compare a player's own squad team against it exactly.
-function buildChampionMap(data) {
-  const map = new Map()
-  for (const league of data.franchiseLeagues || []) {
-    if (league.champion) map.set(league.id, league.champion)
-  }
-  return map
+// The Fair Play trophy has no dedicated league field (unlike champion/
+// runnerUp) — it only shows up as a team-level award row (winner is the
+// team name, `team`/`board` both null). Title spelling varies per league.
+const FAIR_PLAY_TITLES = new Set(['Fair Play Award', 'Spirit of Crown (Fair Play Award)'])
+
+// Team names vary between a league's `teams` roster keys and its
+// `champion`/`runnerUp`/award-`winner` strings — not just casing (one
+// column ALL CAPS, another Title Case for the same team), but occasionally
+// a shortened form of the same club (e.g. "Hyderabad Kings" vs the
+// roster's "HYDERABAD KINGSMEN"). A safe tolerance: same word count, and
+// every word pair either identical or one a >=4-char prefix of the other —
+// enough to bridge real sheet variants without conflating two different teams.
+export function sameTeam(a, b) {
+  if (!a || !b) return false
+  const na = a.trim().toLowerCase()
+  const nb = b.trim().toLowerCase()
+  if (na === nb) return true
+  const wa = na.split(/\s+/)
+  const wb = nb.split(/\s+/)
+  if (wa.length !== wb.length) return false
+  return wa.every((w, i) => {
+    const v = wb[i]
+    if (w === v) return true
+    const [short, long] = w.length <= v.length ? [w, v] : [v, w]
+    return short.length >= 4 && long.startsWith(short)
+  })
+}
+
+// Resolves whether a franchise team won the Champion/Runner-up/Fair Play
+// trophy for its league — used both to badge a player and to tag their
+// squad card, so both surfaces stay in sync from one source of truth.
+export function teamHonorFor(data, leagueId, team) {
+  const league = (data.franchiseLeagues || []).find((l) => l.id === leagueId)
+  if (!league || !team) return null
+  if (sameTeam(league.champion, team)) return 'champion'
+  if (sameTeam(league.runnerUp, team)) return 'runner-up'
+  const fairPlayWinner = (league.awards || []).find((a) => FAIR_PLAY_TITLES.has(a.award) && !a.team)?.winner
+  if (sameTeam(fairPlayWinner, team)) return 'fair-play'
+  return null
 }
 
 export function computeBadges(data, name, { home, squads, achievements, boards }) {
@@ -48,16 +79,20 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   if (wcChampionBoard && home?.board?.name === wcChampionBoard) {
     badges.push({ key: 'world-champion', label: 'World Champion Board', detail: `Represents ${wcChampionBoard} — T20 World Cup 2026 champions` })
   }
-  const championMap = buildChampionMap(data)
-  const championSquad = squads.find((s) => championMap.get(s.leagueId) === s.team)
+  const championSquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
   if (championSquad) {
     badges.push({ key: 'franchise-champion', label: 'Franchise Champion', detail: `${championSquad.team} — ${championSquad.league}` })
   }
+  const runnerUpSquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'runner-up')
+  if (runnerUpSquad) {
+    badges.push({ key: 'franchise-runner-up', label: 'Franchise Runner-up', detail: `${runnerUpSquad.team} — ${runnerUpSquad.league}` })
+  }
+  const fairPlaySquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'fair-play')
+  if (fairPlaySquad) {
+    badges.push({ key: 'franchise-fair-play', label: 'Fair Play Squad', detail: `${fairPlaySquad.team} — ${fairPlaySquad.league}` })
+  }
   if (hasTitle(achievements, ['Player of the Tournament', 'Man of the Tournament', 'Crowned Warrior (Player of the Tournament)'])) {
     badges.push({ key: 'player-of-tournament', label: 'Player of the Tournament', detail: 'Named Player/Man of the Tournament' })
-  }
-  if (hasTitle(achievements, ['Fair Play Award', 'Spirit of Crown (Fair Play Award)'])) {
-    badges.push({ key: 'fair-play', label: 'Fair Play Icon', detail: 'Recognized for the Fair Play Award' })
   }
   const loneWarrior = data.loneWarrior
   if (loneWarrior?.champion === name) {

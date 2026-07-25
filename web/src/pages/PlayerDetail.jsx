@@ -5,7 +5,7 @@ import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
 import { findHomeBoard, findFranchiseSquads, representedBoards } from '../lib/playerProfile'
-import { computeBadges } from '../lib/playerBadges'
+import { computeBadges, teamHonorFor } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import {
@@ -23,8 +23,9 @@ const BADGE_ICONS = {
   'award-magnet': IconStarsStack,
   'world-champion': IconEarth,
   'franchise-champion': IconChampion,
+  'franchise-runner-up': IconMedal,
+  'franchise-fair-play': IconFairPlay,
   'player-of-tournament': IconTrophy,
-  'fair-play': IconFairPlay,
   'lone-warrior-champion': IconDuel,
   'lone-warrior-finalist': IconDuel,
   'captains-armband': IconCaptain,
@@ -33,6 +34,12 @@ const BADGE_ICONS = {
   'franchise-veteran': IconJourney,
   'multi-board-journeyman': IconJourney,
   'hall-of-famer': IconHallOfFame,
+}
+
+const TEAM_HONOR_LABELS = {
+  champion: 'Champions',
+  'runner-up': 'Runners-up',
+  'fair-play': 'Fair Play',
 }
 
 // Dedicated player profile: home board, every franchise-league squad
@@ -74,6 +81,9 @@ export default function PlayerDetail() {
   const achievements = getAchievementsFor(achievementsIndex, name)
   const boards = representedBoards(home, squads)
   const badges = computeBadges(data, name, { home, squads, achievements, boards })
+  const honorSquads = squads
+    .map((s) => ({ ...s, honor: teamHonorFor(data, s.leagueId, s.team) }))
+    .filter((s) => s.honor)
 
   return (
     <div className="page-enter">
@@ -92,6 +102,15 @@ export default function PlayerDetail() {
                   <IconCrown aria-hidden="true" /> {role}
                 </span>
               )}
+              {honorSquads.map((s) => (
+                <span
+                  key={`${s.leagueId}-${s.honor}`}
+                  className={`pill pd-hero__honor-pill pd-hero__honor-pill--${s.honor}`}
+                  title={`${s.team} — ${s.league}`}
+                >
+                  <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[s.honor]} · {s.league}
+                </span>
+              ))}
             </h1>
             <p className="text-dim pd-hero__board">
               Represents{' '}
@@ -168,25 +187,35 @@ export default function PlayerDetail() {
             <div className="empty-state">Not picked in any franchise league squad on record.</div>
           ) : (
             <div className="pd-squad-grid">
-              {squads.map((s, i) => (
-                <Link key={i} to={`/tournaments/${s.leagueId}`} className="pd-squad-card glass-panel">
-                  <p className="pd-squad-card__team">{s.team}</p>
-                  <p className="text-faint pd-squad-card__league">{s.league}</p>
-                  <div className="pd-squad-card__meta">
-                    {s.role && (
-                      <span className="pill pd-squad-card__role-pill">
-                        <IconCaptain aria-hidden="true" /> {s.role}
-                      </span>
-                    )}
-                    {s.credits != null && (
-                      <span className="pill pd-squad-card__credits-pill">
-                        <IconPurse aria-hidden="true" /> {formatCredits(s.credits)}
-                      </span>
-                    )}
-                  </div>
-                  {s.note && <p className="text-faint pd-squad-card__note">{s.note}</p>}
-                </Link>
-              ))}
+              {squads.map((s, i) => {
+                const honor = teamHonorFor(data, s.leagueId, s.team)
+                return (
+                  <Link key={i} to={`/tournaments/${s.leagueId}`} className="pd-squad-card glass-panel">
+                    <p className="pd-squad-card__team">
+                      {s.team}
+                      {honor && (
+                        <span className={`pill pd-squad-card__honor-pill pd-squad-card__honor-pill--${honor}`}>
+                          <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[honor]}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-faint pd-squad-card__league">{s.league}</p>
+                    <div className="pd-squad-card__meta">
+                      {s.role && (
+                        <span className="pill pd-squad-card__role-pill">
+                          <IconCaptain aria-hidden="true" /> {s.role}
+                        </span>
+                      )}
+                      {s.credits != null && (
+                        <span className="pill pd-squad-card__credits-pill">
+                          <IconPurse aria-hidden="true" /> {formatCredits(s.credits)}
+                        </span>
+                      )}
+                    </div>
+                    {s.note && <p className="text-faint pd-squad-card__note">{s.note}</p>}
+                  </Link>
+                )
+              })}
             </div>
           )}
         </section>
