@@ -167,6 +167,7 @@
 }
 
 .players-card__honor-pill {
+  align-self: flex-start;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -176,6 +177,7 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   padding: 1px 6px;
+  margin-top: 2px;
 }
 .players-card__honor-pill svg {
   width: 0.85em;

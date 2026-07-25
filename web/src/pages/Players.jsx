@@ -176,14 +176,6 @@ export default function Players() {
                               <IconCrown aria-hidden="true" /> {p.role}
                             </span>
                           )}
-                          {honor && (
-                            <span
-                              className={`pill players-card__honor-pill players-card__honor-pill--${honor.honor}`}
-                              title={`${honor.team} — ${honor.league}`}
-                            >
-                              <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[honor.honor]}
-                            </span>
-                          )}
                         </p>
                         <Link
                           to={`/boards/${p.boardId}`}
@@ -192,6 +184,14 @@ export default function Players() {
                         >
                           {p.board}
                         </Link>
+                        {honor && (
+                          <span
+                            className={`pill players-card__honor-pill players-card__honor-pill--${honor.honor}`}
+                            title={`${honor.team} — ${honor.league}`}
+                          >
+                            <IconTrophy aria-hidden="true" /> {TEAM_HONOR_LABELS[honor.honor]}
+                          </span>
+                        )}
                       </div>
                       {achievements.length > 0 && (
                         <span className="pill players-card__achv-pill">
