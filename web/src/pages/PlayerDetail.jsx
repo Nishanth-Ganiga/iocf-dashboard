@@ -5,10 +5,35 @@ import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
 import { findHomeBoard, findFranchiseSquads, representedBoards } from '../lib/playerProfile'
+import { computeBadges } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconAward, IconCrown, IconCaptain, IconPurse } from '../lib/icons'
+import {
+  IconAward, IconCrown, IconCaptain, IconPurse, IconChampion, IconTrophy,
+  IconMedal, IconDuel, IconWicketKing, IconStarsStack, IconFairPlay,
+  IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat,
+} from '../lib/icons'
 import './PlayerDetail.css'
+
+// One icon per badge key — picked from the shared icon set, no new library.
+const BADGE_ICONS = {
+  'serial-winner': IconMedal,
+  'run-machine': IconBat,
+  'wicket-king': IconWicketKing,
+  'award-magnet': IconStarsStack,
+  'world-champion': IconEarth,
+  'franchise-champion': IconChampion,
+  'player-of-tournament': IconTrophy,
+  'fair-play': IconFairPlay,
+  'lone-warrior-champion': IconDuel,
+  'lone-warrior-finalist': IconDuel,
+  'captains-armband': IconCaptain,
+  'marquee-signing': IconGem,
+  'direct-signing': IconPurse,
+  'franchise-veteran': IconJourney,
+  'multi-board-journeyman': IconJourney,
+  'hall-of-famer': IconHallOfFame,
+}
 
 // Dedicated player profile: home board, every franchise-league squad
 // they've been picked into, and their full achievement history — the
@@ -48,6 +73,7 @@ export default function PlayerDetail() {
   const achievementsIndex = buildAchievementsIndex(data)
   const achievements = getAchievementsFor(achievementsIndex, name)
   const boards = representedBoards(home, squads)
+  const badges = computeBadges(data, name, { home, squads, achievements, boards })
 
   return (
     <div className="page-enter">
@@ -99,7 +125,36 @@ export default function PlayerDetail() {
               <span className="text-faint">Franchise Squads</span>
               <b>{squads.length}</b>
             </div>
+            <div className="entity-card__stat">
+              <span className="text-faint">IOCF Badges</span>
+              <b>{badges.length}</b>
+            </div>
           </div>
+        </section>
+
+        <section className="page-section">
+          <div className="section-header">
+            <div>
+              <p className="section-header__eyebrow">IOCF Badges</p>
+              <h2>Badge Cabinet ({badges.length})</h2>
+            </div>
+          </div>
+          {badges.length === 0 ? (
+            <div className="empty-state">No badges earned yet — badges unlock from achievements and career milestones.</div>
+          ) : (
+            <div className="pd-badge-grid">
+              {badges.map((b) => {
+                const Icon = BADGE_ICONS[b.key] || IconAward
+                return (
+                  <div key={b.key} className="pd-badge-tile glass-panel" title={b.detail}>
+                    <Icon className="pd-badge-tile__icon" aria-hidden="true" />
+                    <span className="pd-badge-tile__label">{b.label}</span>
+                    <span className="text-faint pd-badge-tile__detail">{b.detail}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         <section className="page-section">

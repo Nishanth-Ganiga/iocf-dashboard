@@ -193,6 +193,53 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Badge cabinet                                                           */
+/* ---------------------------------------------------------------------- */
+.pd-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.pd-badge-grid > * {
+  animation: cardRiseIn 0.4s var(--ease-out) both;
+}
+
+.pd-badge-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 20px 14px;
+  cursor: default;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.pd-badge-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--ioc-gold);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), var(--shadow-glow-gold);
+}
+
+.pd-badge-tile__icon {
+  font-size: 1.8rem;
+  color: var(--ioc-gold);
+  transition: transform 0.3s var(--ease-out);
+}
+.pd-badge-tile:hover .pd-badge-tile__icon {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+.pd-badge-tile__label {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pd-badge-tile__detail {
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Achievements                                                            */
 /* ---------------------------------------------------------------------- */
 .pd-section-icon {
