@@ -945,13 +945,27 @@ def _parse_franchise_player_line(raw):
     role = None
     pair_m = ROLE_PAIR_RE.search(text)
     if pair_m:
-        a, b = pair_m.group(1).lower(), pair_m.group(2).lower()
-        if a in ROLE_ABBRS:
-            role = ROLE_NAMES[a]
+        a, b = pair_m.group(1), pair_m.group(2)
+        a_l, b_l = a.lower(), b.lower()
+        remainder = None
+        if a_l in ROLE_ABBRS and b_l not in ROLE_ABBRS:
+            role, remainder = ROLE_NAMES[a_l], b
+        elif b_l in ROLE_ABBRS and a_l not in ROLE_ABBRS:
+            role, remainder = ROLE_NAMES[b_l], a
+        elif a_l in ROLE_ABBRS:
+            role = ROLE_NAMES[a_l]
+        elif b_l in ROLE_ABBRS:
+            role = ROLE_NAMES[b_l]
+        if role is not None:
             text = text[: pair_m.start()].rstrip()
-        elif b in ROLE_ABBRS:
-            role = ROLE_NAMES[b]
-            text = text[: pair_m.start()].rstrip()
+            # The other half of the pair is usually the board the pick
+            # actually represents ("(M-Aus)" = Marquee + Australia) - the
+            # frontend already parses trailing "(XXX)" board tags off other
+            # roster lines that never had a role attached, so keeping this
+            # one lets it resolve the same way instead of losing the board
+            # info here and never being able to recover it downstream.
+            if remainder:
+                text = f"{text}({remainder})"
     if role is None:
         role_m = ROLE_TAG_RE.search(text)
         if role_m:

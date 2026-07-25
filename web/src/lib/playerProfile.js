@@ -25,15 +25,92 @@ export function findHomeBoard(data, name) {
   return null
 }
 
+// Full edit distance between two strings — used, like in
+// playerAchievements.js, to tolerate a one-character typo/variant between a
+// roster entry's name and the board roster's canonical spelling.
+function levenshtein(a, b) {
+  const m = a.length
+  const n = b.length
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 0; i <= m; i++) dp[i][0] = i
+  for (let j = 0; j <= n; j++) dp[0][j] = j
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+    }
+  }
+  return dp[m][n]
+}
+
+// Many franchise-squad lines only carry a shortened first name ("Arnab" for
+// "Arnab Sarkar", "Nasrullah - Pak" for "Nasrullah Kapri") — the sheet's own
+// shorthand, not a parsing bug. normalizeName() only strips a trailing
+// "(...)" once; this also peels off a trailing "- XYZ" board suffix so the
+// leftover is just the person's name.
+function cleanEntryKey(rawName) {
+  let text = normalizeName(rawName) || ''
+  let m
+  while ((m = text.match(/\s*-\s*[a-z]+\s*$/))) {
+    text = text.slice(0, m.index).trim()
+  }
+  return text
+}
+
+function shortNameMatches(entryKey, otherKey) {
+  if (!entryKey || !otherKey) return false
+  if (entryKey === otherKey) return true
+  if (entryKey.length >= 3 && (otherKey.includes(entryKey) || entryKey.includes(otherKey))) return true
+  return entryKey.length >= 4 && levenshtein(entryKey, otherKey) <= 1
+}
+
+// Every name tied to a board (players + Chairman/CEO, who occasionally get
+// picked into franchise squads too) — the candidate pool a shortened roster
+// name is allowed to resolve against.
+function boardCandidateNames(data, boardName) {
+  const board = (data.boards || []).find((b) => b.name === boardName)
+  if (!board) return []
+  const names = [...(board.players || [])]
+  if (board.chairman) names.push(board.chairman)
+  if (board.ceo) names.push(board.ceo)
+  return names
+}
+
+// A shortened roster entry only resolves to `targetKey` if it carries
+// exactly one board tag, that tag is the target's own home board (known in
+// advance — not guessed), and within that one board's full name list the
+// target is the *only* candidate the shortened name plausibly matches.
+// That last check is what keeps this safe from cross-board or
+// same-board-different-player false positives, at the cost of leaving a
+// genuinely ambiguous shortened name unresolved rather than guessing.
+function resolvesToTarget(data, entryName, targetKey, homeBoardName) {
+  if (!homeBoardName) return false
+  const tags = extractBoardTags(entryName)
+  if (tags.length !== 1 || tags[0] !== homeBoardName) return false
+  const entryKey = cleanEntryKey(entryName)
+  if (!entryKey) return false
+  const candidates = boardCandidateNames(data, homeBoardName)
+  const matches = candidates.filter((c) => shortNameMatches(entryKey, normalizeName(c)))
+  return matches.length === 1 && normalizeName(matches[0]) === targetKey
+}
+
 // Every franchise-league team this player was picked into, across every
-// league — a player can appear in more than one league's roster.
+// league — a player can appear in more than one league's roster. Tries an
+// exact name match first; if that fails, falls back to the shortened-name
+// resolver above so squads picked under a first-name-only/shorthand entry
+// still link back to the right player.
 export function findFranchiseSquads(data, name) {
   const key = normalizeName(name)
   if (!key || !data) return []
+  const home = findHomeBoard(data, name)
+  const homeBoardName = home?.board?.name || null
   const squads = []
   for (const league of data.franchiseLeagues || []) {
     for (const [teamName, team] of Object.entries(league.teams || {})) {
-      const entry = (team.players || []).find((p) => normalizeName(p.name) === key)
+      const entry = (team.players || []).find(
+        (p) => normalizeName(p.name) === key || resolvesToTarget(data, p.name, key, homeBoardName)
+      )
       if (entry) {
         squads.push({
           league: league.name,
