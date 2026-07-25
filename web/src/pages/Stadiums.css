@@ -150,6 +150,17 @@
   background: rgba(52, 224, 255, 0.18);
 }
 
+/* Gold variant for the board's overall stadium-tier tag, kept distinct
+   from the cyan status tags above so tier reads as a rank, not a flag. */
+.pill-stadium-tier {
+  background: rgba(212, 175, 55, 0.14);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: var(--ioc-gold-bright);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .stadiums-search {
     width: 100%;

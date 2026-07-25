@@ -135,6 +135,7 @@ function ChampionBanner({ champion, runnerUp, championBoard, runnerUpBoard, tota
 function T20WorldCupDetail({ t20 }) {
   const groupNames = Object.keys(t20.groups || {})
   const stageNames = Object.keys(t20.stages || {})
+  const standingsByGroup = computeGroupStandings(t20)
 
   return (
     <>
@@ -150,18 +151,44 @@ function T20WorldCupDetail({ t20 }) {
           <div className="empty-state">No groups on record.</div>
         ) : (
           <div className="card-grid">
-            {groupNames.map((g) => (
-              <div key={g} className="entity-card glass-panel td-team-list">
-                <p className="entity-card__title">{g}</p>
-                <ul className="td-team-list__items">
-                  {(t20.groups[g] || []).map((team) => (
-                    <li key={team}>
-                      <Badge name={team} size={26} /> {team}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {groupNames.map((g) => {
+              const standings = standingsByGroup[g]
+              return (
+                <div key={g} className="entity-card glass-panel td-team-list">
+                  <p className="entity-card__title">{g}</p>
+                  {standings ? (
+                    <table className="td-standings-table">
+                      <thead>
+                        <tr>
+                          <th>Team</th>
+                          <th>W</th>
+                          <th>L</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings.map((row) => (
+                          <tr key={row.team}>
+                            <td>
+                              <Badge name={row.team} size={22} /> {row.team}
+                            </td>
+                            <td>{row.wins}</td>
+                            <td>{row.losses}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <ul className="td-team-list__items">
+                      {(t20.groups[g] || []).map((team) => (
+                        <li key={team}>
+                          <Badge name={team} size={26} /> {team}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -174,6 +201,70 @@ function T20WorldCupDetail({ t20 }) {
     </>
   )
 }
+
+// Group-stage W/L standings computed purely from the groups' team lists and
+// each group's own match stage (e.g. "Group A" + "Group A Matches", or
+// "Super 6" whose stage key matches the group name exactly) — no new data
+// beyond what get_t20_world_cup() already returns. Falls back to no
+// standings (plain team list) if a group has no matching match stage.
+//
+// Match "Schedule" strings occasionally misspell a team ("Newzeland" vs the
+// group list's "Newzealand") — resolveTeamName below only corrects that
+// against the group's own known team list, and only when exactly one
+// candidate is a near-exact match (edit distance <= 1), so a genuinely
+// unrecognized name is left alone rather than guessed at.
+function levenshteinLE1(a, b) {
+  if (a === b) return true
+  if (Math.abs(a.length - b.length) > 1) return false
+  const [shorter, longer] = a.length <= b.length ? [a, b] : [b, a]
+  let i = 0
+  let j = 0
+  let edits = 0
+  while (i < shorter.length && j < longer.length) {
+    if (shorter[i] === longer[j]) {
+      i++
+      j++
+      continue
+    }
+    edits++
+    if (edits > 1) return false
+    if (shorter.length === longer.length) i++
+    j++
+  }
+  return true
+}
+
+function resolveTeamName(name, knownTeams) {
+  if (knownTeams.includes(name)) return name
+  const candidates = knownTeams.filter((t) => levenshteinLE1(t.toLowerCase(), name.toLowerCase()))
+  return candidates.length === 1 ? candidates[0] : name
+}
+
+function computeGroupStandings(t20) {
+  const result = {}
+  for (const [groupName, teams] of Object.entries(t20.groups || {})) {
+    const matches = t20.stages?.[`${groupName} Matches`] || t20.stages?.[groupName]
+    if (!matches || matches.length === 0) continue
+    const tally = new Map(teams.map((t) => [t, { team: t, wins: 0, losses: 0 }]))
+    for (const m of matches) {
+      const schedule = m.Schedule || ''
+      const rawParts = schedule.split(/\bvs\b/i).map((s) => s.trim())
+      if (rawParts.length !== 2) continue
+      const parts = rawParts.map((t) => resolveTeamName(t, teams))
+      const winner = resolveTeamName(m.Winner || '', teams)
+      for (const team of parts) {
+        if (!tally.has(team)) tally.set(team, { team, wins: 0, losses: 0 })
+      }
+      if (!winner) continue
+      const loser = parts.find((t) => t !== winner)
+      if (tally.has(winner)) tally.get(winner).wins += 1
+      if (loser && tally.has(loser)) tally.get(loser).losses += 1
+    }
+    result[groupName] = [...tally.values()].sort((a, b) => b.wins - a.wins || a.losses - b.losses)
+  }
+  return result
+}
+
 
 // Generic match table: renders whatever keys are present on each match row,
 // since match objects have varying key sets (extra "Man of the match",

@@ -7,6 +7,33 @@
   line-height: 1.5;
 }
 
+.umpire-multiboard {
+  margin-bottom: 24px;
+}
+.umpire-multiboard__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ioc-text-faint);
+  margin-bottom: 10px;
+}
+.umpire-multiboard__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.umpire-multiboard__pill {
+  background: rgba(124, 92, 255, 0.14);
+  border: 1px solid rgba(124, 92, 255, 0.3);
+  color: #c084fc;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
 .umpire-rankings-list {
   display: flex;
   flex-direction: column;

@@ -18,12 +18,18 @@ export default function Records() {
   const records = data.records || {}
   const biggestWins = records.biggestWins || []
   const whitewashes = records.whitewashes || []
+  const closestMatches = records.closestMatches || []
   const manOfTheMatch = records.manOfTheMatch || []
   const bestBatsman = records.bestBatsman || []
   const bestBowler = records.bestBowler || []
 
   const hasAny =
-    biggestWins.length || whitewashes.length || manOfTheMatch.length || bestBatsman.length || bestBowler.length
+    biggestWins.length ||
+    whitewashes.length ||
+    closestMatches.length ||
+    manOfTheMatch.length ||
+    bestBatsman.length ||
+    bestBowler.length
 
   if (!hasAny) {
     return (
@@ -60,6 +66,7 @@ export default function Records() {
         </section>
 
         <RecordSection title="Biggest Wins" eyebrow="Widest Margins" rows={biggestWins} />
+        <RecordSection title="Nail-Biters" eyebrow="Closest Margins" rows={closestMatches} />
         <RecordSection title="Whitewashes" eyebrow="Clean Sweeps" rows={whitewashes} />
 
         <section className="page-section">

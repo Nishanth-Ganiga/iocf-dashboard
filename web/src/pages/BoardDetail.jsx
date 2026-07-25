@@ -6,7 +6,7 @@ import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
-import { IconStadium, IconTrophy, IconUmpire, IconInstagram } from '../lib/icons'
+import { IconStadium, IconTrophy, IconUmpire, IconInstagram, IconChampion } from '../lib/icons'
 import './BoardDetail.css'
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -45,6 +45,9 @@ export default function BoardDetail() {
   const transfers = board.transfers || []
   const umpires = board.umpires || []
   const identity = knownBoardIdentity(board.name)
+  const overallRow = (data.boardRankings || [])
+    .find((t) => t.id === 'overall-board-ranking')
+    ?.table?.find((r) => r.board === board.name)
 
   return (
     <div className="page-enter">
@@ -83,6 +86,12 @@ export default function BoardDetail() {
               <span className="text-faint">Credits</span>
               <b>{formatCredits(board.credits)}</b>
             </div>
+            {overallRow?.winningRate != null && (
+              <div className="entity-card__stat">
+                <span className="text-faint"><IconChampion aria-hidden="true" /> Winning Rate</span>
+                <b>{overallRow.winningRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}%</b>
+              </div>
+            )}
             {identity?.instagram && (
               <a
                 href={identity.instagram}

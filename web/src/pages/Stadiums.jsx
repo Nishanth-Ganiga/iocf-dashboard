@@ -16,6 +16,8 @@ export default function Stadiums() {
   const location = useLocation()
   const [query, setQuery] = useState('')
   const [boardFilter, setBoardFilter] = useState('All')
+  const [tagFilter, setTagFilter] = useState('All')
+  const [tierFilter, setTierFilter] = useState('All')
 
   useEffect(() => {
     if (location.state?.query) setQuery(location.state.query)
@@ -31,16 +33,28 @@ export default function Stadiums() {
   for (const b of boards) {
     for (const raw of b.stadiums || []) {
       const [name, ...tags] = raw.split('|').map((s) => s.trim())
-      allStadiums.push({ name, tags: tags.filter(Boolean), board: b.name, boardId: b.id })
+      allStadiums.push({
+        name,
+        tags: tags.filter(Boolean),
+        board: b.name,
+        boardId: b.id,
+        tier: b.stadiumTier || null,
+      })
     }
   }
+
+  const allTags = [...new Set(allStadiums.flatMap((s) => s.tags))].sort()
+  const allTiers = [...new Set(allStadiums.map((s) => s.tier).filter(Boolean))].sort()
 
   const q = query.trim().toLowerCase()
   const filtered = allStadiums.filter((s) => {
     if (boardFilter !== 'All' && s.board !== boardFilter) return false
+    if (tagFilter !== 'All' && !s.tags.includes(tagFilter)) return false
+    if (tierFilter !== 'All' && s.tier !== tierFilter) return false
     if (q && !s.name.toLowerCase().includes(q)) return false
     return true
   })
+
 
   return (
     <div className="page-enter">
@@ -78,17 +92,57 @@ export default function Stadiums() {
             ))}
           </div>
 
+          {allTiers.length > 0 && (
+            <div className="stadiums-chips">
+              <button
+                className={`stadiums-chip stadiums-chip--tier${tierFilter === 'All' ? ' is-active' : ''}`}
+                onClick={() => setTierFilter('All')}
+              >
+                All Tiers
+              </button>
+              {allTiers.map((tier) => (
+                <button
+                  key={tier}
+                  className={`stadiums-chip stadiums-chip--tier${tierFilter === tier ? ' is-active' : ''}`}
+                  onClick={() => setTierFilter(tierFilter === tier ? 'All' : tier)}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {allTags.length > 0 && (
+            <div className="stadiums-chips">
+              <button
+                className={`stadiums-chip stadiums-chip--tag${tagFilter === 'All' ? ' is-active' : ''}`}
+                onClick={() => setTagFilter('All')}
+              >
+                All Tags
+              </button>
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`stadiums-chip stadiums-chip--tag${tagFilter === tag ? ' is-active' : ''}`}
+                  onClick={() => setTagFilter(tagFilter === tag ? 'All' : tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
+
           <p className="stadiums-caption text-faint">
             {filtered.length === allStadiums.length
               ? `${allStadiums.length} stadiums`
-              : `${filtered.length} matching ${query ? `"${query}"` : boardFilter}`}
+              : `${filtered.length} matching`}
             {' · '}Venues are sourced from each board's IOCF stadium list (board.stadiums is the
             source of truth).
           </p>
 
           {filtered.length === 0 ? (
             <div className="empty-state">
-              No stadiums match {query ? `"${query}"` : 'the selected board'}.
+              No stadiums match the selected filters.
             </div>
           ) : (
             <div className="stadiums-grid">
@@ -110,8 +164,9 @@ export default function Stadiums() {
                       </Link>
                     </div>
                   </div>
-                  {s.tags.length > 0 && (
+                  {(s.tier || s.tags.length > 0) && (
                     <div className="stadiums-card__tags">
+                      {s.tier && <span className="pill pill-stadium-tier">{s.tier}</span>}
                       {s.tags.map((tag, ti) => (
                         <span key={ti} className="pill pill-stadium-tag">
                           {tag}

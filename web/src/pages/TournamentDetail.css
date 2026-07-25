@@ -125,6 +125,33 @@
   gap: 12px;
 }
 
+.td-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.td-standings-table th,
+.td-standings-table td {
+  padding: 6px 4px;
+  text-align: left;
+}
+.td-standings-table th {
+  color: var(--ioc-text-faint);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--glass-border);
+}
+.td-standings-table th:not(:first-child),
+.td-standings-table td:not(:first-child) {
+  text-align: center;
+}
+.td-standings-table td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Match / awards tables                                                  */
 /* ---------------------------------------------------------------------- */

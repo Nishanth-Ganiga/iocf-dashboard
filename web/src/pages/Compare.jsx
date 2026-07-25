@@ -45,11 +45,19 @@ export default function Compare() {
   const tally = useMemo(() => {
     let winsA = 0
     let winsB = 0
+    const byFormat = {}
     for (const m of meetings) {
-      if (m.winner === boardA?.name) winsA += 1
-      else if (m.winner === boardB?.name) winsB += 1
+      const fmt = m.format || 'Other'
+      if (!byFormat[fmt]) byFormat[fmt] = { winsA: 0, winsB: 0 }
+      if (m.winner === boardA?.name) {
+        winsA += 1
+        byFormat[fmt].winsA += 1
+      } else if (m.winner === boardB?.name) {
+        winsB += 1
+        byFormat[fmt].winsB += 1
+      }
     }
-    return { winsA, winsB }
+    return { winsA, winsB, byFormat }
   }, [meetings, boardA, boardB])
 
   if (loading) return <LoadingState />
@@ -128,6 +136,19 @@ export default function Compare() {
                 </div>
                 <BoardColumn board={boardB} overall={overallByName.get(boardB.name)} align="right" />
               </div>
+              {Object.keys(tally.byFormat).length > 0 && (
+                <div className="compare-format-split">
+                  {Object.entries(tally.byFormat).map(([fmt, w]) => (
+                    <div key={fmt} className="compare-format-split__row">
+                      <span className="compare-format-split__score">{w.winsA}</span>
+                      <span className={`pill compare-meeting__format compare-meeting__format--${fmt.toLowerCase()}`}>
+                        {fmt}
+                      </span>
+                      <span className="compare-format-split__score">{w.winsB}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="page-section">

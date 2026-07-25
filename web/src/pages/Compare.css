@@ -112,6 +112,29 @@
   letter-spacing: 0.08em;
 }
 
+.compare-format-split {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--glass-border);
+}
+.compare-format-split__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.compare-format-split__score {
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ioc-text);
+  min-width: 1.2em;
+  text-align: center;
+}
+
 .compare-meetings {
   display: flex;
   flex-direction: column;

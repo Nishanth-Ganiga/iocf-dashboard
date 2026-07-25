@@ -44,6 +44,8 @@ export default function UmpireRankings() {
   }
 
   const maxPoints = Math.max(1, ...rankings.map((r) => r.totalPoints ?? 0))
+  const multiBoard = rankings.filter((r) => (r.boards || []).length > 1).slice(0, 3)
+
 
   return (
     <div className="page-enter">
@@ -59,6 +61,21 @@ export default function UmpireRankings() {
             Ranked by total points earned officiating series, tournaments and franchise
             leagues across every board — built straight from each board's umpire records.
           </p>
+
+          {multiBoard.length > 0 && (
+            <div className="umpire-multiboard">
+              <p className="umpire-multiboard__eyebrow">
+                <IconUmpire aria-hidden="true" /> Cross-Board Officials
+              </p>
+              <div className="umpire-multiboard__list">
+                {multiBoard.map((r) => (
+                  <span key={r.name} className="pill umpire-multiboard__pill">
+                    {r.name} · officiated for {r.boards.length} boards
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="umpire-rankings-list">
             {rankings.map((row) => {

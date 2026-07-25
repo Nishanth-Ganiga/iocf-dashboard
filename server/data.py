@@ -829,6 +829,13 @@ def get_records(wb):
     biggest_wins.sort(key=lambda e: e["margin"], reverse=True)
     whitewashes.sort(key=lambda e: e["margin"], reverse=True)
 
+    # Closest matches: the same completed-series pool, sorted the other way
+    # and excluding whitewashes (a 0-margin sweep isn't a "nail-biter").
+    closest_matches = sorted(
+        (e for e in biggest_wins if e["margin"] > 0),
+        key=lambda e: e["margin"],
+    )
+
     def _tally(field):
         counts = {}
         order = []
@@ -848,6 +855,7 @@ def get_records(wb):
     return {
         "biggestWins": biggest_wins[:10],
         "whitewashes": whitewashes[:10],
+        "closestMatches": closest_matches[:10],
         "manOfTheMatch": _tally("Man of the Match")[:10],
         "bestBatsman": _tally("Best Batsman")[:10],
         "bestBowler": _tally("Best Bowler")[:10],
