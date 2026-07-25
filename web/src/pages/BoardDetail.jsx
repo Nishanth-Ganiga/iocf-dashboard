@@ -65,8 +65,22 @@ export default function BoardDetail() {
               {identity && <FlagIcon identity={identity} className="board-detail__flag" />} {board.name}
             </h1>
             <div className="board-detail__meta-row">
-              <span className="text-dim">Chairman: {board.chairman || '—'}</span>
-              <span className="text-dim">CEO: {board.ceo || '—'}</span>
+              <span className="text-dim">
+                Chairman:{' '}
+                {board.chairman ? (
+                  <Link to={`/players/${encodeURIComponent(board.chairman)}`} className="board-detail__officer-link">
+                    {board.chairman}
+                  </Link>
+                ) : '—'}
+              </span>
+              <span className="text-dim">
+                CEO:{' '}
+                {board.ceo ? (
+                  <Link to={`/players/${encodeURIComponent(board.ceo)}`} className="board-detail__officer-link">
+                    {board.ceo}
+                  </Link>
+                ) : '—'}
+              </span>
               {board.stadiumTier && (
                 <span className="pill board-detail__tier-pill">{board.stadiumTier}</span>
               )}

@@ -36,6 +36,14 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+.boards-card__officer-link {
+  color: var(--ioc-text-dim);
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.boards-card__officer-link:hover {
+  color: var(--ioc-gold);
+}
 .boards-card__honor-pill {
   background: rgba(212, 175, 55, 0.12);
   color: var(--ioc-gold);

@@ -120,8 +120,30 @@ export default function Boards() {
                         <p className="entity-card__title">
                           {identity && <FlagIcon identity={identity} className="boards-card__flag" />} {b.name}
                         </p>
-                        <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
-                        <p className="entity-card__meta">CEO: {b.ceo || '—'}</p>
+                        <p className="entity-card__meta">
+                          Chairman:{' '}
+                          {b.chairman ? (
+                            <Link
+                              to={`/players/${encodeURIComponent(b.chairman)}`}
+                              className="boards-card__officer-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {b.chairman}
+                            </Link>
+                          ) : '—'}
+                        </p>
+                        <p className="entity-card__meta">
+                          CEO:{' '}
+                          {b.ceo ? (
+                            <Link
+                              to={`/players/${encodeURIComponent(b.ceo)}`}
+                              className="boards-card__officer-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {b.ceo}
+                            </Link>
+                          ) : '—'}
+                        </p>
                         {identity?.mascotName && (
                           <p className="entity-card__meta text-faint">
                             <MascotIcon identity={identity} /> {identity.mascotName}
@@ -196,7 +218,14 @@ export default function Boards() {
                     <Badge name={b.name} size={44} glow={false} />
                     <div>
                       <p className="entity-card__title">{b.name}</p>
-                      <p className="entity-card__meta">Chairman: {b.chairman || '—'}</p>
+                      <p className="entity-card__meta">
+                        Chairman:{' '}
+                        {b.chairman ? (
+                          <Link to={`/players/${encodeURIComponent(b.chairman)}`} className="boards-card__officer-link">
+                            {b.chairman}
+                          </Link>
+                        ) : '—'}
+                      </p>
                     </div>
                   </div>
                   <div className="entity-card__stats">
