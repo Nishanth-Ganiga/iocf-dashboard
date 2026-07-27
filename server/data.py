@@ -587,7 +587,7 @@ def get_t20_world_cup(wb):
 KNOWN_TITLES = {
     "Completed Series",
     "Upcoming Series",
-    "Completed Matches",
+    "World Test Championship Completed Matches",
     "Upcoming IOCF World Test Championship Matches",
     "Franchise Leagues",
     "Major Tournaments",
@@ -795,7 +795,7 @@ def get_head_to_head(wb):
             }
         )
 
-    for row in fixtures["tests"].get("completedMatches", []):
+    for row in fixtures["tests"].get("worldTestChampionshipCompletedMatches", []):
         host, opponent = _clean_pair(row.get("Hosting Board"), row.get("Opponents"))
         if not host:
             continue
@@ -865,7 +865,7 @@ def get_records(wb):
     def _tally(field):
         counts = {}
         order = []
-        for row in fixtures["tests"].get("completedMatches", []):
+        for row in fixtures["tests"].get("worldTestChampionshipCompletedMatches", []):
             v = row.get(field)
             if not isinstance(v, str) or not v.strip():
                 continue
@@ -1577,7 +1577,7 @@ def build_dashboard(path):
     # ---- totals
     total_stadiums = len({s.split("|")[0].strip() for b in boards for s in b["stadiums"]})
     completed_wtc_matches = [
-        r for r in fixtures["tests"].get("wtcPendingSchedule", []) if r.get("Status") == "Completed"
+        r for r in fixtures["tests"].get("worldTestChampionshipCompletedMatches", []) if r.get("Winners")
     ]
     total_matches = (
         (t20wc["totalMatches"] if t20wc else 0)
@@ -1623,7 +1623,7 @@ def build_dashboard(path):
                     "detail": row.get("Dates"),
                 }
             )
-    for row in fixtures["tests"].get("completedMatches", [])[-6:]:
+    for row in fixtures["tests"].get("worldTestChampionshipCompletedMatches", [])[-6:]:
         if row.get("Test Name") and row.get("Winners"):
             news.append(
                 {
