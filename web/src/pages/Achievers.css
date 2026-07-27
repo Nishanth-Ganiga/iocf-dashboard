@@ -1,0 +1,202 @@
+/* Achievers module — career honors leaderboard, ranking players by
+   franchise-trophy squads + individual awards. Mirrors Rankings.css's
+   row/bar/rank pattern, extended with an honor-pill cluster. */
+
+.achievers-search {
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text);
+  font-size: 0.85rem;
+  min-width: 240px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.achievers-search::placeholder {
+  color: var(--ioc-text-faint);
+}
+.achievers-search:focus {
+  border-color: var(--ioc-neon);
+  box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
+}
+
+.achievers-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.achievers-table {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.achievers-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: background 0.2s, transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  animation: cardRiseIn 0.45s var(--ease-out) both;
+}
+.achievers-table > *:nth-child(1) { animation-delay: 0.02s; }
+.achievers-table > *:nth-child(2) { animation-delay: 0.05s; }
+.achievers-table > *:nth-child(3) { animation-delay: 0.08s; }
+.achievers-table > *:nth-child(4) { animation-delay: 0.11s; }
+.achievers-table > *:nth-child(5) { animation-delay: 0.14s; }
+.achievers-table > *:nth-child(6) { animation-delay: 0.17s; }
+.achievers-table > *:nth-child(7) { animation-delay: 0.2s; }
+.achievers-table > *:nth-child(n+8) { animation-delay: 0.23s; }
+.achievers-row:last-child {
+  border-bottom: none;
+}
+.achievers-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
+  box-shadow: -3px 0 0 var(--ioc-gold);
+}
+.achievers-row--top {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
+}
+
+.achievers-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));
+  transition: width 0.6s var(--ease-out);
+  pointer-events: none;
+}
+.achievers-row > *:not(.achievers-row__bar) {
+  position: relative;
+  z-index: 1;
+}
+
+.achievers-row__rank {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ioc-text-dim);
+  transition: transform 0.3s var(--ease-out);
+}
+.achievers-row:hover .achievers-row__rank {
+  transform: scale(1.12) rotate(-4deg);
+}
+.achievers-row__rank--1 {
+  font-size: 1.6rem;
+}
+.achievers-row__rank--2 {
+  font-size: 1.4rem;
+}
+.achievers-row__rank--3 {
+  font-size: 1.3rem;
+}
+
+.achievers-row__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.achievers-row__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ioc-text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.achievers-row__name:hover {
+  color: var(--ioc-gold);
+}
+
+.achievers-row__board {
+  font-size: 0.74rem;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.achievers-row__board:hover {
+  color: var(--ioc-neon);
+}
+
+.achievers-row__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 220px;
+}
+
+.achievers-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+}
+.achievers-pill--champion {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--ioc-gold-bright);
+}
+.achievers-pill--runner-up {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ioc-text-dim);
+}
+.achievers-pill--fair-play {
+  background: rgba(124, 92, 255, 0.14);
+  color: #c084fc;
+}
+.achievers-pill--award {
+  background: rgba(52, 224, 255, 0.12);
+  color: var(--ioc-neon);
+}
+
+.achievers-row__score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+.achievers-row__score b {
+  color: var(--ioc-gold-bright);
+  font-size: 1rem;
+}
+
+@media (max-width: 780px) {
+  .achievers-row__pills {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .achievers-search {
+    width: 100%;
+    min-width: 0;
+  }
+  .achievers-row {
+    gap: 10px;
+    padding: 12px 10px;
+  }
+  .achievers-row__rank {
+    width: 32px;
+  }
+}
