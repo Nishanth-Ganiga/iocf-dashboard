@@ -68,6 +68,31 @@ function achievementFormat(source, loneWarrior) {
   return 'Franchise League'
 }
 
+// Auction credits assigned to a franchise pick swing widely (300 to
+// 80,000 across every roster on record) — 25,000+ sits around the top 5%
+// of real picks, high enough to single out a genuine marquee-money buy
+// rather than an arbitrary round number.
+const BIG_MONEY_THRESHOLD = 25000
+
+// Emerging Talent League squad rosters only ever record a bare first name
+// (occasionally with an "(Exp)" experience tag, stripped like every other
+// trailing-parenthetical suffix elsewhere in this codebase) — so matching
+// is name-only, same tolerance as the rest of the badge/profile lookups.
+function normalizeName(value) {
+  if (!value || typeof value !== 'string') return null
+  const stripped = value.replace(/\s*\([^)]*\)\s*$/, '').trim()
+  return stripped ? stripped.toLowerCase() : null
+}
+
+function isEmergingTalentPick(data, name) {
+  const key = normalizeName(name)
+  if (!key) return false
+  const squads = data.emergingTalentLeague?.squads || {}
+  return Object.values(squads).some((roster) =>
+    (roster || []).some((entry) => normalizeName(entry) === key)
+  )
+}
+
 export function computeBadges(data, name, { home, squads, achievements, boards }) {
   const badges = []
 
@@ -111,6 +136,10 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   if (fairPlaySquad) {
     badges.push({ key: 'franchise-fair-play', label: 'Fair Play Squad', detail: `${fairPlaySquad.team} — ${fairPlaySquad.league}` })
   }
+  const bigMoneyPick = squads.find((s) => s.credits != null && s.credits >= BIG_MONEY_THRESHOLD)
+  if (bigMoneyPick) {
+    badges.push({ key: 'big-money-buy', label: 'Big-Money Buy', detail: `Picked by ${bigMoneyPick.team} for ${bigMoneyPick.credits.toLocaleString()} credits` })
+  }
   if (hasTitle(achievements, ['Player of the Tournament', 'Man of the Tournament', 'Crowned Warrior (Player of the Tournament)'])) {
     badges.push({ key: 'player-of-tournament', label: 'Player of the Tournament', detail: 'Named Player/Man of the Tournament' })
   }
@@ -150,6 +179,9 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   }
   if (boards.length > 1) {
     badges.push({ key: 'multi-board-journeyman', label: 'Multi-Board Journeyman', detail: `Represented ${boards.length} boards` })
+  }
+  if (isEmergingTalentPick(data, name)) {
+    badges.push({ key: 'rising-star', label: 'Rising Star', detail: `Picked in the ${data.emergingTalentLeague.name} squad` })
   }
   if ((home?.role === 'Chairman' || home?.role === 'CEO') && squads.length > 0) {
     badges.push({ key: 'player-executive', label: 'Player-Executive', detail: `${home.role} of ${home.board.name} and an active franchise player` })
