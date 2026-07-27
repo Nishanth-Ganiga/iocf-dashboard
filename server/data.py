@@ -726,6 +726,32 @@ def _resolve_board_name(name):
 _SCORE_RE = re.compile(r"^(\d+)-(\d+)$")
 
 
+def _series_match_count(result):
+    """How many individual matches a completed series' "Series Result" cell
+    represents - not 1 per series. Most results are a clean "N-M" score
+    (matches played = N + M), but a handful of sheets instead spell out
+    "1 Match only" or list each match on its own line (a mini round-robin +
+    final squeezed into one series row) - both are counted from what's
+    actually written rather than assumed to be a single match."""
+    if not isinstance(result, str):
+        return 0
+    text = result.strip()
+    if not text:
+        return 0
+    m = _SCORE_RE.match(text.replace(" ", ""))
+    if m:
+        return int(m.group(1)) + int(m.group(2))
+    m = re.match(r"^(\d+)\s*match", text, re.I)
+    if m:
+        return int(m.group(1))
+    lines = [ln for ln in text.split("\n") if ln.strip()]
+    if len(lines) > 1:
+        vs_lines = [ln for ln in lines if " vs " in ln.lower()]
+        if vs_lines:
+            return len(vs_lines)
+    return 0
+
+
 def get_head_to_head(wb):
     """Every clean two-team meeting (series or Test) between two of the 14
     known boards, for the board comparator / rivalry history page. Rows
@@ -1410,10 +1436,36 @@ def get_emerging_talent_league(wb, tournament_updates):
     }
 
 
+def _read_lone_warrior_matches(ws):
+    """The bracket (Group A/B round robin, Quarter Finals, Semifinals, Grand
+    Final) lives in 4 side-by-side columns, each schedule cell 2 columns to
+    the left of its "Winner" cell ("Ruwanga vs Shamroz" in column A, winner
+    in column C; same layout repeats at columns D/F, G/I, J/L). A row is a
+    match only if its schedule cell contains " vs " - the date-only rows
+    ("21st May") and the free-text scheduling note at the bottom aren't
+    matches. The stage label above each column block ("Group A Matches",
+    "Quarter Finals", "Semifinals", ...) gets reused for every match row
+    beneath it until the next stage header in that same column."""
+    matches = []
+    stage_by_col = {1: None, 4: None, 7: None, 10: None}
+    for r in range(1, ws.max_row + 1):
+        for col in (1, 4, 7, 10):
+            cell_val = _clean(ws.cell(row=r, column=col).value)
+            if not isinstance(cell_val, str):
+                continue
+            if " vs " in cell_val.lower():
+                winner = _clean(ws.cell(row=r, column=col + 2).value)
+                matches.append({"stage": stage_by_col[col], "schedule": cell_val, "winner": winner})
+            elif re.search(r"(matches|final)", cell_val, re.I):
+                stage_by_col[col] = cell_val.strip()
+    return matches
+
+
 def get_lone_warrior(wb, tournament_updates):
     name = "IOCF Lone Warrior"
     info = tournament_updates.get("sections", {}).get("LONE WARRIOR 2026", {})
     representatives = {}
+    matches = []
     if name in wb.sheetnames:
         ws = wb[name]
         for c in range(1, ws.max_column + 1):
@@ -1421,9 +1473,13 @@ def get_lone_warrior(wb, tournament_updates):
             rep = _clean(ws.cell(row=3, column=c).value)
             if board and rep:
                 representatives[board] = rep
+        matches = _read_lone_warrior_matches(ws)
+    completed_matches = [m for m in matches if m.get("winner")]
     return {
         "name": "IOCF Lone Warrior Season One",
         "representatives": representatives,
+        "matches": matches,
+        "totalMatches": len(completed_matches),
         "champion": info.get("champion"),
         "champion_board": info.get("champion_board"),
         "runnerUp": info.get("runnerUp"),
@@ -1476,7 +1532,7 @@ def build_dashboard(path):
             "status": emerging["status"],
             "champion": emerging["champion"],
             "runnerUp": emerging["runnerUp"],
-            "totalMatches": len(emerging["matches"]),
+            "totalMatches": len([m for m in emerging["matches"] if m.get("winner")]),
         }
     )
     tournaments.append(
@@ -1488,7 +1544,7 @@ def build_dashboard(path):
             "status": lone_warrior["status"],
             "champion": lone_warrior["champion"],
             "runnerUp": lone_warrior["runnerUp"],
-            "totalMatches": None,
+            "totalMatches": lone_warrior["totalMatches"],
         }
     )
     for cup in continental_cups:
@@ -1520,11 +1576,16 @@ def build_dashboard(path):
 
     # ---- totals
     total_stadiums = len({s.split("|")[0].strip() for b in boards for s in b["stadiums"]})
+    completed_wtc_matches = [
+        r for r in fixtures["tests"].get("wtcPendingSchedule", []) if r.get("Status") == "Completed"
+    ]
     total_matches = (
         (t20wc["totalMatches"] if t20wc else 0)
-        + len(fixtures["series"].get("completedSeries", []))
-        + len(fixtures["tests"].get("completedMatches", []))
-        + sum(lg["totalMatches"] for lg in franchise_leagues)
+        + sum(_series_match_count(s.get("Series Result")) for s in fixtures["series"].get("completedSeries", []))
+        + len(completed_wtc_matches)
+        + sum(len([m for m in lg["matches"] if m.get("Winner")]) for lg in franchise_leagues)
+        + len([m for m in emerging["matches"] if m.get("winner")])
+        + lone_warrior["totalMatches"]
     )
     total_championships = len([t for t in tournaments if t.get("champion")])
     total_credits = sum(b["credits"] or 0 for b in boards)
