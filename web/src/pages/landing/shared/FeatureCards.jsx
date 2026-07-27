@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { GiTrophyCup, GiPodiumWinner, GiScales } from 'react-icons/gi'
 import { FaNewspaper } from 'react-icons/fa6'
 import TiltCard from './TiltCard'
@@ -14,9 +13,9 @@ const FEATURES = [
 // each tilts toward the cursor (TiltCard), its icon spins on hover, and a
 // gradient border sweeps in, matching the rest of the hero's "everything
 // glows, nothing is flat" language.
-export default function FeatureCards(motionProps) {
+export default function FeatureCards() {
   return (
-    <motion.div className="hero-cards" {...motionProps}>
+    <div className="hero-cards">
       {FEATURES.map(({ icon: Icon, title, copy }, i) => (
         <TiltCard key={title} className="hero-card glass-panel" style={{ '--card-delay': `${i * 0.6}s` }}>
           <span className="hero-card__icon">
@@ -26,6 +25,6 @@ export default function FeatureCards(motionProps) {
           <p className="hero-card__copy">{copy}</p>
         </TiltCard>
       ))}
-    </motion.div>
+    </div>
   )
 }

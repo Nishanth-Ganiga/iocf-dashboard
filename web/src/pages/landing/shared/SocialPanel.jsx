@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { FaInstagram, FaYoutube, FaDiscord, FaTelegram, FaXTwitter } from 'react-icons/fa6'
 import { GiTrophyCup } from 'react-icons/gi'
 import useCountUp from '../../../lib/useCountUp'
@@ -21,13 +20,12 @@ const PLATFORMS = [
 // row of platform icons on the right, one shared FOLLOW button beneath.
 // The follower count reuses the same scroll-triggered useCountUp hook as
 // the dashboard's stat cards, so it only starts ticking once this section
-// enters the viewport. Entry motion props are forwarded from the parent's
-// fadeUpProps() so this slots into the hero's overall choreography.
-export default function SocialPanel({ onRipple, ...motionProps }) {
+// enters the viewport.
+export default function SocialPanel({ onRipple }) {
   const [followers, countRef] = useCountUp(100000)
 
   return (
-    <motion.div className="hero-social glass-panel" ref={countRef} {...motionProps}>
+    <div className="hero-social glass-panel" ref={countRef}>
       <span className="hero-social__corner hero-social__corner--tl" aria-hidden="true" />
       <span className="hero-social__corner hero-social__corner--br" aria-hidden="true" />
       <div className="hero-social__particles" aria-hidden="true">
@@ -74,6 +72,6 @@ export default function SocialPanel({ onRipple, ...motionProps }) {
         <span>FOLLOW IOCF OFFICIAL</span>
         <span className="hero-social__btn-arrow" aria-hidden="true">→</span>
       </a>
-    </motion.div>
+    </div>
   )
 }

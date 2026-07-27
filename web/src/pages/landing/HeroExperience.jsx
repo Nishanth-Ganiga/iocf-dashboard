@@ -28,16 +28,7 @@ import GetStartedButton from './shared/GetStartedButton'
 // one committed scroll/swipe gesture - both trigger the launch sequence (a
 // second portal opens, the camera warps through it, the screen floods with
 // light) before navigating to /dashboard.
-const EASE_OUT = [0.16, 1, 0.3, 1]
 const LAUNCH_WARP_DURATION = 1800
-
-function fadeUpProps(delay, distance = 24) {
-  return {
-    initial: { opacity: 0, y: distance },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.7, ease: EASE_OUT, delay },
-  }
-}
 
 export default function HeroExperience() {
   const navigate = useNavigate()
@@ -124,17 +115,16 @@ export default function HeroExperience() {
 
       <div className={`hero-exp__content${isLaunching ? ' is-launching' : ''}`}>
         {isAtLeast('universe') && (
-          <motion.span className="landing__badge" {...fadeUpProps(0, 14)}>
+          <span className="landing__badge">
             <span className="landing__badge-shimmer" aria-hidden="true" />
             International Online Cricket Federation
-          </motion.span>
+          </span>
         )}
 
         <h1 className={`landing__title gradient-heading${headingGlowing ? ' is-glowing' : ''}`}>
           {isAtLeast('ready') ? (
             <AnimatedHeading
               text={'WELCOME TO THE\nIOCF UNIVERSE'}
-              delay={0}
               onDone={handleHeadingDone}
             />
           ) : null}
@@ -142,21 +132,21 @@ export default function HeroExperience() {
 
         {isAtLeast('ready') && (
           <>
-            <motion.p className="landing__subtitle" {...fadeUpProps(0.5)}>
+            <p className="landing__subtitle">
               One Federation. One Cricket World. Boards, Players, Stadiums, Rankings, Tournaments
               and Cricket Intelligence — Every Nation Connected.
-            </motion.p>
+            </p>
 
-            <GetStartedButton onClick={launch} onRipple={onRipple} isLaunching={isLaunching} {...fadeUpProps(1.0)} />
+            <GetStartedButton onClick={launch} onRipple={onRipple} isLaunching={isLaunching} />
 
-            <FeatureCards {...fadeUpProps(1.35)} />
+            <FeatureCards />
 
-            <SocialPanel {...fadeUpProps(1.7)} onRipple={onRipple} />
+            <SocialPanel onRipple={onRipple} />
           </>
         )}
       </div>
 
-      {isAtLeast('ready') && <ScrollIndicator {...fadeUpProps(2.1, 10)} />}
+      {isAtLeast('ready') && <ScrollIndicator />}
     </div>
   )
 }

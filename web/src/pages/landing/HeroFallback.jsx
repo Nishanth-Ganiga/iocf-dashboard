@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 
 import useParallaxMouse from '../../lib/useParallaxMouse'
 import useRipple from '../../lib/useRipple'
@@ -17,29 +17,11 @@ import GetStartedButton from './shared/GetStartedButton'
 // touch/small-viewport devices, when the browser fails the WebGL
 // capability check, when prefers-reduced-motion is set, or if the WebGL
 // scene throws at runtime (see Landing.jsx). Visually equivalent to the
-// full experience's DOM overlay (same heading/subtitle/CTA/social
-// choreography) but with a 2D canvas starfield + digital-planet backdrop +
-// SVG cricket ball standing in for the 3D stadium scene, and no
-// scroll-lock/launch sequence - Get Started just navigates directly.
-const HEADING_DELAY = 0.3
-const HEADING_DURATION = 1.4
-const HEADING_DONE = HEADING_DELAY + HEADING_DURATION
-const SUBTITLE_DELAY = HEADING_DONE + 0.3
-const CTA_DELAY = SUBTITLE_DELAY + 0.5
-const CARDS_DELAY = CTA_DELAY + 0.3
-const SOCIAL_DELAY = CARDS_DELAY + 0.3
-const SCROLL_CUE_DELAY = SOCIAL_DELAY + 0.4
-
-const EASE_OUT = [0.16, 1, 0.3, 1]
-
-function fadeUpProps(delay, distance = 24) {
-  return {
-    initial: { opacity: 0, y: distance },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.7, ease: EASE_OUT, delay },
-  }
-}
-
+// full experience's DOM overlay (same heading/subtitle/CTA/social layout)
+// but with a 2D canvas starfield + digital-planet backdrop + SVG cricket
+// ball standing in for the 3D stadium scene, and no scroll-lock/launch
+// sequence - Get Started just navigates directly. Content renders
+// immediately, with no staggered entrance choreography.
 export default function HeroFallback() {
   const navigate = useNavigate()
   const prefersReducedMotion = useReducedMotion()
@@ -51,56 +33,41 @@ export default function HeroFallback() {
 
   return (
     <div className="landing">
-      <motion.div
-        className="landing__bg"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
-      >
+      <div className="landing__bg">
         <CanvasField motionX={mouseX} motionY={mouseY} reducedMotion={prefersReducedMotion} />
         <HeroBackdrop mouseX={mouseX} mouseY={mouseY} />
-      </motion.div>
+      </div>
 
-      <motion.div
-        className="landing__ball-stage"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.4, ease: EASE_OUT, delay: 0.15 }}
-      >
+      <div className="landing__ball-stage">
         <CricketBall mouseX={mouseX} mouseY={mouseY} />
-      </motion.div>
+      </div>
 
       <div className="landing__content">
-        <motion.span className="landing__badge" {...fadeUpProps(0.1, 14)}>
+        <span className="landing__badge">
           <span className="landing__badge-shimmer" aria-hidden="true" />
           International Online Cricket Federation
-        </motion.span>
+        </span>
 
         <h1 className={`landing__title gradient-heading${headingGlowing ? ' is-glowing' : ''}`}>
           <AnimatedHeading
             text={'WELCOME TO THE\nIOCF UNIVERSE'}
-            delay={HEADING_DELAY}
             onDone={handleHeadingDone}
           />
         </h1>
 
-        <motion.p className="landing__subtitle" {...fadeUpProps(SUBTITLE_DELAY)}>
+        <p className="landing__subtitle">
           One Federation. One Cricket World. Boards, Players, Stadiums, Rankings, Tournaments
           and Cricket Intelligence — Every Nation Connected.
-        </motion.p>
+        </p>
 
-        <GetStartedButton
-          onClick={() => navigate('/dashboard')}
-          onRipple={onRipple}
-          {...fadeUpProps(CTA_DELAY)}
-        />
+        <GetStartedButton onClick={() => navigate('/dashboard')} onRipple={onRipple} />
 
-        <FeatureCards {...fadeUpProps(CARDS_DELAY)} />
+        <FeatureCards />
 
-        <SocialPanel {...fadeUpProps(SOCIAL_DELAY)} onRipple={onRipple} />
+        <SocialPanel onRipple={onRipple} />
       </div>
 
-      <ScrollIndicator {...fadeUpProps(SCROLL_CUE_DELAY, 10)} />
+      <ScrollIndicator />
     </div>
   )
 }

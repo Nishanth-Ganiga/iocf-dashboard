@@ -19,7 +19,7 @@ const MAGNET_RANGE = 14
 const FLOAT_AMPLITUDE = 4
 const FLOAT_PERIOD_MS = 5000
 
-export default function GetStartedButton({ onClick, onRipple, isLaunching, ...motionProps }) {
+export default function GetStartedButton({ onClick, onRipple, isLaunching }) {
   const buttonRef = useRef(null)
   const magnetRef = useRef({ x: 0, y: 0 })
   const prefersReducedMotion = useReducedMotion()
@@ -69,7 +69,6 @@ export default function GetStartedButton({ onClick, onRipple, isLaunching, ...mo
       onPointerLeave={handlePointerLeave}
       disabled={isLaunching}
       data-cursor-hover
-      {...motionProps}
     >
       <span className="hero-cta__fill" aria-hidden="true" />
       <span className="hero-cta__border" aria-hidden="true" />
