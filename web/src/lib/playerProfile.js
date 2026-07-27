@@ -65,6 +65,24 @@ function shortNameMatches(entryKey, otherKey) {
   return entryKey.length >= 4 && levenshtein(entryKey, otherKey) <= 1
 }
 
+// A handful of franchise-roster shorthand spellings don't come close
+// enough to the full name for shortNameMatches to trust automatically
+// ("Ajk"/"AKJ" vs "Ajikumar" is neither a prefix nor a 1-typo variant) —
+// and loosening that check generally would risk conflating them with an
+// unrelated player who has a similarly-spelled name on the same board
+// (Australia's own roster also has a distinct "Arjun Akj"). Each entry
+// below is a specific shorthand -> full-name pairing manually verified
+// against the underlying sheets (same team/league context, same board
+// tag), not a guessed rule.
+const KNOWN_NAME_ALIASES = {
+  'anand ajk': 'anand ajikumar',
+  'anand akj': 'anand ajikumar',
+}
+
+function resolveKnownAlias(rawName) {
+  return KNOWN_NAME_ALIASES[cleanEntryKey(rawName)] || null
+}
+
 // Every name tied to a board (players + Chairman/CEO, who occasionally get
 // picked into franchise squads too) — the candidate pool a shortened roster
 // name is allowed to resolve against.
@@ -97,9 +115,9 @@ function resolvesToTarget(data, entryName, targetKey, homeBoardName) {
 
 // Every franchise-league team this player was picked into, across every
 // league — a player can appear in more than one league's roster. Tries an
-// exact name match first; if that fails, falls back to the shortened-name
-// resolver above so squads picked under a first-name-only/shorthand entry
-// still link back to the right player.
+// exact name match first, then a known verified alias, then falls back to
+// the shortened-name resolver above so squads picked under a
+// first-name-only/shorthand entry still link back to the right player.
 export function findFranchiseSquads(data, name) {
   const key = normalizeName(name)
   if (!key || !data) return []
@@ -109,7 +127,10 @@ export function findFranchiseSquads(data, name) {
   for (const league of data.franchiseLeagues || []) {
     for (const [teamName, team] of Object.entries(league.teams || {})) {
       const entry = (team.players || []).find(
-        (p) => normalizeName(p.name) === key || resolvesToTarget(data, p.name, key, homeBoardName)
+        (p) =>
+          normalizeName(p.name) === key ||
+          resolveKnownAlias(p.name) === key ||
+          resolvesToTarget(data, p.name, key, homeBoardName)
       )
       if (entry) {
         squads.push({

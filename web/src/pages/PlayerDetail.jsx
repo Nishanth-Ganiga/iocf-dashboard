@@ -13,7 +13,7 @@ import {
   IconAward, IconCrown, IconCaptain, IconPurse, IconChampion, IconTrophy,
   IconMedal, IconDuel, IconWicketKing, IconStarsStack, IconFairPlay,
   IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat, IconGlobe,
-  IconCredits, IconRisingStar,
+  IconCredits, IconRisingStar, IconSpecialistAward,
 } from '../lib/icons'
 import './PlayerDetail.css'
 
@@ -23,6 +23,7 @@ const BADGE_ICONS = {
   'run-machine': IconBat,
   'wicket-king': IconWicketKing,
   'award-magnet': IconStarsStack,
+  'specialist-award': IconSpecialistAward,
   'world-champion': IconEarth,
   'world-cup-hero': IconGlobe,
   'franchise-champion': IconChampion,

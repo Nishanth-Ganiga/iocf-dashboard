@@ -19,6 +19,37 @@ function describeAchievement(a) {
 // team name, `team`/`board` both null). Title spelling varies per league.
 const FAIR_PLAY_TITLES = new Set(['Fair Play Award', 'Spirit of Crown (Fair Play Award)'])
 
+// Every franchise league (and the T20 World Cup) hands out its own set of
+// specialist-skill awards on top of Man of the Match/Best Batsman/Best
+// Bowler — Most Sixes, Emerging Player, Purple/Orange Cap, Best Captain,
+// etc. Titles are reused verbatim across leagues but a few leagues rename
+// them with their own flavour text (Kiwi Crown League's "The Thunder
+// Striker (Most Sixes)", IPL's plain "Purple Cap"), so this groups every
+// variant spelling under one badge rather than shipping a near-empty
+// single-purpose badge per exact title. "Best Captain"/"Player of the
+// Tournament"-family and Fair Play titles already have their own badges,
+// so they're deliberately excluded here to avoid double-counting.
+const SPECIALIST_AWARD_TITLES = new Set([
+  'Most Sixes',
+  'The Thunder Striker (Most Sixes)',
+  'Emerging Player',
+  'Rise of the crown (Emerging Player)',
+  'Purple Cap',
+  'Orange Cap',
+  'Economical Bowler',
+  'Best Economy',
+  'Best Young Player',
+  'Fastest Century',
+  'Fastest Fifty',
+  'Highest Individual Score',
+  'Most Fours',
+  'Most Maidens',
+  'Most Dot Balls',
+  'Best Bat Average',
+  'Best Bowl Figure',
+  'Best Captain',
+])
+
 // Team names vary between a league's `teams` roster keys and its
 // `champion`/`runnerUp`/award-`winner` strings — not just casing (one
 // column ALL CAPS, another Title Case for the same team), but occasionally
@@ -135,6 +166,16 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: `${achievements.length} career honors`,
       criteria: 'Awarded to players who have accumulated 5 or more career honors of any kind.',
       evidence: achievements.map(describeAchievement),
+    })
+  }
+  const specialistAchievements = achievements.filter((a) => SPECIALIST_AWARD_TITLES.has(a.title))
+  if (specialistAchievements.length > 0) {
+    badges.push({
+      key: 'specialist-award',
+      label: 'Specialist Award',
+      detail: specialistAchievements[0].title,
+      criteria: 'Awarded to players named winner of a specialist-skill award (Most Sixes, Emerging Player, Purple/Orange Cap, Best Captain, and similar) in any competition.',
+      evidence: specialistAchievements.map(describeAchievement),
     })
   }
 

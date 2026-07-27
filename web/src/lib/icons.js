@@ -32,6 +32,7 @@ export {
   GiFireGem as IconGem,
   GiSuitcase as IconJourney,
   GiRocket as IconRisingStar,
+  GiRibbonMedal as IconSpecialistAward,
 } from 'react-icons/gi'
 export { MdStadium as IconStadium, MdContactMail as IconContact } from 'react-icons/md'
 export { FaNewspaper as IconNews, FaInstagram as IconInstagram } from 'react-icons/fa6'
