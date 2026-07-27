@@ -11,7 +11,7 @@ import { knownBoardIdentity } from '../lib/boardIdentity'
 import {
   IconAward, IconCrown, IconCaptain, IconPurse, IconChampion, IconTrophy,
   IconMedal, IconDuel, IconWicketKing, IconStarsStack, IconFairPlay,
-  IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat,
+  IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat, IconGlobe,
 } from '../lib/icons'
 import './PlayerDetail.css'
 
@@ -22,17 +22,22 @@ const BADGE_ICONS = {
   'wicket-king': IconWicketKing,
   'award-magnet': IconStarsStack,
   'world-champion': IconEarth,
+  'world-cup-hero': IconGlobe,
   'franchise-champion': IconChampion,
+  'franchise-serial-champion': IconTrophy,
   'franchise-runner-up': IconMedal,
   'franchise-fair-play': IconFairPlay,
   'player-of-tournament': IconTrophy,
   'lone-warrior-champion': IconDuel,
   'lone-warrior-finalist': IconDuel,
+  'all-format-star': IconStarsStack,
   'captains-armband': IconCaptain,
+  'vice-captains-armband': IconCaptain,
   'marquee-signing': IconGem,
   'direct-signing': IconPurse,
   'franchise-veteran': IconJourney,
   'multi-board-journeyman': IconJourney,
+  'player-executive': IconCrown,
   'hall-of-famer': IconHallOfFame,
 }
 

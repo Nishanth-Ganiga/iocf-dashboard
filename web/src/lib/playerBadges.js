@@ -54,6 +54,20 @@ export function teamHonorFor(data, leagueId, team) {
   return null
 }
 
+// Buckets an achievement's `source` string into the underlying competition
+// type rather than the exact league/edition — used by the All-Format Star
+// badge so 3 honors in 3 different franchise leagues don't count the same
+// as honors spread across 3 genuinely different kinds of competition.
+function achievementFormat(source, loneWarrior) {
+  if (source.startsWith('T20 World Cup')) return 'T20 World Cup'
+  if (source.startsWith('Hall of Fame ·')) return 'Hall of Fame'
+  if (source === 'World Test Championship') return 'World Test Championship'
+  if (loneWarrior?.name && source === loneWarrior.name) return 'Lone Warrior'
+  if (source.includes('Lone Warrior')) return 'Lone Warrior'
+  if (source.includes('Emerging Talent')) return 'Emerging Talent League'
+  return 'Franchise League'
+}
+
 export function computeBadges(data, name, { home, squads, achievements, boards }) {
   const badges = []
 
@@ -79,9 +93,15 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   if (wcChampionBoard && home?.board?.name === wcChampionBoard) {
     badges.push({ key: 'world-champion', label: 'World Champion Board', detail: `Represents ${wcChampionBoard} — T20 World Cup 2026 champions` })
   }
-  const championSquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
-  if (championSquad) {
-    badges.push({ key: 'franchise-champion', label: 'Franchise Champion', detail: `${championSquad.team} — ${championSquad.league}` })
+  if (achievements.some((a) => a.source === 'T20 World Cup 2026' || a.source.startsWith('T20 World Cup 2026 ·'))) {
+    badges.push({ key: 'world-cup-hero', label: 'World Cup Hero', detail: 'Named in a T20 World Cup 2026 award or match honor' })
+  }
+  const championSquads = squads.filter((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
+  if (championSquads.length >= 1) {
+    badges.push({ key: 'franchise-champion', label: 'Franchise Champion', detail: `${championSquads[0].team} — ${championSquads[0].league}` })
+  }
+  if (championSquads.length >= 2) {
+    badges.push({ key: 'franchise-serial-champion', label: 'Serial Champion', detail: `Won ${championSquads.length} franchise league titles` })
   }
   const runnerUpSquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'runner-up')
   if (runnerUpSquad) {
@@ -101,9 +121,23 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
     badges.push({ key: 'lone-warrior-finalist', label: 'Lone Warrior Finalist', detail: loneWarrior.name || 'IOCF Lone Warrior' })
   }
 
+  // A career honor can only come from a handful of distinct competition
+  // types (T20 World Cup, a franchise league, Hall of Fame, WTC, Emerging
+  // Talent League, Lone Warrior) — grouping by type rather than by exact
+  // `source` string means winning honors in 3 different franchise leagues
+  // doesn't count as "all-format" the way winning across 3 genuinely
+  // different competitions should.
+  const formats = new Set(achievements.map((a) => achievementFormat(a.source, loneWarrior)))
+  if (formats.size >= 3) {
+    badges.push({ key: 'all-format-star', label: 'All-Format Star', detail: `Honored across ${formats.size} different competitions` })
+  }
+
   // --- Career / role badges -------------------------------------------------
   if (squads.some((s) => s.role === 'Captain')) {
     badges.push({ key: 'captains-armband', label: "Captain's Armband", detail: 'Named Captain of a franchise squad' })
+  }
+  if (squads.some((s) => s.role === 'Vice-Captain')) {
+    badges.push({ key: 'vice-captains-armband', label: "Vice-Captain's Armband", detail: 'Named Vice-Captain of a franchise squad' })
   }
   if (squads.some((s) => s.role === 'Marquee')) {
     badges.push({ key: 'marquee-signing', label: 'Marquee Signing', detail: 'Picked as a Marquee player' })
@@ -116,6 +150,9 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   }
   if (boards.length > 1) {
     badges.push({ key: 'multi-board-journeyman', label: 'Multi-Board Journeyman', detail: `Represented ${boards.length} boards` })
+  }
+  if ((home?.role === 'Chairman' || home?.role === 'CEO') && squads.length > 0) {
+    badges.push({ key: 'player-executive', label: 'Player-Executive', detail: `${home.role} of ${home.board.name} and an active franchise player` })
   }
 
   // --- Legacy badge ----------------------------------------------------------
