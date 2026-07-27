@@ -4,13 +4,14 @@
 // badge is a simple, explainable rule over that existing data; if the rule
 // doesn't hold the badge just doesn't appear — nothing is inferred beyond
 // what the sheets actually recorded.
-function countTitle(achievements, titles) {
-  const set = new Set(titles)
-  return achievements.filter((a) => set.has(a.title)).length
-}
-
-function hasTitle(achievements, titles) {
-  return countTitle(achievements, titles) > 0
+//
+// Every badge carries, alongside its short `detail` summary, a `criteria`
+// (the general rule anyone would need to meet) and `evidence` (the exact
+// facts *this* player's data satisfied it with) — the click-through detail
+// view in PlayerDetail.jsx renders both so "why did I get this?" always has
+// a concrete, traceable answer.
+function describeAchievement(a) {
+  return `${a.title}${a.detail ? ` — ${a.detail}` : ''} (${a.source})`
 }
 
 // The Fair Play trophy has no dedicated league field (unlike champion/
@@ -84,70 +85,160 @@ function normalizeName(value) {
   return stripped ? stripped.toLowerCase() : null
 }
 
-function isEmergingTalentPick(data, name) {
+function emergingTalentBoards(data, name) {
   const key = normalizeName(name)
-  if (!key) return false
+  if (!key) return []
   const squads = data.emergingTalentLeague?.squads || {}
-  return Object.values(squads).some((roster) =>
-    (roster || []).some((entry) => normalizeName(entry) === key)
-  )
+  return Object.entries(squads)
+    .filter(([, roster]) => (roster || []).some((entry) => normalizeName(entry) === key))
+    .map(([board]) => board)
 }
 
 export function computeBadges(data, name, { home, squads, achievements, boards }) {
   const badges = []
 
   // --- Performance badges ------------------------------------------------
-  const motm = countTitle(achievements, ['Man of the Match'])
-  if (motm >= 3) {
-    badges.push({ key: 'serial-winner', label: 'Serial Match-Winner', detail: `${motm} Man of the Match awards` })
+  const motmAchievements = achievements.filter((a) => a.title === 'Man of the Match')
+  if (motmAchievements.length >= 3) {
+    badges.push({
+      key: 'serial-winner',
+      label: 'Serial Match-Winner',
+      detail: `${motmAchievements.length} Man of the Match awards`,
+      criteria: 'Awarded to players with 3 or more Man of the Match honors across their career.',
+      evidence: motmAchievements.map(describeAchievement),
+    })
   }
-  const bestBat = countTitle(achievements, ['Best Batsman'])
-  if (bestBat >= 3) {
-    badges.push({ key: 'run-machine', label: 'Run Machine', detail: `${bestBat} Best Batsman honors` })
+  const bestBatAchievements = achievements.filter((a) => a.title === 'Best Batsman')
+  if (bestBatAchievements.length >= 3) {
+    badges.push({
+      key: 'run-machine',
+      label: 'Run Machine',
+      detail: `${bestBatAchievements.length} Best Batsman honors`,
+      criteria: 'Awarded to players with 3 or more Best Batsman honors across their career.',
+      evidence: bestBatAchievements.map(describeAchievement),
+    })
   }
-  const bestBowl = countTitle(achievements, ['Best Bowler'])
-  if (bestBowl >= 3) {
-    badges.push({ key: 'wicket-king', label: 'Wicket King', detail: `${bestBowl} Best Bowler honors` })
+  const bestBowlAchievements = achievements.filter((a) => a.title === 'Best Bowler')
+  if (bestBowlAchievements.length >= 3) {
+    badges.push({
+      key: 'wicket-king',
+      label: 'Wicket King',
+      detail: `${bestBowlAchievements.length} Best Bowler honors`,
+      criteria: 'Awarded to players with 3 or more Best Bowler honors across their career.',
+      evidence: bestBowlAchievements.map(describeAchievement),
+    })
   }
   if (achievements.length >= 5) {
-    badges.push({ key: 'award-magnet', label: 'Award Magnet', detail: `${achievements.length} career honors` })
+    badges.push({
+      key: 'award-magnet',
+      label: 'Award Magnet',
+      detail: `${achievements.length} career honors`,
+      criteria: 'Awarded to players who have accumulated 5 or more career honors of any kind.',
+      evidence: achievements.map(describeAchievement),
+    })
   }
 
   // --- Tournament badges ---------------------------------------------------
   const wcChampionBoard = data.t20WorldCup?.champion
   if (wcChampionBoard && home?.board?.name === wcChampionBoard) {
-    badges.push({ key: 'world-champion', label: 'World Champion Board', detail: `Represents ${wcChampionBoard} — T20 World Cup 2026 champions` })
+    badges.push({
+      key: 'world-champion',
+      label: 'World Champion Board',
+      detail: `Represents ${wcChampionBoard} — T20 World Cup 2026 champions`,
+      criteria: "Awarded to every player of the national board that won the T20 World Cup 2026.",
+      evidence: [`${wcChampionBoard} won the T20 World Cup 2026`, `${name} represents ${wcChampionBoard}`],
+    })
   }
-  if (achievements.some((a) => a.source === 'T20 World Cup 2026' || a.source.startsWith('T20 World Cup 2026 ·'))) {
-    badges.push({ key: 'world-cup-hero', label: 'World Cup Hero', detail: 'Named in a T20 World Cup 2026 award or match honor' })
+  const worldCupAchievements = achievements.filter(
+    (a) => a.source === 'T20 World Cup 2026' || a.source.startsWith('T20 World Cup 2026 ·')
+  )
+  if (worldCupAchievements.length > 0) {
+    badges.push({
+      key: 'world-cup-hero',
+      label: 'World Cup Hero',
+      detail: 'Named in a T20 World Cup 2026 award or match honor',
+      criteria: 'Awarded to players named in any T20 World Cup 2026 award or match honor.',
+      evidence: worldCupAchievements.map(describeAchievement),
+    })
   }
   const championSquads = squads.filter((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
   if (championSquads.length >= 1) {
-    badges.push({ key: 'franchise-champion', label: 'Franchise Champion', detail: `${championSquads[0].team} — ${championSquads[0].league}` })
+    badges.push({
+      key: 'franchise-champion',
+      label: 'Franchise Champion',
+      detail: `${championSquads[0].team} — ${championSquads[0].league}`,
+      criteria: "Awarded to every player of a franchise squad that won its league's title.",
+      evidence: championSquads.map((s) => `${s.team} — Champions, ${s.league}`),
+    })
   }
   if (championSquads.length >= 2) {
-    badges.push({ key: 'franchise-serial-champion', label: 'Serial Champion', detail: `Won ${championSquads.length} franchise league titles` })
+    badges.push({
+      key: 'franchise-serial-champion',
+      label: 'Serial Champion',
+      detail: `Won ${championSquads.length} franchise league titles`,
+      criteria: 'Awarded to players who have won the title with 2 or more different franchise squads.',
+      evidence: championSquads.map((s) => `${s.team} — Champions, ${s.league}`),
+    })
   }
   const runnerUpSquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'runner-up')
   if (runnerUpSquad) {
-    badges.push({ key: 'franchise-runner-up', label: 'Franchise Runner-up', detail: `${runnerUpSquad.team} — ${runnerUpSquad.league}` })
+    badges.push({
+      key: 'franchise-runner-up',
+      label: 'Franchise Runner-up',
+      detail: `${runnerUpSquad.team} — ${runnerUpSquad.league}`,
+      criteria: "Awarded to every player of a franchise squad that finished runner-up in its league.",
+      evidence: [`${runnerUpSquad.team} — Runner-up, ${runnerUpSquad.league}`],
+    })
   }
   const fairPlaySquad = squads.find((s) => teamHonorFor(data, s.leagueId, s.team) === 'fair-play')
   if (fairPlaySquad) {
-    badges.push({ key: 'franchise-fair-play', label: 'Fair Play Squad', detail: `${fairPlaySquad.team} — ${fairPlaySquad.league}` })
+    badges.push({
+      key: 'franchise-fair-play',
+      label: 'Fair Play Squad',
+      detail: `${fairPlaySquad.team} — ${fairPlaySquad.league}`,
+      criteria: "Awarded to every player of a franchise squad that won its league's Fair Play award.",
+      evidence: [`${fairPlaySquad.team} — Fair Play, ${fairPlaySquad.league}`],
+    })
   }
-  const bigMoneyPick = squads.find((s) => s.credits != null && s.credits >= BIG_MONEY_THRESHOLD)
-  if (bigMoneyPick) {
-    badges.push({ key: 'big-money-buy', label: 'Big-Money Buy', detail: `Picked by ${bigMoneyPick.team} for ${bigMoneyPick.credits.toLocaleString()} credits` })
+  const bigMoneyPicks = squads.filter((s) => s.credits != null && s.credits >= BIG_MONEY_THRESHOLD)
+  if (bigMoneyPicks.length > 0) {
+    badges.push({
+      key: 'big-money-buy',
+      label: 'Big-Money Buy',
+      detail: `Picked by ${bigMoneyPicks[0].team} for ${bigMoneyPicks[0].credits.toLocaleString()} credits`,
+      criteria: `Awarded to players picked for ${BIG_MONEY_THRESHOLD.toLocaleString()}+ credits in a franchise auction — around the top 5% of real auction prices.`,
+      evidence: bigMoneyPicks.map((s) => `${s.team} (${s.league}) — ${s.credits.toLocaleString()} credits`),
+    })
   }
-  if (hasTitle(achievements, ['Player of the Tournament', 'Man of the Tournament', 'Crowned Warrior (Player of the Tournament)'])) {
-    badges.push({ key: 'player-of-tournament', label: 'Player of the Tournament', detail: 'Named Player/Man of the Tournament' })
+  const potAchievements = achievements.filter((a) =>
+    ['Player of the Tournament', 'Man of the Tournament', 'Crowned Warrior (Player of the Tournament)'].includes(a.title)
+  )
+  if (potAchievements.length > 0) {
+    badges.push({
+      key: 'player-of-tournament',
+      label: 'Player of the Tournament',
+      detail: 'Named Player/Man of the Tournament',
+      criteria: 'Awarded to players named Player/Man of the Tournament in any competition.',
+      evidence: potAchievements.map(describeAchievement),
+    })
   }
   const loneWarrior = data.loneWarrior
   if (loneWarrior?.champion === name) {
-    badges.push({ key: 'lone-warrior-champion', label: 'Lone Warrior Champion', detail: loneWarrior.name || 'IOCF Lone Warrior' })
+    badges.push({
+      key: 'lone-warrior-champion',
+      label: 'Lone Warrior Champion',
+      detail: loneWarrior.name || 'IOCF Lone Warrior',
+      criteria: 'Awarded to the champion of the Lone Warrior individual competition.',
+      evidence: [`${loneWarrior.name || 'IOCF Lone Warrior'} — Champion`],
+    })
   } else if (loneWarrior?.runnerUp === name) {
-    badges.push({ key: 'lone-warrior-finalist', label: 'Lone Warrior Finalist', detail: loneWarrior.name || 'IOCF Lone Warrior' })
+    badges.push({
+      key: 'lone-warrior-finalist',
+      label: 'Lone Warrior Finalist',
+      detail: loneWarrior.name || 'IOCF Lone Warrior',
+      criteria: 'Awarded to the runner-up of the Lone Warrior individual competition.',
+      evidence: [`${loneWarrior.name || 'IOCF Lone Warrior'} — Runner-up`],
+    })
   }
 
   // A career honor can only come from a handful of distinct competition
@@ -156,40 +247,110 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
   // `source` string means winning honors in 3 different franchise leagues
   // doesn't count as "all-format" the way winning across 3 genuinely
   // different competitions should.
-  const formats = new Set(achievements.map((a) => achievementFormat(a.source, loneWarrior)))
-  if (formats.size >= 3) {
-    badges.push({ key: 'all-format-star', label: 'All-Format Star', detail: `Honored across ${formats.size} different competitions` })
+  const formatCounts = new Map()
+  for (const a of achievements) {
+    const f = achievementFormat(a.source, loneWarrior)
+    formatCounts.set(f, (formatCounts.get(f) || 0) + 1)
+  }
+  if (formatCounts.size >= 3) {
+    badges.push({
+      key: 'all-format-star',
+      label: 'All-Format Star',
+      detail: `Honored across ${formatCounts.size} different competitions`,
+      criteria: 'Awarded to players honored across 3 or more genuinely different competition types (not just different editions of the same league).',
+      evidence: [...formatCounts.entries()].map(([f, n]) => `${f} — ${n} honor${n > 1 ? 's' : ''}`),
+    })
   }
 
   // --- Career / role badges -------------------------------------------------
-  if (squads.some((s) => s.role === 'Captain')) {
-    badges.push({ key: 'captains-armband', label: "Captain's Armband", detail: 'Named Captain of a franchise squad' })
+  const captainSquads = squads.filter((s) => s.role === 'Captain')
+  if (captainSquads.length > 0) {
+    badges.push({
+      key: 'captains-armband',
+      label: "Captain's Armband",
+      detail: 'Named Captain of a franchise squad',
+      criteria: 'Awarded to players named Captain of any franchise league squad.',
+      evidence: captainSquads.map((s) => `Captain — ${s.team}, ${s.league}`),
+    })
   }
-  if (squads.some((s) => s.role === 'Vice-Captain')) {
-    badges.push({ key: 'vice-captains-armband', label: "Vice-Captain's Armband", detail: 'Named Vice-Captain of a franchise squad' })
+  const viceCaptainSquads = squads.filter((s) => s.role === 'Vice-Captain')
+  if (viceCaptainSquads.length > 0) {
+    badges.push({
+      key: 'vice-captains-armband',
+      label: "Vice-Captain's Armband",
+      detail: 'Named Vice-Captain of a franchise squad',
+      criteria: 'Awarded to players named Vice-Captain of any franchise league squad.',
+      evidence: viceCaptainSquads.map((s) => `Vice-Captain — ${s.team}, ${s.league}`),
+    })
   }
-  if (squads.some((s) => s.role === 'Marquee')) {
-    badges.push({ key: 'marquee-signing', label: 'Marquee Signing', detail: 'Picked as a Marquee player' })
+  const marqueeSquads = squads.filter((s) => s.role === 'Marquee')
+  if (marqueeSquads.length > 0) {
+    badges.push({
+      key: 'marquee-signing',
+      label: 'Marquee Signing',
+      detail: 'Picked as a Marquee player',
+      criteria: 'Awarded to players picked with Marquee status in any franchise league squad.',
+      evidence: marqueeSquads.map((s) => `Marquee — ${s.team}, ${s.league}`),
+    })
   }
-  if (squads.some((s) => s.role === 'Direct Signing')) {
-    badges.push({ key: 'direct-signing', label: 'Direct Signing', detail: 'Picked as a Direct Signing' })
+  const directSquads = squads.filter((s) => s.role === 'Direct Signing')
+  if (directSquads.length > 0) {
+    badges.push({
+      key: 'direct-signing',
+      label: 'Direct Signing',
+      detail: 'Picked as a Direct Signing',
+      criteria: 'Awarded to players picked as a Direct Signing in any franchise league squad.',
+      evidence: directSquads.map((s) => `Direct Signing — ${s.team}, ${s.league}`),
+    })
   }
   if (squads.length >= 3) {
-    badges.push({ key: 'franchise-veteran', label: 'Franchise Veteran', detail: `${squads.length} franchise league squads` })
+    badges.push({
+      key: 'franchise-veteran',
+      label: 'Franchise Veteran',
+      detail: `${squads.length} franchise league squads`,
+      criteria: 'Awarded to players picked into 3 or more franchise league squads across their career.',
+      evidence: squads.map((s) => `${s.team} — ${s.league}`),
+    })
   }
   if (boards.length > 1) {
-    badges.push({ key: 'multi-board-journeyman', label: 'Multi-Board Journeyman', detail: `Represented ${boards.length} boards` })
+    badges.push({
+      key: 'multi-board-journeyman',
+      label: 'Multi-Board Journeyman',
+      detail: `Represented ${boards.length} boards`,
+      criteria: 'Awarded to players who have represented more than one national board (home board plus franchise-squad board tags).',
+      evidence: boards,
+    })
   }
-  if (isEmergingTalentPick(data, name)) {
-    badges.push({ key: 'rising-star', label: 'Rising Star', detail: `Picked in the ${data.emergingTalentLeague.name} squad` })
+  const etlBoards = emergingTalentBoards(data, name)
+  if (etlBoards.length > 0) {
+    badges.push({
+      key: 'rising-star',
+      label: 'Rising Star',
+      detail: `Picked in the ${data.emergingTalentLeague.name} squad`,
+      criteria: 'Awarded to players picked into an Emerging Talent League squad roster.',
+      evidence: etlBoards.map((b) => `Picked in ${b}'s Emerging Talent League squad`),
+    })
   }
   if ((home?.role === 'Chairman' || home?.role === 'CEO') && squads.length > 0) {
-    badges.push({ key: 'player-executive', label: 'Player-Executive', detail: `${home.role} of ${home.board.name} and an active franchise player` })
+    badges.push({
+      key: 'player-executive',
+      label: 'Player-Executive',
+      detail: `${home.role} of ${home.board.name} and an active franchise player`,
+      criteria: 'Awarded to a board Chairman/CEO who is also actively picked in a franchise league squad.',
+      evidence: [`${home.role} of ${home.board.name}`, ...squads.map((s) => `Also plays for ${s.team} — ${s.league}`)],
+    })
   }
 
   // --- Legacy badge ----------------------------------------------------------
-  if (achievements.some((a) => a.source.startsWith('Hall of Fame ·'))) {
-    badges.push({ key: 'hall-of-famer', label: 'IOCF Hall of Famer', detail: 'Inducted into the Hall of Fame' })
+  const hallOfFameAchievements = achievements.filter((a) => a.source.startsWith('Hall of Fame ·'))
+  if (hallOfFameAchievements.length > 0) {
+    badges.push({
+      key: 'hall-of-famer',
+      label: 'IOCF Hall of Famer',
+      detail: 'Inducted into the Hall of Fame',
+      criteria: 'Awarded to players inducted into the IOCF Hall of Fame.',
+      evidence: hallOfFameAchievements.map(describeAchievement),
+    })
   }
 
   return badges

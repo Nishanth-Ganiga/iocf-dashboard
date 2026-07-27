@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
@@ -57,6 +58,16 @@ const TEAM_HONOR_LABELS = {
 export default function PlayerDetail() {
   const { name: encodedName } = useParams()
   const { data, loading, error } = useDashboard()
+  const [selectedBadge, setSelectedBadge] = useState(null)
+
+  useEffect(() => {
+    if (!selectedBadge) return undefined
+    function onKey(e) {
+      if (e.key === 'Escape') setSelectedBadge(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedBadge])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} />
@@ -173,11 +184,17 @@ export default function PlayerDetail() {
               {badges.map((b) => {
                 const Icon = BADGE_ICONS[b.key] || IconAward
                 return (
-                  <div key={b.key} className="pd-badge-tile glass-panel" title={b.detail}>
+                  <button
+                    key={b.key}
+                    type="button"
+                    className="pd-badge-tile glass-panel"
+                    title={b.detail}
+                    onClick={() => setSelectedBadge(b)}
+                  >
                     <Icon className="pd-badge-tile__icon" aria-hidden="true" />
                     <span className="pd-badge-tile__label">{b.label}</span>
                     <span className="text-faint pd-badge-tile__detail">{b.detail}</span>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -257,6 +274,44 @@ export default function PlayerDetail() {
             </ul>
           )}
         </section>
+      </div>
+
+      {selectedBadge && (
+        <BadgeDetailModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} />
+      )}
+    </div>
+  )
+}
+
+function BadgeDetailModal({ badge, onClose }) {
+  const Icon = BADGE_ICONS[badge.key] || IconAward
+  return (
+    <div className="pd-badge-modal-overlay" onClick={onClose}>
+      <div className="pd-badge-modal glass-panel" onClick={(e) => e.stopPropagation()}>
+        <button className="pd-badge-modal__close" onClick={onClose} aria-label="Close">
+          ✕
+        </button>
+        <Icon className="pd-badge-modal__icon" aria-hidden="true" />
+        <h3 className="pd-badge-modal__label">{badge.label}</h3>
+        <p className="text-dim pd-badge-modal__detail">{badge.detail}</p>
+
+        {badge.criteria && (
+          <div className="pd-badge-modal__section">
+            <p className="pd-badge-modal__section-title">How this badge is earned</p>
+            <p className="text-faint pd-badge-modal__criteria">{badge.criteria}</p>
+          </div>
+        )}
+
+        {badge.evidence?.length > 0 && (
+          <div className="pd-badge-modal__section">
+            <p className="pd-badge-modal__section-title">Why this player earned it</p>
+            <ul className="pd-badge-modal__evidence">
+              {badge.evidence.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
