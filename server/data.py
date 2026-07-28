@@ -1373,6 +1373,8 @@ CONTINENTAL_CUPS = {
     "IOCF OCEANIA CUP": "IOCF Oceania Cup",
 }
 
+CONTINENTAL_CUP_SCHEDULE_RE = re.compile(r"schedule and all match updates", re.I)
+
 
 def get_continental_cups(wb):
     cups = []
@@ -1387,13 +1389,29 @@ def get_continental_cups(wb):
                 m = NUMBERED_RE.match(v)
                 if m:
                     teams.append(m.group(1))
+
+        matches = []
+        schedule_row = _find_row_with_text(ws, CONTINENTAL_CUP_SCHEDULE_RE)
+        if schedule_row:
+            matches = _read_franchise_matches(ws, schedule_row + 1, ws.max_row + 1)
+
+        completed = [m for m in matches if m.get("Winner")]
+        if matches and len(completed) == len(matches):
+            status = "Completed"
+        elif completed:
+            status = "Ongoing"
+        else:
+            status = "Upcoming"
+
         cups.append(
             {
                 "id": sheet_name.lower().replace(" ", "-"),
                 "name": display,
                 "season": "2026",
                 "teams": teams,
-                "status": "Upcoming",
+                "matches": matches,
+                "totalMatches": len(matches),
+                "status": status,
                 "champion": None,
             }
         )
@@ -1557,7 +1575,7 @@ def build_dashboard(path):
                 "status": cup["status"],
                 "champion": cup["champion"],
                 "runnerUp": None,
-                "totalMatches": None,
+                "totalMatches": cup["totalMatches"],
             }
         )
     for lg in franchise_leagues:
@@ -1586,6 +1604,7 @@ def build_dashboard(path):
         + sum(len([m for m in lg["matches"] if m.get("Winner")]) for lg in franchise_leagues)
         + len([m for m in emerging["matches"] if m.get("winner")])
         + lone_warrior["totalMatches"]
+        + sum(len([m for m in cup["matches"] if m.get("Winner")]) for cup in continental_cups)
     )
     total_championships = len([t for t in tournaments if t.get("champion")])
     total_credits = sum(b["credits"] or 0 for b in boards)

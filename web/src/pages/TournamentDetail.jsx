@@ -436,13 +436,14 @@ function LoneWarriorDetail({ lw }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Continental Cup — participants only, no fixtures yet                */
+/* Continental Cup — participants + full fixture schedule              */
 /* ------------------------------------------------------------------ */
 function ContinentalCupDetail({ cup }) {
   const teams = cup.teams || []
+  const matches = cup.matches || []
   return (
     <>
-      <ChampionBanner champion={cup.champion} />
+      <ChampionBanner champion={cup.champion} totalMatches={cup.totalMatches || null} />
       <div className="td-subsection">
         <h3 className="td-subsection__title">Participating Teams</h3>
         {teams.length === 0 ? (
@@ -458,7 +459,11 @@ function ContinentalCupDetail({ cup }) {
           </div>
         )}
       </div>
-      <div className="empty-state">Fixtures for this cup have not been scheduled yet.</div>
+      {matches.length > 0 ? (
+        <FranchiseMatchTimeline matches={matches} />
+      ) : (
+        <div className="empty-state">Fixtures for this cup have not been scheduled yet.</div>
+      )}
     </>
   )
 }
