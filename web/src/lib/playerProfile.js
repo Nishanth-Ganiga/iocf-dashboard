@@ -8,7 +8,7 @@
 // leans on the same "(XXX)" suffix stripped, case-insensitive comparison
 // so a franchise squad line like "Ram Thakkar(NZ)" still resolves to the
 // board roster's "Ram Thakkar".
-function normalizeName(value) {
+export function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
   const stripped = value.replace(/\s*\([^)]*\)\s*$/, '').trim()
   return stripped ? stripped.toLowerCase() : null
@@ -59,7 +59,7 @@ function levenshtein(a, b) {
 // shorthand, not a parsing bug. normalizeName() only strips a trailing
 // "(...)" once; this also peels off a trailing "- XYZ" board suffix so the
 // leftover is just the person's name.
-function cleanEntryKey(rawName) {
+export function cleanEntryKey(rawName) {
   let text = normalizeName(rawName) || ''
   let m
   while ((m = text.match(/\s*-\s*[a-z]+\s*$/))) {
@@ -68,11 +68,23 @@ function cleanEntryKey(rawName) {
   return text
 }
 
-function shortNameMatches(entryKey, otherKey) {
+export function shortNameMatches(entryKey, otherKey) {
   if (!entryKey || !otherKey) return false
   if (entryKey === otherKey) return true
   if (entryKey.length >= 3 && (otherKey.includes(entryKey) || entryKey.includes(otherKey))) return true
-  return entryKey.length >= 4 && levenshtein(entryKey, otherKey) <= 1
+  if (entryKey.length >= 4 && levenshtein(entryKey, otherKey) <= 1) return true
+  // A name can also be recorded with its words reordered or a middle name
+  // dropped ("Ahsan Siddiqui" for the roster's "Siddiqui Ahsan", "Princhi
+  // Bora" for "Princhi Pratim Bora") — safe to trust once every word in the
+  // shorter name also appears as a whole word in the other, since the
+  // caller already restricts this to one board's own candidate pool and
+  // requires the match to be unique there.
+  const entryTokens = entryKey.split(/\s+/).filter(Boolean)
+  const otherTokens = otherKey.split(/\s+/).filter(Boolean)
+  if (entryTokens.length >= 2 && otherTokens.length >= 2 && entryTokens.every((t) => otherTokens.includes(t))) {
+    return true
+  }
+  return false
 }
 
 // A handful of franchise-roster shorthand spellings don't come close
@@ -96,7 +108,7 @@ function resolveKnownAlias(rawName) {
 // Every name tied to a board (players + Chairman/CEO, who occasionally get
 // picked into franchise squads too) — the candidate pool a shortened roster
 // name is allowed to resolve against.
-function boardCandidateNames(data, boardName) {
+export function boardCandidateNames(data, boardName) {
   const board = (data.boards || []).find((b) => b.name === boardName)
   if (!board) return []
   return [...(board.players || []), ...splitOfficeHolders(board.chairman), ...splitOfficeHolders(board.ceo)]

@@ -20,7 +20,7 @@
 // candidate. That keeps this codebase's "never fabricate — omit rather
 // than guess" rule intact while fixing genuine typos/nicknames instead of
 // silently dropping them.
-import { splitOfficeHolders } from './playerProfile'
+import { splitOfficeHolders, cleanEntryKey, shortNameMatches } from './playerProfile'
 
 function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
@@ -107,9 +107,125 @@ function pushAchievement(index, name, achievement, boardRosterIndex, boardName) 
   index.get(key).push(achievement)
 }
 
+function boardRosterNames(boardRosterIndex, boardName) {
+  const key = normalizeName(boardName)
+  if (!key) return []
+  const members = boardRosterIndex.get(key)
+  return members ? [...members.values()] : []
+}
+
+// Match-honor fields ("Bhavin Kumar (LS)") only ever belong to one of the
+// two sides that actually played that match — a much narrower, safer
+// candidate pool than a whole board/team roster. Reuses the same
+// cleanEntryKey/shortNameMatches fuzzy resolver playerProfile.js already
+// trusts for shortened franchise-squad names, scoped here to that pool
+// instead of a single roster, and only when exactly one member matches.
+// shortNameMatches is symmetric (it also matches a fuller name down to a
+// shorter one), but a franchise team's own roster entry is often the
+// shortened form ("Chiranjibi" for "Chiranjibi Samal") — only ever widen
+// a raw honor name to a fuller candidate, never shrink an already-fuller
+// name down to the roster's shorthand, or a genuine full name gets
+// clobbered into an unrelated shorter roster spelling.
+function resolvePoolName(rawName, poolNames) {
+  const entryKey = cleanEntryKey(rawName)
+  if (!entryKey || !poolNames || !poolNames.length) return null
+  const matches = poolNames.filter((c) => {
+    const candidateKey = cleanEntryKey(c)
+    return candidateKey.length >= entryKey.length && shortNameMatches(entryKey, candidateKey)
+  })
+  return matches.length === 1 ? matches[0] : null
+}
+
+// Strips wrapper text around a playoff Schedule string ("Qualifier 1:
+// Hyderabad Kingsmen vs Lahore Qalandars", "Eliminator(Welsh vs
+// Sunrisers)", "Grand Final: RR vs KKR") down to the bare "A vs B" before
+// the two team names are parsed out.
+function stripPlayoffPrefix(schedule) {
+  const match = schedule.match(/^(?:Qualifier\s*\d*|Eliminator|Grand Final|Finals?|Q\d|SF\d*|E)\s*[:(]\s*(.*?)\)?$/i)
+  return match ? match[1] : schedule
+}
+
+// Splits a match's Schedule string into its two team/board names. One real
+// row ("Sunrisers Leeds vs vs MI London") has an accidental double "vs" —
+// collapsed before splitting. Returns null rather than guessing if the
+// string doesn't parse into exactly two names.
+function splitScheduleTeams(schedule) {
+  if (!schedule || typeof schedule !== 'string') return null
+  const collapsed = stripPlayoffPrefix(schedule.trim()).replace(/\bvs\s+vs\b/i, 'vs')
+  const parts = collapsed.split(/\bvs\b/i).map((p) => p.trim()).filter(Boolean)
+  return parts.length === 2 ? parts : null
+}
+
+// Strips everything but word characters/spaces/"&" (this also drops CPL's
+// emoji flag suffixes, e.g. "Antigua & Barbuda Falcons 🇦🇬") and lowercases,
+// so team names compare the same way regardless of decoration.
+function cleanTeamName(s) {
+  return (s || '').replace(/[^\w\s&]/gu, '').trim().toLowerCase()
+}
+
+// Word-by-word closeness for team names: exact, or the shorter word is a
+// meaningful (>=4 char) prefix of the longer, or a 1-typo variant at that
+// length, or a 2-typo variant once the shorter word is long enough (>=7)
+// that a 2-edit gap still can't collide with an unrelated word — needed
+// for KCL's "Welllinton"/"Wellington" and "Barbodas"/"Barbados".
+function wordsClose(a, b) {
+  if (a === b) return true
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a]
+  if (short.length >= 4 && long.startsWith(short)) return true
+  if (short.length >= 4 && levenshtein(a, b) <= 1) return true
+  if (short.length >= 7 && levenshtein(a, b) <= 2) return true
+  return false
+}
+
+// IPL's Schedule strings use 2-4 letter team tags (MI, CSK, RCB...) that
+// bear no textual resemblance to the full team name, so word-closeness
+// alone can't resolve them — every other league's tags are either full/
+// near-full names or initials that already fuzzy-match. Verified against
+// this workbook's own IPL roster, including its "GT"/"PKBS" spellings.
+const FRANCHISE_TAG_ALIASES = {
+  mi: 'mumbai indians',
+  csk: 'chennai super kings',
+  rcb: 'royal challengers bengaluru',
+  kkr: 'kolkata knight riders',
+  dc: 'delhi capitals',
+  pbks: 'punjab kings',
+  pkbs: 'punjab kings',
+  rr: 'rajasthan royals',
+  srh: 'sunrisers hyderabad',
+  gt: 'gujrat titans',
+  lsg: 'lucknow super gaints',
+}
+
+// Resolves a team/board name parsed out of a Schedule string against the
+// known list for that league/tournament — exact match first, then the IPL
+// tag-alias table, then word-by-word fuzzy matching. Only trusts the fuzzy
+// pass when exactly one known name matches, same "never guess" rule as
+// every other resolver in this codebase.
+function resolveTeamName(name, knownNames) {
+  const target = cleanTeamName(name)
+  if (!target || !knownNames || !knownNames.length) return null
+  for (const known of knownNames) {
+    if (cleanTeamName(known) === target) return known
+  }
+  const alias = FRANCHISE_TAG_ALIASES[target]
+  if (alias) {
+    const aliased = knownNames.find((known) => cleanTeamName(known) === alias)
+    if (aliased) return aliased
+  }
+  const targetWords = target.split(/\s+/).filter(Boolean)
+  const candidates = knownNames.filter((known) => {
+    const knownWords = cleanTeamName(known).split(/\s+/).filter(Boolean)
+    return targetWords.length <= knownWords.length && targetWords.every((w, i) => wordsClose(w, knownWords[i]))
+  })
+  return candidates.length === 1 ? candidates[0] : null
+}
+
 // A match/fixture row's Man of the Match / Best Batsman / Best Bowler
 // fields — the exact key spelling varies slightly between sheets ("Man of
-// the match" vs "Man of the Match"), so both are checked.
+// the match" vs "Man of the Match"), so both are checked. `candidatePool`,
+// when given, is the roster of the two sides that actually played this
+// match — honor names are tried against it first so shortened/typo'd
+// entries ("Bhavin Kumar (LS)") still resolve to the real roster spelling.
 const MATCH_HONOR_FIELDS = [
   ['Man of the Match', 'Man of the Match'],
   ['Man of the match', 'Man of the Match'],
@@ -117,12 +233,29 @@ const MATCH_HONOR_FIELDS = [
   ['Best Bowler', 'Best Bowler'],
 ]
 
-function addMatchHonors(index, source, match, detail) {
+function addMatchHonors(index, source, match, detail, candidatePool) {
   for (const [field, title] of MATCH_HONOR_FIELDS) {
-    if (match[field]) {
-      pushAchievement(index, match[field], { source, title, detail })
-    }
+    const raw = match[field]
+    if (!raw) continue
+    const resolved = candidatePool ? resolvePoolName(raw, candidatePool) : null
+    pushAchievement(index, resolved || raw, { source, title, detail })
   }
+}
+
+// Builds the two-sided player-name candidate pool for a match's Schedule
+// string, resolving each parsed team/board name against `knownNames` and
+// pulling their rosters from `rosterFor`. Returns null (fall back to
+// unscoped resolution) unless the Schedule parses cleanly into exactly two
+// names AND both resolve uniquely — never guesses a pool from a partial
+// parse.
+function matchCandidatePool(schedule, knownNames, rosterFor) {
+  const teams = splitScheduleTeams(schedule)
+  if (!teams) return null
+  const [a, b] = teams
+  const resolvedA = resolveTeamName(a, knownNames)
+  const resolvedB = resolveTeamName(b, knownNames)
+  if (!resolvedA || !resolvedB) return null
+  return [...rosterFor(resolvedA), ...rosterFor(resolvedB)]
 }
 
 // Builds the full name -> achievements[] index once from the whole
@@ -134,6 +267,8 @@ export function buildAchievementsIndex(data) {
   if (!data) return index
 
   const boardRosterIndex = buildBoardRosterIndex(data.boards)
+  const boardNames = (data.boards || []).map((b) => b.name)
+  const rosterForBoard = (boardName) => boardRosterNames(boardRosterIndex, boardName)
 
   const wc = data.t20WorldCup
   if (wc) {
@@ -147,12 +282,15 @@ export function buildAchievementsIndex(data) {
     }
     for (const [stage, matches] of Object.entries(wc.stages || {})) {
       for (const m of matches) {
-        addMatchHonors(index, `T20 World Cup 2026 · ${stage}`, m, m.Schedule)
+        const pool = matchCandidatePool(m.Schedule, boardNames, rosterForBoard)
+        addMatchHonors(index, `T20 World Cup 2026 · ${stage}`, m, m.Schedule, pool)
       }
     }
   }
 
   for (const league of data.franchiseLeagues || []) {
+    const teamNames = Object.keys(league.teams || {})
+    const rosterForTeam = (teamName) => (league.teams[teamName]?.players || []).map((p) => p.name)
     for (const a of league.awards || []) {
       // Team-level trophies (Champions/Runners-up/Fair Play) carry a team
       // name rather than a player name and have no `team` field of their
@@ -165,7 +303,8 @@ export function buildAchievementsIndex(data) {
       }, a.team ? boardRosterIndex : null, a.board)
     }
     for (const m of league.matches || []) {
-      addMatchHonors(index, league.name, m, m.Schedule)
+      const pool = matchCandidatePool(m.Schedule, teamNames, rosterForTeam)
+      addMatchHonors(index, league.name, m, m.Schedule, pool)
     }
   }
 
@@ -182,17 +321,22 @@ export function buildAchievementsIndex(data) {
   const wtcMatches = data.fixtures?.tests?.worldTestChampionshipCompletedMatches || []
   for (const m of wtcMatches) {
     const detail = m['Test Name'] || [m['Hosting Board'], m['Opponents']].filter(Boolean).join(' vs ')
-    addMatchHonors(index, 'World Test Championship', m, detail)
+    const schedule = [m['Hosting Board'], m['Opponents']].filter(Boolean).join(' vs ')
+    const pool = matchCandidatePool(schedule, boardNames, rosterForBoard)
+    addMatchHonors(index, 'World Test Championship', m, detail, pool)
   }
 
   const etl = data.emergingTalentLeague
   if (etl) {
     for (const m of etl.matches || []) {
       if (m.motm) {
-        pushAchievement(index, m.motm, {
+        const schedule = [m.host, m.opponent].filter(Boolean).join(' vs ')
+        const pool = matchCandidatePool(schedule, boardNames, rosterForBoard)
+        const resolved = pool ? resolvePoolName(m.motm, pool) : null
+        pushAchievement(index, resolved || m.motm, {
           source: etl.name || 'Emerging Talent League 2026',
           title: 'Man of the Match',
-          detail: [m.host, m.opponent].filter(Boolean).join(' vs '),
+          detail: schedule,
         })
       }
     }

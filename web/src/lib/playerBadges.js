@@ -1,3 +1,5 @@
+import { cleanEntryKey, shortNameMatches, boardCandidateNames } from './playerProfile'
+
 // Derives a player's "IOCF Badges" — a cabinet of earned honors computed
 // purely from data already surfaced elsewhere (the achievements index and
 // the franchise-squad/board profile), no new fields or fabrication. Each
@@ -127,13 +129,32 @@ function emergingTalentBoards(data, name) {
 
 // A player's name can independently show up in a board's `umpires` list too
 // (same board or a different one — umpiring assignments aren't restricted
-// to your own board) — real, verified overlap, not an inferred/fuzzy match.
+// to your own board). Exact-spelling matches are checked globally, same as
+// before. On top of that, umpire lists commonly record only a shortened
+// first name ("Akshay" for "Akshay Varnam", "Noor" for "Mohammad Noor") —
+// the same shorthand already handled for franchise squads in
+// playerProfile.js. That shorthand is only trusted when it resolves to
+// exactly one candidate (player/Chairman/CEO) on the SAME board the umpire
+// is listed under — never guessed across boards — which is what kept the
+// franchise-squad resolver safe and applies just as well here.
 function boardsUmpiredFor(data, name) {
   const key = normalizeName(name)
   if (!key) return []
   const boards = []
   for (const b of data.boards || []) {
-    if ((b.umpires || []).some((u) => normalizeName(u.name) === key)) boards.push(b.name)
+    const umpires = b.umpires || []
+    if (umpires.some((u) => normalizeName(u.name) === key)) {
+      boards.push(b.name)
+      continue
+    }
+    const candidates = boardCandidateNames(data, b.name)
+    const fuzzyMatch = umpires.some((u) => {
+      const entryKey = cleanEntryKey(u.name)
+      if (!entryKey) return false
+      const matches = candidates.filter((c) => shortNameMatches(entryKey, normalizeName(c)))
+      return matches.length === 1 && normalizeName(matches[0]) === key
+    })
+    if (fuzzyMatch) boards.push(b.name)
   }
   return boards
 }
