@@ -4,7 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
-import { findFranchiseSquads } from '../lib/playerProfile'
+import { findFranchiseSquads, splitOfficeHolders } from '../lib/playerProfile'
 import { teamHonorFor } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
 import { IconAward, IconCrown, IconTrophy } from '../lib/icons'
@@ -69,8 +69,8 @@ export default function Players() {
 
   const allPlayers = []
   for (const b of boards) {
-    if (b.chairman) allPlayers.push({ name: b.chairman, board: b.name, boardId: b.id, role: 'Chairman' })
-    if (b.ceo) allPlayers.push({ name: b.ceo, board: b.name, boardId: b.id, role: 'CEO' })
+    for (const n of splitOfficeHolders(b.chairman)) allPlayers.push({ name: n, board: b.name, boardId: b.id, role: 'Chairman' })
+    for (const n of splitOfficeHolders(b.ceo)) allPlayers.push({ name: n, board: b.name, boardId: b.id, role: 'CEO' })
     for (const name of b.players || []) {
       allPlayers.push({ name, board: b.name, boardId: b.id, role: null })
     }

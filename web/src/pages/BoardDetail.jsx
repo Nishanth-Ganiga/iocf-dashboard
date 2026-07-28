@@ -4,6 +4,7 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
+import OfficerLinks from '../components/OfficerLinks'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconStadium, IconTrophy, IconUmpire, IconInstagram, IconChampion } from '../lib/icons'
@@ -66,20 +67,10 @@ export default function BoardDetail() {
             </h1>
             <div className="board-detail__meta-row">
               <span className="text-dim">
-                Chairman:{' '}
-                {board.chairman ? (
-                  <Link to={`/players/${encodeURIComponent(board.chairman)}`} className="board-detail__officer-link">
-                    {board.chairman}
-                  </Link>
-                ) : '—'}
+                Chairman: <OfficerLinks value={board.chairman} className="board-detail__officer-link" />
               </span>
               <span className="text-dim">
-                CEO:{' '}
-                {board.ceo ? (
-                  <Link to={`/players/${encodeURIComponent(board.ceo)}`} className="board-detail__officer-link">
-                    {board.ceo}
-                  </Link>
-                ) : '—'}
+                CEO: <OfficerLinks value={board.ceo} className="board-detail__officer-link" />
               </span>
               {board.stadiumTier && (
                 <span className="pill board-detail__tier-pill">{board.stadiumTier}</span>

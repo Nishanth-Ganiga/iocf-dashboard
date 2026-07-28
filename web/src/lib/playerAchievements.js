@@ -20,6 +20,8 @@
 // candidate. That keeps this codebase's "never fabricate — omit rather
 // than guess" rule intact while fixing genuine typos/nicknames instead of
 // silently dropping them.
+import { splitOfficeHolders } from './playerProfile'
+
 function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
   const stripped = value.replace(/\s*\([^)]*\)\s*$/, '').trim()
@@ -60,8 +62,8 @@ function buildBoardRosterIndex(boards) {
       const key = normalizeName(raw)
       if (key && !members.has(key)) members.set(key, raw.trim())
     }
-    if (b.chairman) add(b.chairman)
-    if (b.ceo) add(b.ceo)
+    for (const n of splitOfficeHolders(b.chairman)) add(n)
+    for (const n of splitOfficeHolders(b.ceo)) add(n)
     for (const p of b.players || []) add(p)
     index.set(boardKey, members)
   }

@@ -5,6 +5,7 @@ import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import MascotIcon from '../components/MascotIcon'
+import OfficerLinks from '../components/OfficerLinks'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconInstagram, IconUmpire, IconGlobe, IconBoard as IconGrid, IconTrophy, IconCredits, IconChampion } from '../lib/icons'
@@ -122,27 +123,19 @@ export default function Boards() {
                         </p>
                         <p className="entity-card__meta">
                           Chairman:{' '}
-                          {b.chairman ? (
-                            <Link
-                              to={`/players/${encodeURIComponent(b.chairman)}`}
-                              className="boards-card__officer-link"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {b.chairman}
-                            </Link>
-                          ) : '—'}
+                          <OfficerLinks
+                            value={b.chairman}
+                            className="boards-card__officer-link"
+                            onClick={(e) => e.stopPropagation()}
+                          />
                         </p>
                         <p className="entity-card__meta">
                           CEO:{' '}
-                          {b.ceo ? (
-                            <Link
-                              to={`/players/${encodeURIComponent(b.ceo)}`}
-                              className="boards-card__officer-link"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {b.ceo}
-                            </Link>
-                          ) : '—'}
+                          <OfficerLinks
+                            value={b.ceo}
+                            className="boards-card__officer-link"
+                            onClick={(e) => e.stopPropagation()}
+                          />
                         </p>
                         {identity?.mascotName && (
                           <p className="entity-card__meta text-faint">
@@ -219,12 +212,7 @@ export default function Boards() {
                     <div>
                       <p className="entity-card__title">{b.name}</p>
                       <p className="entity-card__meta">
-                        Chairman:{' '}
-                        {b.chairman ? (
-                          <Link to={`/players/${encodeURIComponent(b.chairman)}`} className="boards-card__officer-link">
-                            {b.chairman}
-                          </Link>
-                        ) : '—'}
+                        Chairman: <OfficerLinks value={b.chairman} className="boards-card__officer-link" />
                       </p>
                     </div>
                   </div>

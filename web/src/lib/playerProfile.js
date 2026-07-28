@@ -14,12 +14,22 @@ function normalizeName(value) {
   return stripped ? stripped.toLowerCase() : null
 }
 
+// A board's "Chairman:"/"CEO:" cell occasionally credits more than one
+// person with the same office in a single string (South Africa's sheet
+// reads "Chairman: Srinidhi & Donald Baghwar", no CEO) — split on the
+// common joiners so each person is recognized as their own office-holder
+// rather than one unmatched combined name.
+export function splitOfficeHolders(value) {
+  if (!value || typeof value !== 'string') return []
+  return value.split(/\s*(?:&|,|\/|\band\b)\s*/i).map((s) => s.trim()).filter(Boolean)
+}
+
 export function findHomeBoard(data, name) {
   const key = normalizeName(name)
   if (!key || !data) return null
   for (const b of data.boards || []) {
-    if (normalizeName(b.chairman) === key) return { board: b, role: 'Chairman' }
-    if (normalizeName(b.ceo) === key) return { board: b, role: 'CEO' }
+    if (splitOfficeHolders(b.chairman).some((n) => normalizeName(n) === key)) return { board: b, role: 'Chairman' }
+    if (splitOfficeHolders(b.ceo).some((n) => normalizeName(n) === key)) return { board: b, role: 'CEO' }
     if ((b.players || []).some((p) => normalizeName(p) === key)) return { board: b, role: null }
   }
   return null
@@ -89,10 +99,7 @@ function resolveKnownAlias(rawName) {
 function boardCandidateNames(data, boardName) {
   const board = (data.boards || []).find((b) => b.name === boardName)
   if (!board) return []
-  const names = [...(board.players || [])]
-  if (board.chairman) names.push(board.chairman)
-  if (board.ceo) names.push(board.ceo)
-  return names
+  return [...(board.players || []), ...splitOfficeHolders(board.chairman), ...splitOfficeHolders(board.ceo)]
 }
 
 // A shortened roster entry only resolves to `targetKey` if it carries
