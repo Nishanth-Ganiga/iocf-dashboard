@@ -125,6 +125,19 @@ function emergingTalentBoards(data, name) {
     .map(([board]) => board)
 }
 
+// A player's name can independently show up in a board's `umpires` list too
+// (same board or a different one — umpiring assignments aren't restricted
+// to your own board) — real, verified overlap, not an inferred/fuzzy match.
+function boardsUmpiredFor(data, name) {
+  const key = normalizeName(name)
+  if (!key) return []
+  const boards = []
+  for (const b of data.boards || []) {
+    if ((b.umpires || []).some((u) => normalizeName(u.name) === key)) boards.push(b.name)
+  }
+  return boards
+}
+
 export function computeBadges(data, name, { home, squads, achievements, boards }) {
   const badges = []
 
@@ -176,6 +189,18 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: specialistAchievements[0].title,
       criteria: 'Awarded to players named winner of a specialist-skill award (Most Sixes, Emerging Player, Purple/Orange Cap, Best Captain, and similar) in any competition.',
       evidence: specialistAchievements.map(describeAchievement),
+    })
+  }
+  const testAchievements = achievements.filter(
+    (a) => a.source === 'World Test Championship' && ['Man of the Match', 'Best Batsman', 'Best Bowler'].includes(a.title)
+  )
+  if (testAchievements.length >= 2) {
+    badges.push({
+      key: 'test-purist',
+      label: 'Test Purist',
+      detail: `${testAchievements.length} World Test Championship match honors`,
+      criteria: 'Awarded to players with 2 or more Man of the Match/Best Batsman/Best Bowler honors specifically from World Test Championship matches.',
+      evidence: testAchievements.map(describeAchievement),
     })
   }
 
@@ -370,6 +395,16 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: `Picked in the ${data.emergingTalentLeague.name} squad`,
       criteria: 'Awarded to players picked into an Emerging Talent League squad roster.',
       evidence: etlBoards.map((b) => `Picked in ${b}'s Emerging Talent League squad`),
+    })
+  }
+  const umpireBoards = boardsUmpiredFor(data, name)
+  if (umpireBoards.length > 0) {
+    badges.push({
+      key: 'dual-role',
+      label: 'Dual Role: Player & Umpire',
+      detail: `Also officiates as an umpire for ${umpireBoards.join(', ')}`,
+      criteria: 'Awarded to players whose name also appears on a board’s umpire list.',
+      evidence: umpireBoards.map((b) => `Listed as an umpire for ${b}`),
     })
   }
   if ((home?.role === 'Chairman' || home?.role === 'CEO') && squads.length > 0) {

@@ -179,7 +179,7 @@ export function buildAchievementsIndex(data) {
     }
   }
 
-  const wtcMatches = data.fixtures?.tests?.completedMatches || []
+  const wtcMatches = data.fixtures?.tests?.worldTestChampionshipCompletedMatches || []
   for (const m of wtcMatches) {
     const detail = m['Test Name'] || [m['Hosting Board'], m['Opponents']].filter(Boolean).join(' vs ')
     addMatchHonors(index, 'World Test Championship', m, detail)

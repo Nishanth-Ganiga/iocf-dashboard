@@ -13,7 +13,7 @@ import {
   IconAward, IconCrown, IconCaptain, IconPurse, IconChampion, IconTrophy,
   IconMedal, IconDuel, IconWicketKing, IconStarsStack, IconFairPlay,
   IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat, IconGlobe,
-  IconCredits, IconRisingStar, IconSpecialistAward,
+  IconCredits, IconRisingStar, IconSpecialistAward, IconDualRole, IconTestPurist,
 } from '../lib/icons'
 import './PlayerDetail.css'
 
@@ -44,6 +44,8 @@ const BADGE_ICONS = {
   'rising-star': IconRisingStar,
   'player-executive': IconCrown,
   'hall-of-famer': IconHallOfFame,
+  'dual-role': IconDualRole,
+  'test-purist': IconTestPurist,
 }
 
 const TEAM_HONOR_LABELS = {

@@ -233,7 +233,7 @@ export default function Fixtures() {
   const upcomingWtcSeries = series.upcomingIocfWorldTestChampionshipMatches || []
   const upcomingWtcTests = tests.upcomingIocfWorldTestChampionshipMatches || []
   const completedSeries = series.completedSeries || []
-  const completedTests = tests.completedMatches || []
+  const completedTests = tests.worldTestChampionshipCompletedMatches || []
   const franchiseLeagues = series.franchiseLeagues || []
   const majorTournaments = series.majorTournaments || []
   const wtcPending = tests.wtcPendingSchedule || []
