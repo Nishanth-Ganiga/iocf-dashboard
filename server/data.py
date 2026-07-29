@@ -699,12 +699,23 @@ def _levenshtein(a, b):
     return prev[lb]
 
 
+# Afghanistan was dissolved as an IOCF board and replaced by Qatar - the
+# same players carried over, so its historical fixture rows ("Afghanistan"
+# as Hosting Board/Opponents/Winners) resolve to Qatar rather than being
+# dropped as an unregistered board. A future, newly-formed Afghanistan
+# board would be a distinct entity recorded under its own sheet, so this
+# alias only ever matches the literal historical spelling here.
+_BOARD_NAME_ALIASES = {
+    "afghanistan": "Qatar",
+}
+
+
 def _resolve_board_name(name):
     """Resolve a free-text board name from a fixture sheet to one of the 14
-    known boards - exact match first, then a case-insensitive Levenshtein
-    distance of 1 (catches typos like "Netherland"). Multi-team strings
-    ("A, B & C") and boards that were never registered (e.g. "Afghanistan")
-    resolve to None rather than being guessed at.
+    known boards - exact match first, then the historical alias table
+    above, then a case-insensitive Levenshtein distance of 1 (catches typos
+    like "Netherland"). Multi-team strings ("A, B & C") and boards that were
+    never registered resolve to None rather than being guessed at.
     """
     if not isinstance(name, str):
         return None
@@ -714,6 +725,9 @@ def _resolve_board_name(name):
     for board in BOARD_SHEETS:
         if cleaned.lower() == board.lower():
             return board
+    alias = _BOARD_NAME_ALIASES.get(cleaned.lower())
+    if alias:
+        return alias
     match = None
     for board in BOARD_SHEETS:
         if _levenshtein(cleaned.lower(), board.lower()) <= 1:
@@ -1490,6 +1504,8 @@ def get_lone_warrior(wb, tournament_updates):
             board = _clean(ws.cell(row=2, column=c).value)
             rep = _clean(ws.cell(row=3, column=c).value)
             if board and rep:
+                if isinstance(board, str):
+                    board = _BOARD_NAME_ALIASES.get(board.strip().lower(), board)
                 representatives[board] = rep
         matches = _read_lone_warrior_matches(ws)
     completed_matches = [m for m in matches if m.get("winner")]

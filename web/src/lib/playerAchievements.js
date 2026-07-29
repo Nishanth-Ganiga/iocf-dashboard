@@ -28,6 +28,20 @@ function normalizeName(value) {
   return stripped ? stripped.toLowerCase() : null
 }
 
+// Same as normalizeName, but also peels off a trailing "- XYZ" board-tag
+// suffix (as cleanEntryKey does in playerProfile.js). resolvePoolName
+// resolves a shortened match-honor name to a team roster's own full entry
+// — but that roster entry can itself still carry its board tag ("Ram
+// Thakkar - NZ"), so without this the achievement would get filed under a
+// key nothing ever looks it up by (every other lookup here uses a bare
+// board-roster name with no tag), silently hiding the honor from that
+// player's profile.
+function normalizeResolvedName(value) {
+  if (!value || typeof value !== 'string') return null
+  const key = cleanEntryKey(value)
+  return key || null
+}
+
 // Full Levenshtein edit distance — names here are short (a few words at
 // most) and each board roster only has a few dozen entries, so the plain
 // O(n*m) DP table is more than fast enough.
@@ -101,7 +115,7 @@ function pushAchievement(index, name, achievement, boardRosterIndex, boardName) 
   const resolved = boardRosterIndex && boardName
     ? resolveNameOnBoard(boardRosterIndex, name, boardName)
     : null
-  const key = normalizeName(resolved || name)
+  const key = normalizeResolvedName(resolved || name)
   if (!key) return
   if (!index.has(key)) index.set(key, [])
   index.get(key).push(achievement)
@@ -112,6 +126,16 @@ function boardRosterNames(boardRosterIndex, boardName) {
   if (!key) return []
   const members = boardRosterIndex.get(key)
   return members ? [...members.values()] : []
+}
+
+// A bare "Ram" honor entry is ambiguous against Newzealand's roster (also
+// has Gautam Shankara Ram, Ramith Acharya, Tukaram Parabat) — confirmed by
+// hand that every such entry means Ram Thakkar specifically, so this skips
+// the multi-candidate ambiguity check for that one name. Still only
+// applies when Ram Thakkar is actually in the match's own candidate pool —
+// never resolved outside the pool it was confirmed against.
+const KNOWN_HONOR_ALIASES = {
+  ram: 'ram thakkar',
 }
 
 // Match-honor fields ("Bhavin Kumar (LS)") only ever belong to one of the
@@ -129,6 +153,13 @@ function boardRosterNames(boardRosterIndex, boardName) {
 function resolvePoolName(rawName, poolNames) {
   const entryKey = cleanEntryKey(rawName)
   if (!entryKey || !poolNames || !poolNames.length) return null
+
+  const alias = KNOWN_HONOR_ALIASES[entryKey]
+  if (alias) {
+    const aliased = poolNames.find((c) => cleanEntryKey(c) === alias)
+    if (aliased) return aliased
+  }
+
   const matches = poolNames.filter((c) => {
     const candidateKey = cleanEntryKey(c)
     return candidateKey.length >= entryKey.length && shortNameMatches(entryKey, candidateKey)
@@ -196,6 +227,19 @@ const FRANCHISE_TAG_ALIASES = {
   lsg: 'lucknow super gaints',
 }
 
+// Afghanistan was dissolved as an IOCF board and replaced by Qatar — WTC
+// completed-match rows and the T20 World Cup's Group B still name
+// "Afghanistan" as the Hosting Board/Opponent/participant verbatim (that's
+// the historical record, left untouched), but resolving it against the
+// current 14-board list must land on Qatar so those match honors join
+// Qatar's own roster/candidate pool instead of going unresolved. A future,
+// newly-formed Afghanistan board would be a distinct entity — this alias
+// only fires when the schedule text says "Afghanistan" and is unrelated to
+// however that future board's own records get parsed.
+const BOARD_NAME_ALIASES = {
+  afghanistan: 'qatar',
+}
+
 // Resolves a team/board name parsed out of a Schedule string against the
 // known list for that league/tournament — exact match first, then the IPL
 // tag-alias table, then word-by-word fuzzy matching. Only trusts the fuzzy
@@ -206,6 +250,11 @@ function resolveTeamName(name, knownNames) {
   if (!target || !knownNames || !knownNames.length) return null
   for (const known of knownNames) {
     if (cleanTeamName(known) === target) return known
+  }
+  const boardAlias = BOARD_NAME_ALIASES[target]
+  if (boardAlias) {
+    const aliased = knownNames.find((known) => cleanTeamName(known) === boardAlias)
+    if (aliased) return aliased
   }
   const alias = FRANCHISE_TAG_ALIASES[target]
   if (alias) {

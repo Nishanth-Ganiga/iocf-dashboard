@@ -175,7 +175,16 @@ export function findFranchiseSquads(data, name) {
 // IOCF boards are mapped; role abbreviations ("c", "vc", "ds"...), trade
 // values ("41k"), and unrecognized codes are left out rather than guessed
 // — consistent with this codebase's "omit, never fabricate" rule.
+//
+// Afghanistan was dissolved and replaced by Qatar as an IOCF board — the
+// same players (Anas Asim, Saad Rizwan, Huzaifa Imran, Adnan Khalid...)
+// now sit on Qatar's roster, confirmed against Qatar's actual player list.
+// A future Afghanistan board will be a distinct, newly-formed entity, so
+// "Afg"/"Afghanistan" tags on existing records are mapped to Qatar rather
+// than left to point at a board that no longer has any roster to resolve
+// against.
 const BOARD_TAG_ALIASES = {
+  afg: 'Qatar', afghanistan: 'Qatar',
   aus: 'Australia', australia: 'Australia',
   ban: 'Bangladesh', bd: 'Bangladesh', bangladesh: 'Bangladesh',
   eng: 'England', england: 'England',
