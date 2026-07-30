@@ -56,16 +56,30 @@ function levenshtein(a, b) {
 
 // Many franchise-squad lines only carry a shortened first name ("Arnab" for
 // "Arnab Sarkar", "Nasrullah - Pak" for "Nasrullah Kapri") — the sheet's own
-// shorthand, not a parsing bug. normalizeName() only strips a trailing
-// "(...)" once; this also peels off a trailing "- XYZ" board suffix so the
-// leftover is just the person's name.
+// shorthand, not a parsing bug. Squad lines can also stack a board tag and a
+// trailing credits/role shorthand together ("Subaida (DS- Italy) - 1L",
+// "Ashiqui Ashi (C - Scot) - 5L") — normalizeName() only strips one trailing
+// "(...)", and only when it's the very last thing in the string, so a
+// trailing " - 1L" after the parenthetical defeats it entirely. This peels
+// off trailing "(...)" and "- XYZ" suffixes repeatedly, in whichever order
+// they appear, until neither pattern matches, so the leftover is just the
+// person's name.
 export function cleanEntryKey(rawName) {
-  let text = normalizeName(rawName) || ''
-  let m
-  while ((m = text.match(/\s*-\s*[a-z]+\s*$/))) {
-    text = text.slice(0, m.index).trim()
+  let text = (normalizeName(rawName) || rawName || '').toString().trim().toLowerCase()
+  for (let i = 0; i < 6; i++) {
+    const dash = text.match(/\s*-\s*[a-z0-9]+\s*$/)
+    if (dash) {
+      text = text.slice(0, dash.index).trim()
+      continue
+    }
+    const paren = text.match(/\s*\([^)]*\)\s*$/)
+    if (paren) {
+      text = text.slice(0, paren.index).trim()
+      continue
+    }
+    break
   }
-  return text
+  return text || null
 }
 
 export function shortNameMatches(entryKey, otherKey) {
@@ -121,15 +135,45 @@ export function boardCandidateNames(data, boardName) {
 // That last check is what keeps this safe from cross-board or
 // same-board-different-player false positives, at the cost of leaving a
 // genuinely ambiguous shortened name unresolved rather than guessing.
+//
+// Some squad lines carry no board tag at all ("Shibasis Nayak", "Ashutosh
+// Jha" — a fuller/typo'd name with nothing marking which board it's from).
+// Since there's no tag to scope the search, this only trusts a match there
+// when it's unique across *every* board's roster, not just the home
+// board's — same "exactly one candidate, or stay unresolved" rule, just
+// widened to the whole player pool instead of one board. A tag that
+// explicitly names a *different* board than the target's home board is
+// left alone (still returns false) — that's contradicting data, not
+// missing data, and overriding it would be guessing why it disagrees.
 function resolvesToTarget(data, entryName, targetKey, homeBoardName) {
   if (!homeBoardName) return false
   const tags = extractBoardTags(entryName)
-  if (tags.length !== 1 || tags[0] !== homeBoardName) return false
   const entryKey = cleanEntryKey(entryName)
   if (!entryKey) return false
-  const candidates = boardCandidateNames(data, homeBoardName)
-  const matches = candidates.filter((c) => shortNameMatches(entryKey, normalizeName(c)))
-  return matches.length === 1 && normalizeName(matches[0]) === targetKey
+
+  if (tags.length === 1) {
+    if (tags[0] !== homeBoardName) return false
+    const candidates = boardCandidateNames(data, homeBoardName)
+    const matches = candidates.filter((c) => shortNameMatches(entryKey, normalizeName(c)))
+    return matches.length === 1 && normalizeName(matches[0]) === targetKey
+  }
+
+  if (tags.length === 0) {
+    const candidates = allBoardCandidateNames(data)
+    const matches = candidates.filter((c) => shortNameMatches(entryKey, normalizeName(c)))
+    return matches.length === 1 && normalizeName(matches[0]) === targetKey
+  }
+
+  return false
+}
+
+// Every board's own candidate pool (players + Chairman/CEO), flattened —
+// the global fallback list resolvesToTarget uses when a squad entry has no
+// board tag at all to scope the search to one board.
+function allBoardCandidateNames(data) {
+  const list = []
+  for (const b of data.boards || []) list.push(...boardCandidateNames(data, b.name))
+  return list
 }
 
 // Every franchise-league team this player was picked into, across every

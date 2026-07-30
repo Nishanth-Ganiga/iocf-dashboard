@@ -141,18 +141,23 @@ const KNOWN_HONOR_ALIASES = {
 // Shared by resolvePoolName, upgradeToBoardCanonical and the global
 // fallback below. shortNameMatches is symmetric (it also matches a fuller
 // name down to a shorter one), but a franchise team's own roster entry is
-// often the shortened form ("Chiranjibi" for "Chiranjibi Samal") — only
-// ever widen a raw honor name to a fuller candidate, never shrink an
-// already-fuller name down to the roster's shorthand, or a genuine full
-// name gets clobbered into an unrelated shorter roster spelling. Only
-// trusts the result when exactly one candidate matches. `entryKeyOrRaw`
-// may be a raw name or an already-cleaned key.
-function resolveUniqueCandidate(entryKeyOrRaw, candidateNames, alreadyKey) {
+// often the shortened form ("Chiranjibi" for "Chiranjibi Samal") — within a
+// single match/squad's own small candidate pool, only ever widen a raw
+// honor name to a fuller candidate, never shrink an already-fuller name
+// down to the roster's shorthand, or a genuine full name gets clobbered
+// into an unrelated shorter roster spelling there. `allowShrink` lifts that
+// restriction for the untagged global-fallback case below, where the
+// candidate pool is every board's entire roster rather than one match's —
+// requiring a match to be unique across that whole pool is itself enough
+// of a safety bar to allow matching in either direction (this is exactly
+// what recovers "Shibasis Nayak" for the board roster's bare "Shibasis").
+// `entryKeyOrRaw` may be a raw name or an already-cleaned key.
+function resolveUniqueCandidate(entryKeyOrRaw, candidateNames, alreadyKey, allowShrink) {
   const entryKey = alreadyKey ? entryKeyOrRaw : cleanEntryKey(entryKeyOrRaw)
   if (!entryKey || !candidateNames || !candidateNames.length) return null
   const matches = candidateNames.filter((c) => {
     const candidateKey = cleanEntryKey(c)
-    return candidateKey.length >= entryKey.length && shortNameMatches(entryKey, candidateKey)
+    return (allowShrink || candidateKey.length >= entryKey.length) && shortNameMatches(entryKey, candidateKey)
   })
   return matches.length === 1 ? matches[0] : null
 }
@@ -180,14 +185,25 @@ function resolvePoolName(rawName, poolNames) {
 // carries exactly one board tag, chase that tag back to the named board's
 // own roster (same tag-resolution findFranchiseSquads already trusts) and
 // upgrade to the canonical spelling when exactly one candidate matches
-// there too. A no-op for entries with no tag or more than one (e.g. a
-// national-board roster name straight from rosterForBoard, which never
-// carries a tag to begin with).
-function upgradeToBoardCanonical(data, resolvedName) {
+// there too.
+//
+// Some squad entries carry no tag at all ("Shibasis Nayak", a fuller/typo'd
+// name with nothing marking which board it's from) — without a tag to scope
+// the search, this falls back to matching against every board's roster at
+// once, only trusting it when exactly one candidate anywhere matches. A tag
+// naming more than one board (ambiguous) or a board-roster name straight
+// from rosterForBoard (which never carries a tag to begin with, and is
+// already canonical) both correctly fall through to a no-op.
+function upgradeToBoardCanonical(data, resolvedName, globalCandidateNames) {
   const tags = extractBoardTags(resolvedName)
-  if (tags.length !== 1) return null
-  const candidates = boardCandidateNames(data, tags[0])
-  return resolveUniqueCandidate(resolvedName, candidates)
+  if (tags.length === 1) {
+    const candidates = boardCandidateNames(data, tags[0])
+    return resolveUniqueCandidate(resolvedName, candidates)
+  }
+  if (tags.length === 0) {
+    return resolveUniqueCandidate(resolvedName, globalCandidateNames, false, true)
+  }
+  return null
 }
 
 // Falls back to a global uniqueness check across every board's own roster
@@ -197,7 +213,7 @@ function upgradeToBoardCanonical(data, resolvedName) {
 // candidate across all 14 boards matches; ambiguous names (multiple boards
 // or multiple same-board players) correctly stay unresolved.
 function resolveGlobalName(rawName, globalCandidateNames) {
-  return resolveUniqueCandidate(rawName, globalCandidateNames)
+  return resolveUniqueCandidate(rawName, globalCandidateNames, false, true)
 }
 
 // Strips wrapper text around a playoff Schedule string ("Qualifier 1:
@@ -321,7 +337,7 @@ function addMatchHonors(index, source, match, detail, candidatePool, data, globa
     if (!raw) continue
     let resolved = candidatePool ? resolvePoolName(raw, candidatePool) : null
     if (resolved) {
-      resolved = upgradeToBoardCanonical(data, resolved) || resolved
+      resolved = upgradeToBoardCanonical(data, resolved, globalCandidateNames) || resolved
     } else {
       resolved = resolveGlobalName(raw, globalCandidateNames)
     }
@@ -431,7 +447,7 @@ export function buildAchievementsIndex(data) {
         const pool = matchCandidatePool(schedule, boardNames, rosterForBoard)
         const resolved = pool ? resolvePoolName(m.motm, pool) : null
         const finalResolved = resolved
-          ? upgradeToBoardCanonical(data, resolved) || resolved
+          ? upgradeToBoardCanonical(data, resolved, globalCandidateNames) || resolved
           : resolveGlobalName(m.motm, globalCandidateNames)
         pushAchievement(index, finalResolved || m.motm, {
           source: etl.name || 'Emerging Talent League 2026',
