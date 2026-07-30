@@ -20,7 +20,7 @@
 // candidate. That keeps this codebase's "never fabricate — omit rather
 // than guess" rule intact while fixing genuine typos/nicknames instead of
 // silently dropping them.
-import { splitOfficeHolders, cleanEntryKey, shortNameMatches, extractBoardTags, boardCandidateNames } from './playerProfile'
+import { splitOfficeHolders, cleanEntryKey, shortNameMatches, extractBoardTags, boardCandidateNames, resolveKnownAlias } from './playerProfile'
 
 function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
@@ -35,11 +35,15 @@ function normalizeName(value) {
 // Thakkar - NZ"), so without this the achievement would get filed under a
 // key nothing ever looks it up by (every other lookup here uses a bare
 // board-roster name with no tag), silently hiding the honor from that
-// player's profile.
+// player's profile. Also applies playerProfile.js's own manually-verified
+// shorthand aliases ("anand ajk"/"anand akj" -> "anand ajikumar") so every
+// spelling of the same person's name files under one canonical key instead
+// of splitting their honors across several.
 function normalizeResolvedName(value) {
   if (!value || typeof value !== 'string') return null
   const key = cleanEntryKey(value)
-  return key || null
+  if (!key) return null
+  return resolveKnownAlias(key) || key
 }
 
 // Full Levenshtein edit distance — names here are short (a few words at
@@ -119,6 +123,28 @@ function pushAchievement(index, name, achievement, boardRosterIndex, boardName) 
   if (!key) return
   if (!index.has(key)) index.set(key, [])
   index.get(key).push(achievement)
+}
+
+// Award winner/board fields occasionally credit more than one person at
+// once ("Arnab Sarkar & Nasrullah Kapri" / "Australia & Pakistan", Big Bash
+// League 2026's Most Sixes) — same "&"/","/"and" joiners splitOfficeHolders
+// already handles for board Chairman/CEO fields. When the winner and board
+// strings split into the same count, each person is paired with their own
+// board so both still get correctly board-scoped resolution; otherwise
+// (board doesn't name one per winner) each split name falls back to
+// unscoped resolution against the whole player pool.
+function pushAwardAchievement(index, winner, board, achievement, boardRosterIndex, singleBoardOnly) {
+  const winners = splitOfficeHolders(winner)
+  if (winners.length <= 1) {
+    pushAchievement(index, winner, achievement, singleBoardOnly ? boardRosterIndex : null, board)
+    return
+  }
+  const boards = splitOfficeHolders(board)
+  const pairedBoards = boards.length === winners.length ? boards : null
+  winners.forEach((w, i) => {
+    const b = pairedBoards ? pairedBoards[i] : null
+    pushAchievement(index, w, achievement, b && singleBoardOnly ? boardRosterIndex : null, b)
+  })
 }
 
 function boardRosterNames(boardRosterIndex, boardName) {
@@ -386,12 +412,12 @@ export function buildAchievementsIndex(data) {
   const wc = data.t20WorldCup
   if (wc) {
     for (const a of wc.awards || []) {
-      pushAchievement(index, a.winner, {
+      pushAwardAchievement(index, a.winner, a.board, {
         source: 'T20 World Cup 2026',
         title: a.award,
         detail: a.board,
         credits: a.credits,
-      }, boardRosterIndex, a.board)
+      }, boardRosterIndex, true)
     }
     for (const [stage, matches] of Object.entries(wc.stages || {})) {
       for (const m of matches) {
@@ -408,12 +434,12 @@ export function buildAchievementsIndex(data) {
       // Team-level trophies (Champions/Runners-up/Fair Play) carry a team
       // name rather than a player name and have no `team` field of their
       // own — only player awards get board-scoped resolution.
-      pushAchievement(index, a.winner, {
+      pushAwardAchievement(index, a.winner, a.board, {
         source: league.name,
         title: a.award,
         detail: a.team || a.board,
         credits: a.credits,
-      }, a.team ? boardRosterIndex : null, a.board)
+      }, boardRosterIndex, Boolean(a.team))
     }
     for (const m of league.matches || []) {
       const pool = matchCandidatePool(m.Schedule, teamNames, rosterForTeam)

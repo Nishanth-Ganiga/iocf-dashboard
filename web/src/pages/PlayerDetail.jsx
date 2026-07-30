@@ -97,7 +97,7 @@ export default function PlayerDetail() {
     )
   }
 
-  const { board, role } = home
+  const { board, role, former } = home
   const squads = findFranchiseSquads(data, name)
   const achievementsIndex = buildAchievementsIndex(data)
   const achievements = getAchievementsFor(achievementsIndex, name)
@@ -135,7 +135,7 @@ export default function PlayerDetail() {
               ))}
             </h1>
             <p className="text-dim pd-hero__board">
-              Represents{' '}
+              {former ? 'Formerly represented' : 'Represents'}{' '}
               <Link to={`/boards/${board.id}`} className="pd-hero__board-link">
                 {board.name}
               </Link>

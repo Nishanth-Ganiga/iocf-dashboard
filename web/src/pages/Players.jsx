@@ -4,7 +4,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
-import { findFranchiseSquads, splitOfficeHolders } from '../lib/playerProfile'
+import { findFranchiseSquads, splitOfficeHolders, FORMER_BOARD_MEMBER_NAMES } from '../lib/playerProfile'
 import { teamHonorFor } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
 import { IconAward, IconCrown, IconTrophy } from '../lib/icons'
@@ -74,6 +74,10 @@ export default function Players() {
     for (const name of b.players || []) {
       allPlayers.push({ name, board: b.name, boardId: b.id, role: null })
     }
+  }
+  for (const [name, boardName] of Object.entries(FORMER_BOARD_MEMBER_NAMES)) {
+    const board = boards.find((b) => b.name === boardName)
+    if (board) allPlayers.push({ name, board: board.name, boardId: board.id, role: null, former: true })
   }
 
   const q = query.trim().toLowerCase()
@@ -182,7 +186,7 @@ export default function Players() {
                           className="players-card__board text-faint"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {p.board}
+                          {p.former ? `Formerly ${p.board}` : p.board}
                         </Link>
                         {honor && (
                           <span

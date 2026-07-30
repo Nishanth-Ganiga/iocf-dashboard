@@ -27,12 +27,15 @@ export function splitOfficeHolders(value) {
 export function findHomeBoard(data, name) {
   const key = normalizeName(name)
   if (!key || !data) return null
+  const aliasKey = resolveKnownAlias(name)
   for (const b of data.boards || []) {
     if (splitOfficeHolders(b.chairman).some((n) => normalizeName(n) === key)) return { board: b, role: 'Chairman' }
     if (splitOfficeHolders(b.ceo).some((n) => normalizeName(n) === key)) return { board: b, role: 'CEO' }
-    if ((b.players || []).some((p) => normalizeName(p) === key)) return { board: b, role: null }
+    if ((b.players || []).some((p) => normalizeName(p) === key || (aliasKey && normalizeName(p) === aliasKey))) {
+      return { board: b, role: null }
+    }
   }
-  return null
+  return findFormerBoardMember(data, name)
 }
 
 // Full edit distance between two strings — used, like in
@@ -67,6 +70,11 @@ function levenshtein(a, b) {
 export function cleanEntryKey(rawName) {
   let text = (normalizeName(rawName) || rawName || '').toString().trim().toLowerCase()
   for (let i = 0; i < 6; i++) {
+    const colon = text.match(/\s*:\s*$/)
+    if (colon) {
+      text = text.slice(0, colon.index).trim()
+      continue
+    }
     const dash = text.match(/\s*-\s*[a-z0-9]+\s*$/)
     if (dash) {
       text = text.slice(0, dash.index).trim()
@@ -113,10 +121,52 @@ export function shortNameMatches(entryKey, otherKey) {
 const KNOWN_NAME_ALIASES = {
   'anand ajk': 'anand ajikumar',
   'anand akj': 'anand ajikumar',
+  'bhargab kashyap': 'bhagrab kashyap',
+  'bhargab': 'bhagrab kashyap',
+  'rahul sharma': 'rahul',
 }
 
-function resolveKnownAlias(rawName) {
+export function resolveKnownAlias(rawName) {
   return KNOWN_NAME_ALIASES[cleanEntryKey(rawName)] || null
+}
+
+// Players confirmed removed from their board's live roster since being
+// picked into these franchise squads/honors — their board.players entry is
+// gone, but the historical record (squad picks, awards) is real and still
+// belongs to them, so they resolve as a former member instead of vanishing
+// entirely. Each mapping is a specific, manually-confirmed fact (not a
+// guess): the board named here is the one they were actually on before
+// being removed. Keyed by the fuller/display name only (not every
+// shorthand) — that's the one entry Players.jsx lists in the directory;
+// findFormerBoardMember below still matches shorthand mentions elsewhere.
+export const FORMER_BOARD_MEMBER_NAMES = {
+  'Nadirsha Nachu': 'England',
+  'Rejith Mohan': 'England',
+  'Sreeju': 'England',
+  'Suman Byndoor': 'Newzealand',
+  'Saubhagya Gupta': 'Australia',
+}
+
+const FORMER_BOARD_MEMBERS = {
+  'nadirsha nachu': 'England',
+  'nadirsha': 'England',
+  'rejith mohan': 'England',
+  'rejith': 'England',
+  'sreeju': 'England',
+  'suman byndoor': 'Newzealand',
+  'suman': 'Newzealand',
+  'saubhagya gupta': 'Australia',
+  'saubhagya': 'Australia',
+}
+
+function findFormerBoardMember(data, name) {
+  const key = cleanEntryKey(name)
+  if (!key) return null
+  const boardName = FORMER_BOARD_MEMBERS[key]
+  if (!boardName) return null
+  const board = (data.boards || []).find((b) => b.name === boardName)
+  if (!board) return null
+  return { board, role: null, former: true }
 }
 
 // Every name tied to a board (players + Chairman/CEO, who occasionally get
@@ -234,7 +284,7 @@ const BOARD_TAG_ALIASES = {
   eng: 'England', england: 'England',
   ind: 'India', india: 'India',
   ita: 'Italy', italy: 'Italy',
-  ned: 'Netherlands', nl: 'Netherlands', netherlands: 'Netherlands',
+  ned: 'Netherlands', nl: 'Netherlands', nd: 'Netherlands', netherlands: 'Netherlands',
   nz: 'Newzealand', newzealand: 'Newzealand',
   pak: 'Pakistan', pakistan: 'Pakistan',
   qatar: 'Qatar', qaatr: 'Qatar', qat: 'Qatar',
