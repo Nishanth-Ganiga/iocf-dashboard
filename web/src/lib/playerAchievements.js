@@ -20,7 +20,7 @@
 // candidate. That keeps this codebase's "never fabricate — omit rather
 // than guess" rule intact while fixing genuine typos/nicknames instead of
 // silently dropping them.
-import { splitOfficeHolders, cleanEntryKey, shortNameMatches } from './playerProfile'
+import { splitOfficeHolders, cleanEntryKey, shortNameMatches, extractBoardTags, boardCandidateNames } from './playerProfile'
 
 function normalizeName(value) {
   if (!value || typeof value !== 'string') return null
@@ -138,18 +138,28 @@ const KNOWN_HONOR_ALIASES = {
   ram: 'ram thakkar',
 }
 
+// Shared by resolvePoolName, upgradeToBoardCanonical and the global
+// fallback below. shortNameMatches is symmetric (it also matches a fuller
+// name down to a shorter one), but a franchise team's own roster entry is
+// often the shortened form ("Chiranjibi" for "Chiranjibi Samal") — only
+// ever widen a raw honor name to a fuller candidate, never shrink an
+// already-fuller name down to the roster's shorthand, or a genuine full
+// name gets clobbered into an unrelated shorter roster spelling. Only
+// trusts the result when exactly one candidate matches. `entryKeyOrRaw`
+// may be a raw name or an already-cleaned key.
+function resolveUniqueCandidate(entryKeyOrRaw, candidateNames, alreadyKey) {
+  const entryKey = alreadyKey ? entryKeyOrRaw : cleanEntryKey(entryKeyOrRaw)
+  if (!entryKey || !candidateNames || !candidateNames.length) return null
+  const matches = candidateNames.filter((c) => {
+    const candidateKey = cleanEntryKey(c)
+    return candidateKey.length >= entryKey.length && shortNameMatches(entryKey, candidateKey)
+  })
+  return matches.length === 1 ? matches[0] : null
+}
+
 // Match-honor fields ("Bhavin Kumar (LS)") only ever belong to one of the
 // two sides that actually played that match — a much narrower, safer
-// candidate pool than a whole board/team roster. Reuses the same
-// cleanEntryKey/shortNameMatches fuzzy resolver playerProfile.js already
-// trusts for shortened franchise-squad names, scoped here to that pool
-// instead of a single roster, and only when exactly one member matches.
-// shortNameMatches is symmetric (it also matches a fuller name down to a
-// shorter one), but a franchise team's own roster entry is often the
-// shortened form ("Chiranjibi" for "Chiranjibi Samal") — only ever widen
-// a raw honor name to a fuller candidate, never shrink an already-fuller
-// name down to the roster's shorthand, or a genuine full name gets
-// clobbered into an unrelated shorter roster spelling.
+// candidate pool than a whole board/team roster.
 function resolvePoolName(rawName, poolNames) {
   const entryKey = cleanEntryKey(rawName)
   if (!entryKey || !poolNames || !poolNames.length) return null
@@ -160,11 +170,34 @@ function resolvePoolName(rawName, poolNames) {
     if (aliased) return aliased
   }
 
-  const matches = poolNames.filter((c) => {
-    const candidateKey = cleanEntryKey(c)
-    return candidateKey.length >= entryKey.length && shortNameMatches(entryKey, candidateKey)
-  })
-  return matches.length === 1 ? matches[0] : null
+  return resolveUniqueCandidate(entryKey, poolNames, true)
+}
+
+// A franchise team's own squad listing is often itself a shortened/tagged
+// entry ("Gopi(Ind)") rather than the player's home-board canonical name
+// ("Gopikrishnan SV") — resolvePoolName can only match against what the
+// pool actually contains, so once it lands on a squad-shorthand entry that
+// carries exactly one board tag, chase that tag back to the named board's
+// own roster (same tag-resolution findFranchiseSquads already trusts) and
+// upgrade to the canonical spelling when exactly one candidate matches
+// there too. A no-op for entries with no tag or more than one (e.g. a
+// national-board roster name straight from rosterForBoard, which never
+// carries a tag to begin with).
+function upgradeToBoardCanonical(data, resolvedName) {
+  const tags = extractBoardTags(resolvedName)
+  if (tags.length !== 1) return null
+  const candidates = boardCandidateNames(data, tags[0])
+  return resolveUniqueCandidate(resolvedName, candidates)
+}
+
+// Falls back to a global uniqueness check across every board's own roster
+// (players + Chairman/CEO) when the match's own two-sided pool has no
+// candidate at all — e.g. a player traded off the roster a Schedule string
+// still names for a historical fixture. Only trusted when exactly one
+// candidate across all 14 boards matches; ambiguous names (multiple boards
+// or multiple same-board players) correctly stay unresolved.
+function resolveGlobalName(rawName, globalCandidateNames) {
+  return resolveUniqueCandidate(rawName, globalCandidateNames)
 }
 
 // Strips wrapper text around a playoff Schedule string ("Qualifier 1:
@@ -282,13 +315,27 @@ const MATCH_HONOR_FIELDS = [
   ['Best Bowler', 'Best Bowler'],
 ]
 
-function addMatchHonors(index, source, match, detail, candidatePool) {
+function addMatchHonors(index, source, match, detail, candidatePool, data, globalCandidateNames) {
   for (const [field, title] of MATCH_HONOR_FIELDS) {
     const raw = match[field]
     if (!raw) continue
-    const resolved = candidatePool ? resolvePoolName(raw, candidatePool) : null
+    let resolved = candidatePool ? resolvePoolName(raw, candidatePool) : null
+    if (resolved) {
+      resolved = upgradeToBoardCanonical(data, resolved) || resolved
+    } else {
+      resolved = resolveGlobalName(raw, globalCandidateNames)
+    }
     pushAchievement(index, resolved || raw, { source, title, detail })
   }
+}
+
+// Flattens buildBoardRosterIndex's per-board maps into one list of every
+// board's canonical player/Chairman/CEO names — the global fallback pool
+// for match honors whose own scoped candidate pool comes up empty.
+function flattenRosterIndex(boardRosterIndex) {
+  const list = []
+  for (const members of boardRosterIndex.values()) list.push(...members.values())
+  return list
 }
 
 // Builds the two-sided player-name candidate pool for a match's Schedule
@@ -318,6 +365,7 @@ export function buildAchievementsIndex(data) {
   const boardRosterIndex = buildBoardRosterIndex(data.boards)
   const boardNames = (data.boards || []).map((b) => b.name)
   const rosterForBoard = (boardName) => boardRosterNames(boardRosterIndex, boardName)
+  const globalCandidateNames = flattenRosterIndex(boardRosterIndex)
 
   const wc = data.t20WorldCup
   if (wc) {
@@ -332,7 +380,7 @@ export function buildAchievementsIndex(data) {
     for (const [stage, matches] of Object.entries(wc.stages || {})) {
       for (const m of matches) {
         const pool = matchCandidatePool(m.Schedule, boardNames, rosterForBoard)
-        addMatchHonors(index, `T20 World Cup 2026 · ${stage}`, m, m.Schedule, pool)
+        addMatchHonors(index, `T20 World Cup 2026 · ${stage}`, m, m.Schedule, pool, data, globalCandidateNames)
       }
     }
   }
@@ -353,7 +401,7 @@ export function buildAchievementsIndex(data) {
     }
     for (const m of league.matches || []) {
       const pool = matchCandidatePool(m.Schedule, teamNames, rosterForTeam)
-      addMatchHonors(index, league.name, m, m.Schedule, pool)
+      addMatchHonors(index, league.name, m, m.Schedule, pool, data, globalCandidateNames)
     }
   }
 
@@ -372,7 +420,7 @@ export function buildAchievementsIndex(data) {
     const detail = m['Test Name'] || [m['Hosting Board'], m['Opponents']].filter(Boolean).join(' vs ')
     const schedule = [m['Hosting Board'], m['Opponents']].filter(Boolean).join(' vs ')
     const pool = matchCandidatePool(schedule, boardNames, rosterForBoard)
-    addMatchHonors(index, 'World Test Championship', m, detail, pool)
+    addMatchHonors(index, 'World Test Championship', m, detail, pool, data, globalCandidateNames)
   }
 
   const etl = data.emergingTalentLeague
@@ -382,7 +430,10 @@ export function buildAchievementsIndex(data) {
         const schedule = [m.host, m.opponent].filter(Boolean).join(' vs ')
         const pool = matchCandidatePool(schedule, boardNames, rosterForBoard)
         const resolved = pool ? resolvePoolName(m.motm, pool) : null
-        pushAchievement(index, resolved || m.motm, {
+        const finalResolved = resolved
+          ? upgradeToBoardCanonical(data, resolved) || resolved
+          : resolveGlobalName(m.motm, globalCandidateNames)
+        pushAchievement(index, finalResolved || m.motm, {
           source: etl.name || 'Emerging Talent League 2026',
           title: 'Man of the Match',
           detail: schedule,

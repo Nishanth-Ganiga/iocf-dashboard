@@ -206,7 +206,7 @@ function tagToBoard(tag) {
   return BOARD_TAG_ALIASES[key] || null
 }
 
-function extractBoardTags(rawName) {
+export function extractBoardTags(rawName) {
   if (!rawName) return []
   const boards = new Set()
   for (const paren of rawName.match(/\(([^)]+)\)/g) || []) {
