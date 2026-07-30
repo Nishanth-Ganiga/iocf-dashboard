@@ -27,6 +27,36 @@
   line-height: 1.5;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Leaderboard tab toggle                                                  */
+/* ---------------------------------------------------------------------- */
+.achievers-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.achievers-tab {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text-dim);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s var(--ease-out);
+}
+.achievers-tab:hover {
+  border-color: var(--ioc-neon);
+  color: var(--ioc-text);
+  transform: translateY(-1px);
+}
+.achievers-tab.is-active {
+  background: rgba(212, 175, 55, 0.16);
+  border-color: var(--ioc-gold);
+  color: var(--ioc-gold-bright);
+}
+
 .achievers-table {
   display: flex;
   flex-direction: column;
@@ -179,6 +209,72 @@
 .achievers-row__score b {
   color: var(--ioc-gold-bright);
   font-size: 1rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Top Badge Holders — expand-in-place row                                */
+/* ---------------------------------------------------------------------- */
+.achievers-row--badges {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  cursor: default;
+}
+.achievers-row--badges:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.achievers-row__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.achievers-row--badges:hover .achievers-row__main {
+  background: rgba(255, 255, 255, 0.03);
+}
+.achievers-row--badges.is-expanded .achievers-row__main {
+  margin-bottom: 14px;
+}
+
+.achievers-row__badges-panel {
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+  animation: playersAchvReveal 0.3s var(--ease-out) both;
+}
+@keyframes playersAchvReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.achievers-row__badges-board-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: var(--ioc-gold);
+  font-weight: 600;
+}
+.achievers-row__badges-board-link:hover {
+  color: var(--ioc-gold-bright);
+}
+
+.achievers-badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.achievers-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--ioc-gold);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
 }
 
 @media (max-width: 780px) {

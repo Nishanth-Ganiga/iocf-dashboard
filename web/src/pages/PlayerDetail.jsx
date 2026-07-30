@@ -6,47 +6,13 @@ import Badge from '../components/Badge'
 import FlagIcon from '../components/FlagIcon'
 import { buildAchievementsIndex, getAchievementsFor } from '../lib/playerAchievements'
 import { findHomeBoard, findFranchiseSquads, representedBoards } from '../lib/playerProfile'
-import { computeBadges, teamHonorFor } from '../lib/playerBadges'
+import { computeBadges, teamHonorFor, BADGE_ICONS } from '../lib/playerBadges'
 import { formatCredits } from '../lib/badges'
 import { knownBoardIdentity } from '../lib/boardIdentity'
 import {
-  IconAward, IconCrown, IconCaptain, IconPurse, IconChampion, IconTrophy,
-  IconMedal, IconDuel, IconWicketKing, IconStarsStack, IconFairPlay,
-  IconHallOfFame, IconEarth, IconGem, IconJourney, IconBat, IconGlobe,
-  IconCredits, IconRisingStar, IconSpecialistAward, IconDualRole, IconTestPurist,
+  IconAward, IconCrown, IconCaptain, IconPurse, IconTrophy,
 } from '../lib/icons'
 import './PlayerDetail.css'
-
-// One icon per badge key — picked from the shared icon set, no new library.
-const BADGE_ICONS = {
-  'serial-winner': IconMedal,
-  'run-machine': IconBat,
-  'wicket-king': IconWicketKing,
-  'award-magnet': IconStarsStack,
-  'specialist-award': IconSpecialistAward,
-  'world-champion': IconEarth,
-  'world-cup-hero': IconGlobe,
-  'franchise-champion': IconChampion,
-  'franchise-serial-champion': IconTrophy,
-  'franchise-runner-up': IconMedal,
-  'franchise-fair-play': IconFairPlay,
-  'big-money-buy': IconCredits,
-  'player-of-tournament': IconTrophy,
-  'lone-warrior-champion': IconDuel,
-  'lone-warrior-finalist': IconDuel,
-  'all-format-star': IconStarsStack,
-  'captains-armband': IconCaptain,
-  'vice-captains-armband': IconCaptain,
-  'marquee-signing': IconGem,
-  'direct-signing': IconPurse,
-  'franchise-veteran': IconJourney,
-  'multi-board-journeyman': IconJourney,
-  'rising-star': IconRisingStar,
-  'player-executive': IconCrown,
-  'hall-of-famer': IconHallOfFame,
-  'dual-role': IconDualRole,
-  'test-purist': IconTestPurist,
-}
 
 const TEAM_HONOR_LABELS = {
   champion: 'Champions',

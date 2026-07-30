@@ -1,4 +1,43 @@
 import { cleanEntryKey, shortNameMatches, boardCandidateNames } from './playerProfile'
+import {
+  IconMedal, IconBat, IconWicketKing, IconStarsStack, IconSpecialistAward, IconEarth,
+  IconGlobe, IconChampion, IconTrophy, IconFairPlay, IconCredits, IconDuel, IconCaptain,
+  IconGem, IconPurse, IconJourney, IconRisingStar, IconCrown, IconHallOfFame, IconDualRole,
+  IconTestPurist,
+} from './icons'
+
+// One icon per badge key — shared by PlayerDetail.jsx's badge cabinet and
+// Achievers.jsx's Top Badge Holders leaderboard, so both surfaces render
+// the exact same icon for a given badge.
+export const BADGE_ICONS = {
+  'serial-winner': IconMedal,
+  'run-machine': IconBat,
+  'wicket-king': IconWicketKing,
+  'award-magnet': IconStarsStack,
+  'specialist-award': IconSpecialistAward,
+  'world-champion': IconEarth,
+  'world-cup-hero': IconGlobe,
+  'franchise-champion': IconChampion,
+  'franchise-serial-champion': IconTrophy,
+  'franchise-runner-up': IconMedal,
+  'franchise-fair-play': IconFairPlay,
+  'big-money-buy': IconCredits,
+  'player-of-tournament': IconTrophy,
+  'lone-warrior-champion': IconDuel,
+  'lone-warrior-finalist': IconDuel,
+  'all-format-star': IconStarsStack,
+  'captains-armband': IconCaptain,
+  'vice-captains-armband': IconCaptain,
+  'marquee-signing': IconGem,
+  'direct-signing': IconPurse,
+  'franchise-veteran': IconJourney,
+  'multi-board-journeyman': IconJourney,
+  'rising-star': IconRisingStar,
+  'player-executive': IconCrown,
+  'hall-of-famer': IconHallOfFame,
+  'dual-role': IconDualRole,
+  'test-purist': IconTestPurist,
+}
 
 // Derives a player's "IOCF Badges" — a cabinet of earned honors computed
 // purely from data already surfaced elsewhere (the achievements index and
