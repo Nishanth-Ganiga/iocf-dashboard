@@ -16,6 +16,7 @@ import {
   IconChampion,
   IconAward,
   IconStarsStack,
+  IconSpecialistAward,
 } from '../lib/icons'
 
 const MODULES = [
@@ -26,6 +27,7 @@ const MODULES = [
   { label: 'Tournaments', to: '/tournaments', Icon: IconTrophy },
   { label: 'Credits Ranking', to: '/rankings', Icon: IconPodium },
   { label: 'Top Achievers', to: '/achievers', Icon: IconStarsStack },
+  { label: 'Top Badge Holders', to: '/badge-holders', Icon: IconSpecialistAward },
   { label: 'Board Rankings', to: '/board-rankings', Icon: IconBoard },
   { label: 'Umpire Rankings', to: '/umpire-rankings', Icon: IconUmpire },
   { label: 'Board Comparator', to: '/compare', Icon: IconChampion },

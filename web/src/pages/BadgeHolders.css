@@ -1,0 +1,207 @@
+/* Badge Holders module — top-30 IOCF Badge leaderboard, own route so its
+   heavier per-player badge computation only runs when this page is
+   visited. Mirrors Achievers.css's row/bar/rank pattern. */
+
+.bh-search {
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ioc-text);
+  font-size: 0.85rem;
+  min-width: 240px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.bh-search::placeholder {
+  color: var(--ioc-text-faint);
+}
+.bh-search:focus {
+  border-color: var(--ioc-neon);
+  box-shadow: 0 0 16px rgba(52, 224, 255, 0.2);
+}
+
+.bh-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.bh-table {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.bh-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  animation: cardRiseIn 0.45s var(--ease-out) both;
+}
+.bh-table > *:nth-child(1) { animation-delay: 0.02s; }
+.bh-table > *:nth-child(2) { animation-delay: 0.05s; }
+.bh-table > *:nth-child(3) { animation-delay: 0.08s; }
+.bh-table > *:nth-child(4) { animation-delay: 0.11s; }
+.bh-table > *:nth-child(5) { animation-delay: 0.14s; }
+.bh-table > *:nth-child(6) { animation-delay: 0.17s; }
+.bh-table > *:nth-child(7) { animation-delay: 0.2s; }
+.bh-table > *:nth-child(n+8) { animation-delay: 0.23s; }
+.bh-row:last-child {
+  border-bottom: none;
+}
+.bh-row--top {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
+}
+
+.bh-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));
+  transition: width 0.6s var(--ease-out);
+  pointer-events: none;
+}
+.bh-row > *:not(.bh-row__bar) {
+  position: relative;
+  z-index: 1;
+}
+
+.bh-row__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.bh-row__main:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
+  box-shadow: -3px 0 0 var(--ioc-gold);
+}
+.bh-row.is-expanded .bh-row__main {
+  box-shadow: -3px 0 0 var(--ioc-gold);
+}
+
+.bh-row__rank {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-display, 'Rajdhani'), var(--sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ioc-text-dim);
+  transition: transform 0.3s var(--ease-out);
+}
+.bh-row__main:hover .bh-row__rank {
+  transform: scale(1.12) rotate(-4deg);
+}
+.bh-row__rank--1 {
+  font-size: 1.6rem;
+}
+.bh-row__rank--2 {
+  font-size: 1.4rem;
+}
+.bh-row__rank--3 {
+  font-size: 1.3rem;
+}
+
+.bh-row__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bh-row__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ioc-text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bh-row__name:hover {
+  color: var(--ioc-gold);
+}
+
+.bh-row__board {
+  font-size: 0.74rem;
+}
+
+.bh-row__count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+.bh-row__count b {
+  color: var(--ioc-gold-bright);
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Expanded badge panel                                                    */
+/* ---------------------------------------------------------------------- */
+.bh-row__panel {
+  padding: 0 16px 16px;
+  animation: bhPanelReveal 0.3s var(--ease-out) both;
+}
+@keyframes bhPanelReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bh-row__board-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: var(--ioc-gold);
+  font-weight: 600;
+}
+.bh-row__board-link:hover {
+  color: var(--ioc-gold-bright);
+}
+
+.bh-badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bh-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--ioc-gold);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+}
+
+@media (max-width: 640px) {
+  .bh-search {
+    width: 100%;
+    min-width: 0;
+  }
+  .bh-row__main {
+    gap: 10px;
+    padding: 12px 10px;
+  }
+  .bh-row__rank {
+    width: 32px;
+  }
+}
