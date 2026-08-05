@@ -1,28 +1,29 @@
 import { boardCode } from '../lib/badges'
-import { KiwiBirdPath } from './MascotIcon'
 
 // A procedurally-built shield crest for one of the 14 known IOCF boards -
-// there's no real board logo artwork available (no image-gen tool, no
-// fetchable stock art in this environment), so this stands in as a
-// genuine "team crest" rather than a plain initials circle: a shield
-// silhouette filled with the board's real national colors, the board's
-// mascot centered large, and (at large enough render sizes) its short
-// code in a ribbon along the base - the same layout language real
-// sports-team crests use.
+// there's no real board *logo* artwork available, so this stands in as a
+// genuine "team crest": a shield silhouette filled with the board's real
+// national colors, the board's real mascot artwork centered large, and (at
+// large enough render sizes) its short code in a ribbon along the base -
+// the same layout language real sports-team crests use.
 //
-// Pure SVG (crisp at any size, no image request) - `identity` is the
-// BOARD_IDENTITY entry (must have `.crest`), `size` is the render box in
-// px, matching how <Badge> already sizes itself. Below ~34px the code
-// ribbon's text stops being legible (it's rendered at a fixed fraction of
-// the shield regardless of `size`, since SVG scales as one unit), so it's
-// dropped entirely rather than shipping a blurry sub-pixel label - the
-// mascot alone reads better at a glance at small sizes anyway.
+// Pure SVG shield (crisp at any size, no image request for the shield
+// itself) with the mascot's raster artwork (identity.mascotImage, see
+// boardIdentity.js) dropped in via <image> - `identity` is the
+// BOARD_IDENTITY entry (must have `.crest` and `.mascotImage`), `size` is
+// the render box in px, matching how <Badge> already sizes itself. Below
+// ~34px the code ribbon's text stops being legible (it's rendered at a
+// fixed fraction of the shield regardless of `size`, since SVG scales as
+// one unit), so it's dropped entirely rather than shipping a blurry
+// sub-pixel label - the mascot alone reads better at a glance at small
+// sizes anyway.
 const RIBBON_MIN_SIZE = 34
 
 export default function BoardCrest({ name, identity, size = 48 }) {
   const { primary, secondary } = identity.crest
   const code = boardCode(name)
   const gradientId = `crest-grad-${name.replace(/[^a-zA-Z0-9]/g, '')}`
+  const clipId = `crest-clip-${name.replace(/[^a-zA-Z0-9]/g, '')}`
   const showRibbon = size >= RIBBON_MIN_SIZE
 
   return (
@@ -39,6 +40,9 @@ export default function BoardCrest({ name, identity, size = 48 }) {
           <stop offset="0%" stopColor={primary} />
           <stop offset="100%" stopColor={secondary} stopOpacity="0.85" />
         </linearGradient>
+        <clipPath id={clipId}>
+          <path d="M50 2 L94 16 V56 C94 86 74 104 50 114 C26 104 6 86 6 56 V16 Z" />
+        </clipPath>
       </defs>
 
       {/* Shield outline */}
@@ -56,23 +60,23 @@ export default function BoardCrest({ name, identity, size = 48 }) {
         strokeWidth="1.5"
       />
 
-      {/* Mascot - shifted up to leave room for the ribbon when it's
-          shown, otherwise centered in the full shield body. New Zealand's
-          mascot is a real SVG shape (KiwiBirdPath) instead of a <text>
-          emoji character - there's no kiwi-bird emoji in Unicode, only
-          the kiwi-fruit one, which would mislabel the mascot. */}
-      {identity.mascotName === 'Kiwi Bird' ? (
-        <KiwiBirdPath x={50} y={showRibbon ? 52 : 60} scale={showRibbon ? 1.15 : 1.4} />
-      ) : (
-        <text
-          x="50"
-          y={showRibbon ? 52 : 60}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={showRibbon ? 42 : 50}
-        >
-          {identity.mascot}
-        </text>
+      {/* Mascot artwork - the source images are full-body portrait
+          illustrations, so at crest size the interesting part is the
+          head/torso, not the whole figure. "slice" + a source box taller
+          than it is wide crops in from the top (face-first) rather than
+          squeezing the whole body into the shield. Clipped to the shield
+          outline so it never spills past the crest edges; shifted up to
+          leave room for the ribbon when it's shown. */}
+      {identity.mascotImage && (
+        <image
+          href={identity.mascotImage}
+          x={showRibbon ? 8 : 3}
+          y={showRibbon ? 4 : 4}
+          width={showRibbon ? 84 : 94}
+          height={showRibbon ? 78 : 96}
+          preserveAspectRatio="xMidYMin slice"
+          clipPath={`url(#${clipId})`}
+        />
       )}
 
       {showRibbon && (
@@ -96,3 +100,4 @@ export default function BoardCrest({ name, identity, size = 48 }) {
     </svg>
   )
 }
+

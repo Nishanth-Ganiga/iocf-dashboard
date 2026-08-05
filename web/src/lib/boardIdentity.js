@@ -18,6 +18,13 @@
 // other badge (players, stadiums, tournaments) uses — a real team crest
 // wouldn't recolor itself based on a hash of its own name.
 //
+// `mascotImage` is each board's real mascot artwork (statically served
+// from public/mascots/ — see FlagIcon.jsx's comment for why static assets
+// live under public/ rather than the repo's top-level Images/ folder).
+// Every known board has one; `mascotName` is the plain-text label shown
+// alongside it (MascotIcon.jsx renders mascotImage, never falls back to
+// an emoji glyph).
+//
 // `instagram` is each board's real, official Instagram page (as given by
 // the user) — used to render a working "Contact this board" button
 // wherever a board is shown in detail (Contact directory, BoardDetail).
@@ -27,72 +34,86 @@
 // sports teams having an animal nickname.
 export const BOARD_IDENTITY = {
   Australia: {
-    flagCode: 'au', flagEmoji: '🇦🇺', mascot: '🦘', mascotName: 'Kangaroo',
+    flagCode: 'au', flagEmoji: '🇦🇺', mascotName: 'Kangaroo',
+    mascotImage: '/mascots/australia.png',
     crest: { primary: '#006B3C', secondary: '#FFCC00' },
     instagram: 'https://www.instagram.com/cricketaustralia_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Bangladesh: {
-    flagCode: 'bd', flagEmoji: '🇧🇩', mascot: '🐅', mascotName: 'Bengal Tiger',
+    flagCode: 'bd', flagEmoji: '🇧🇩', mascotName: 'Bengal Tiger',
+    mascotImage: '/mascots/bangladesh.png',
     crest: { primary: '#006a4e', secondary: '#f42a41' },
     instagram: 'https://www.instagram.com/bangladeshoc_iocf?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   England: {
-    flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascot: '🦁', mascotName: 'Lion',
+    flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascotName: 'Lion',
+    mascotImage: '/mascots/england.png',
     crest: { primary: '#12225c', secondary: '#c8102e' },
     instagram: 'https://www.instagram.com/england_onlinecricket?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   India: {
-    flagCode: 'in', flagEmoji: '🇮🇳', mascot: '🐘', mascotName: 'Elephant',
+    flagCode: 'in', flagEmoji: '🇮🇳', mascotName: 'Elephant',
+    mascotImage: '/mascots/india.png',
     crest: { primary: '#1a3fa0', secondary: '#ff9933' },
     instagram: 'https://www.instagram.com/iocb_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Italy: {
-    flagCode: 'it', flagEmoji: '🇮🇹', mascot: '🐺', mascotName: 'Roman Wolf',
+    flagCode: 'it', flagEmoji: '🇮🇹', mascotName: 'Roman Wolf',
+    mascotImage: '/mascots/italy.png',
     crest: { primary: '#008C45', secondary: '#CD212A' },
     instagram: 'https://www.instagram.com/italy_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Netherlands: {
-    flagCode: 'nl', flagEmoji: '🇳🇱', mascot: '🦊', mascotName: 'Fox',
+    flagCode: 'nl', flagEmoji: '🇳🇱', mascotName: 'Fox',
+    mascotImage: '/mascots/netherlands.png',
     crest: { primary: '#ff6c2f', secondary: '#21468b' },
     instagram: 'https://www.instagram.com/boardnetherlands?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Newzealand: {
-    flagCode: 'nz', flagEmoji: '🇳🇿', mascot: '🥝', mascotName: 'Kiwi Bird',
+    flagCode: 'nz', flagEmoji: '🇳🇿', mascotName: 'Kiwi Bird',
+    mascotImage: '/mascots/newzealand.png',
     crest: { primary: '#0a0a0a', secondary: '#c0c0c0' },
     instagram: 'https://www.instagram.com/newzealand_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Pakistan: {
-    flagCode: 'pk', flagEmoji: '🇵🇰', mascot: '🦅', mascotName: 'Falcon',
+    flagCode: 'pk', flagEmoji: '🇵🇰', mascotName: 'Falcon',
+    mascotImage: '/mascots/pakistan.png',
     crest: { primary: '#01411c', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/pakistan_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Qatar: {
-    flagCode: 'qa', flagEmoji: '🇶🇦', mascot: '🐎', mascotName: 'Arabian Horse',
+    flagCode: 'qa', flagEmoji: '🇶🇦', mascotName: 'Arabian Horse',
+    mascotImage: '/mascots/qatar.png',
     crest: { primary: '#8a1538', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/iocf_qatar?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Scotland: {
-    flagCode: 'gb-sct', flagEmoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', mascot: '🦄', mascotName: 'Unicorn',
+    flagCode: 'gb-sct', flagEmoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', mascotName: 'Unicorn',
+    mascotImage: '/mascots/scotland.png',
     crest: { primary: '#0065bd', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/scotland_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   'South Africa': {
-    flagCode: 'za', flagEmoji: '🇿🇦', mascot: '🦏', mascotName: 'Rhino',
+    flagCode: 'za', flagEmoji: '🇿🇦', mascotName: 'Rhino',
+    mascotImage: '/mascots/south-africa.png',
     crest: { primary: '#007749', secondary: '#ffb612' },
     instagram: 'https://www.instagram.com/cric.sa_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   Srilanka: {
-    flagCode: 'lk', flagEmoji: '🇱🇰', mascot: '🐻', mascotName: 'Bear',
+    flagCode: 'lk', flagEmoji: '🇱🇰', mascotName: 'Bear',
+    mascotImage: '/mascots/srilanka.png',
     crest: { primary: '#8d153a', secondary: '#ffb700' },
     instagram: 'https://www.instagram.com/srilankaoc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   UAE: {
-    flagCode: 'ae', flagEmoji: '🇦🇪', mascot: '🐪', mascotName: 'Camel',
+    flagCode: 'ae', flagEmoji: '🇦🇪', mascotName: 'Camel',
+    mascotImage: '/mascots/uae.png',
     crest: { primary: '#00732f', secondary: '#ff0000' },
     instagram: 'https://www.instagram.com/uae_iocf?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
   'West Indies': {
-    flagCode: null, flagEmoji: '🌴', mascot: '🦈', mascotName: 'Shark',
+    flagCode: null, flagEmoji: '🌴', mascotName: 'Shark',
+    mascotImage: '/mascots/west-indies.png',
     crest: { primary: '#7b0028', secondary: '#ffd700' },
     instagram: 'https://www.instagram.com/westindiesoc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
@@ -100,7 +121,7 @@ export const BOARD_IDENTITY = {
 
 // Boards not in the map (e.g. a dismantled/archived board with an
 // unrecognized name) fall back to a plain shield - never render nothing.
-const FALLBACK = { flagCode: null, flagEmoji: '🏳️', mascot: '🏏', mascotName: null }
+const FALLBACK = { flagCode: null, flagEmoji: '🏳️', mascotName: null }
 
 export function identityFor(name = '') {
   return BOARD_IDENTITY[name] || FALLBACK
