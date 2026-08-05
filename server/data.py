@@ -222,6 +222,21 @@ def _collect_numbered_list(ws, col, start_row, end_row):
     return out
 
 
+def _find_players_header_row(ws, max_row, default=5):
+    """The "Players" column header is usually row 5, but a board sheet can
+    grow an extra meta row above it (e.g. a "TITLE SPONSORS: ..." line) and
+    shift everything below down by one. Scan for the actual "Players"
+    (or "Players:") cell in column A instead of trusting a fixed row
+    number, so the rest of the sheet's row offsets - credits, players,
+    column headers - move with it.
+    """
+    for r in range(1, min(max_row, 15) + 1):
+        v = _clean(ws.cell(row=r, column=1).value)
+        if isinstance(v, str) and v.strip().rstrip(":").strip().lower() == "players":
+            return r
+    return default
+
+
 def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
     ws = wb[sheet_name]
     max_col = ws.max_column
@@ -241,8 +256,10 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
         parts = [p.strip() for p in chairman.split("|")]
         chairman = parts[0]
 
+    header_row = _find_players_header_row(ws, max_row)
+
     credits = None
-    for r in (3, 4, 5):
+    for r in range(3, header_row + 1):
         v = ws.cell(row=r, column=1).value
         if isinstance(v, (int, float)):
             credits = v
@@ -250,17 +267,20 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
     if credits is None:
         credits = credits_fallback
 
-    # Players: the numbered roster block in column A, starting at row 6.
-    # Stops at the first blank cell so it doesn't bleed into unrelated
-    # franchise-team roster tables further down the same column.
-    players = _collect_numbered_list(ws, 1, 6, max_row)
+    # Players: the numbered roster block in column A, right below the
+    # "Players" header row. Stops at the first blank cell so it doesn't
+    # bleed into unrelated franchise-team roster tables further down the
+    # same column.
+    players_start = header_row + 1
+    players = _collect_numbered_list(ws, 1, players_start, max_row)
     if not players:
-        players = _collect_numbered_list(ws, 1, 6, min(max_row, 100))
+        players = _collect_numbered_list(ws, 1, players_start, min(max_row, 100))
 
-    # Column headers live on row 5 (best-effort - not always perfectly aligned)
+    # Column headers live on the row found above (best-effort - not always
+    # perfectly aligned)
     headers = {}
     for c in range(1, max_col + 1):
-        v = _clean(ws.cell(row=5, column=c).value)
+        v = _clean(ws.cell(row=header_row, column=c).value)
         if v:
             headers[c] = v
 
@@ -276,7 +296,7 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
     stadiums = []
     stadium_tier = None
     if stadium_col:
-        for v in _read_column_block(ws, stadium_col, 6, max_row):
+        for v in _read_column_block(ws, stadium_col, header_row + 1, max_row):
             if not isinstance(v, str):
                 continue
             if LEVEL_STADIUM_RE.match(v):
@@ -302,11 +322,11 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
     umpires = []
     umpire_credits = None
     if umpire_col:
-        total_cell = ws.cell(row=6, column=umpire_col).value
+        total_cell = ws.cell(row=header_row + 1, column=umpire_col).value
         if isinstance(total_cell, (int, float)):
             umpire_credits = total_cell
         current = None
-        for r in range(8, max_row + 1):
+        for r in range(header_row + 3, max_row + 1):
             name_cell = _clean(ws.cell(row=r, column=umpire_col).value)
             label = ws.cell(row=r, column=umpire_col + 1).value
             matches = _num_or_none(ws.cell(row=r, column=umpire_col + 2).value)
