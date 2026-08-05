@@ -10,6 +10,26 @@ import { knownBoardIdentity } from '../lib/boardIdentity'
 import { IconStadium, IconTrophy, IconUmpire, IconInstagram, IconChampion } from '../lib/icons'
 import './BoardDetail.css'
 
+// Board-level wins in IOCF's own organized international tournaments —
+// distinct from board.trophies (bilateral series trophies scraped straight
+// off each board's sheet). Champion/runner-up here come from the top-level
+// dashboard payload (data.t20WorldCup / data.emergingTalentLeague), the
+// same fields playerBadges.js already reads for the 'world-champion' badge.
+const INTERNATIONAL_TOURNAMENTS = [
+  {
+    id: 't20-world-cup-2026',
+    name: 'IOCF T20 World Cup',
+    image: '/trophies/t20-world-cup.png',
+    key: 't20WorldCup',
+  },
+  {
+    id: 'emerging-talent-league-2026',
+    name: 'IOCF Emerging Talents League',
+    image: '/trophies/emerging-talents-league.png',
+    key: 'emergingTalentLeague',
+  },
+]
+
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
 // and recent transfer activity — everything the workbook has on one board.
 export default function BoardDetail() {
@@ -49,6 +69,16 @@ export default function BoardDetail() {
   const overallRow = (data.boardRankings || [])
     .find((t) => t.id === 'overall-board-ranking')
     ?.table?.find((r) => r.board === board.name)
+
+  const internationalTrophies = INTERNATIONAL_TOURNAMENTS
+    .map((t) => {
+      const info = data[t.key]
+      if (!info) return null
+      if (info.champion === board.name) return { ...t, result: 'Champions' }
+      if (info.runnerUp === board.name) return { ...t, result: 'Runners-up' }
+      return null
+    })
+    .filter(Boolean)
 
   return (
     <div className="page-enter">
@@ -178,6 +208,32 @@ export default function BoardDetail() {
                 <div key={i} className="board-detail__trophy-card glass-panel">
                   <span className="board-detail__trophy-icon"><IconTrophy /></span>
                   <span>{trophy}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="page-section">
+          <div className="section-header">
+            <div>
+              <p className="section-header__eyebrow">IOCF Organized Tournaments</p>
+              <h2><IconTrophy className="board-detail__section-icon" /> International Tournament Trophies ({internationalTrophies.length})</h2>
+            </div>
+          </div>
+          {internationalTrophies.length === 0 ? (
+            <div className="empty-state">No international tournament wins recorded for this board.</div>
+          ) : (
+            <div className="board-detail__intl-trophy-grid">
+              {internationalTrophies.map((t) => (
+                <div key={t.id} className="board-detail__intl-trophy-card glass-panel">
+                  <img src={t.image} alt={t.name} className="board-detail__intl-trophy-image" />
+                  <div className="board-detail__intl-trophy-text">
+                    <span className="board-detail__intl-trophy-name">{t.name}</span>
+                    <span className={`pill board-detail__intl-trophy-pill${t.result === 'Champions' ? ' is-champion' : ''}`}>
+                      {t.result}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
