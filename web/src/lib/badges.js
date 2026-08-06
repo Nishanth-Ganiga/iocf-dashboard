@@ -46,6 +46,7 @@ export function initialsFor(name = '', max = 3) {
 const BOARD_CODES = {
   Australia: 'AUS',
   Bangladesh: 'BAN',
+  Canada: 'CAN',
   England: 'ENG',
   India: 'IND',
   Italy: 'ITA',
@@ -58,6 +59,7 @@ const BOARD_CODES = {
   Srilanka: 'SL',
   UAE: 'UAE',
   'West Indies': 'WI',
+  Zimbabwe: 'ZIM',
 }
 
 export function boardCode(name = '') {

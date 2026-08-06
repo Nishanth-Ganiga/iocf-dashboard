@@ -45,6 +45,11 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#006a4e', secondary: '#f42a41' },
     instagram: 'https://www.instagram.com/bangladeshoc_iocf?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
+  Canada: {
+    flagCode: 'ca', flagEmoji: '🇨🇦', mascotName: 'Great Horned Owl',
+    mascotImage: '/mascots/canada.png',
+    crest: { primary: '#d80621', secondary: '#f5f5f5' },
+  },
   England: {
     flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascotName: 'Lion',
     mascotImage: '/mascots/england.png',
@@ -116,6 +121,11 @@ export const BOARD_IDENTITY = {
     mascotImage: '/mascots/west-indies.png',
     crest: { primary: '#7b0028', secondary: '#ffd700' },
     instagram: 'https://www.instagram.com/westindiesoc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+  },
+  Zimbabwe: {
+    flagCode: 'zw', flagEmoji: '🇿🇼', mascotName: 'Nile Crocodile',
+    mascotImage: '/mascots/zimbabwe.png',
+    crest: { primary: '#d40000', secondary: '#ffd200' },
   },
 }
 

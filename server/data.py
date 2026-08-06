@@ -20,6 +20,7 @@ import openpyxl
 BOARD_SHEETS = {
     "Australia": "Australia",
     "Bangladesh": "Bangladesh",
+    "Canada": "Canada",
     "England": "England",
     "India": "India",
     "Italy": "Italy",
@@ -32,6 +33,7 @@ BOARD_SHEETS = {
     "Srilanka": "Srilanka",
     "UAE": "UAE",
     "West Indies": "WestIndies",
+    "Zimbabwe": "Zimbabwe",
 }
 
 CREDITS_SHEET = "All Board Credits & Important U"
