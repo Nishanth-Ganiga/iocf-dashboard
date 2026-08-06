@@ -49,6 +49,7 @@ export const BOARD_IDENTITY = {
     flagCode: 'ca', flagEmoji: '🇨🇦', mascotName: 'Great Horned Owl',
     mascotImage: '/mascots/canada.png',
     crest: { primary: '#d80621', secondary: '#f5f5f5' },
+    instagram: 'https://www.instagram.com/canada_iocf/',
   },
   England: {
     flagCode: 'gb-eng', flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', mascotName: 'Lion',
@@ -126,6 +127,7 @@ export const BOARD_IDENTITY = {
     flagCode: 'zw', flagEmoji: '🇿🇼', mascotName: 'Nile Crocodile',
     mascotImage: '/mascots/zimbabwe.png',
     crest: { primary: '#d40000', secondary: '#ffd200' },
+    instagram: 'https://www.instagram.com/iocfzimbabwe/',
   },
 }
 
