@@ -95,13 +95,20 @@ const SPECIALIST_AWARD_TITLES = new Set([
 // `champion`/`runnerUp`/award-`winner` strings — not just casing (one
 // column ALL CAPS, another Title Case for the same team), but occasionally
 // a shortened form of the same club (e.g. "Hyderabad Kings" vs the
-// roster's "HYDERABAD KINGSMEN"). A safe tolerance: same word count, and
-// every word pair either identical or one a >=4-char prefix of the other —
-// enough to bridge real sheet variants without conflating two different teams.
+// roster's "HYDERABAD KINGSMEN"), and CPL's team-name headers carry a
+// trailing country flag emoji ("Jamaica Kingsmen 🇯🇲") that the
+// champion/runnerUp/awards columns don't repeat — stripped before
+// comparing so it doesn't get counted as an extra "word" and fail the
+// word-count check below. A safe tolerance otherwise: same word count,
+// and every word pair either identical or one a >=4-char prefix of the
+// other — enough to bridge real sheet variants without conflating two
+// different teams.
+const TRAILING_EMOJI_RE = /[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\s]+$/u
+
 export function sameTeam(a, b) {
   if (!a || !b) return false
-  const na = a.trim().toLowerCase()
-  const nb = b.trim().toLowerCase()
+  const na = a.trim().toLowerCase().replace(TRAILING_EMOJI_RE, '')
+  const nb = b.trim().toLowerCase().replace(TRAILING_EMOJI_RE, '')
   if (na === nb) return true
   const wa = na.split(/\s+/)
   const wb = nb.split(/\s+/)
