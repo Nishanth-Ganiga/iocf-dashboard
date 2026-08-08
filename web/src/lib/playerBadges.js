@@ -33,6 +33,7 @@ export const BADGE_ICONS = {
   'franchise-veteran': IconJourney,
   'multi-board-journeyman': IconJourney,
   'rising-star': IconRisingStar,
+  'womens-global-league': IconGlobe,
   'player-executive': IconCrown,
   'hall-of-famer': IconHallOfFame,
   'dual-role': IconDualRole,
@@ -168,6 +169,18 @@ function emergingTalentBoards(data, name) {
   const key = normalizeName(name)
   if (!key) return []
   const squads = data.emergingTalentLeague?.squads || {}
+  return Object.entries(squads)
+    .filter(([, roster]) => (roster || []).some((entry) => normalizeName(entry) === key))
+    .map(([board]) => board)
+}
+
+// Womens Global League squad rosters use the same "Name (C)" captain-tag
+// format as everywhere else — normalizeName's trailing-parenthetical strip
+// already handles it, same as Emerging Talent League above.
+function womensGlobalLeagueBoards(data, name) {
+  const key = normalizeName(name)
+  if (!key) return []
+  const squads = data.womensGlobalLeague?.squads || {}
   return Object.entries(squads)
     .filter(([, roster]) => (roster || []).some((entry) => normalizeName(entry) === key))
     .map(([board]) => board)
@@ -462,6 +475,16 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: `Picked in the ${data.emergingTalentLeague.name} squad`,
       criteria: 'Awarded to players picked into an Emerging Talent League squad roster.',
       evidence: etlBoards.map((b) => `Picked in ${b}'s Emerging Talent League squad`),
+    })
+  }
+  const wglBoards = womensGlobalLeagueBoards(data, name)
+  if (wglBoards.length > 0) {
+    badges.push({
+      key: 'womens-global-league',
+      label: 'Womens Global League',
+      detail: `Picked in the ${data.womensGlobalLeague.name} squad`,
+      criteria: 'Awarded to players picked into a Womens Global League squad roster.',
+      evidence: wglBoards.map((b) => `Picked in ${b}'s Womens Global League squad`),
     })
   }
   const umpireBoards = boardsUmpiredFor(data, name)

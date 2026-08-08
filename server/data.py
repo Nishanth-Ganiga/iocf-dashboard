@@ -1490,6 +1490,46 @@ def get_emerging_talent_league(wb, tournament_updates):
     }
 
 
+WOMENS_GLOBAL_LEAGUE_SCHEDULE_RE = re.compile(r"schedule", re.I)
+
+
+def get_womens_global_league(wb, tournament_updates):
+    """Brand-new competition, still at the "squads only" stage in the
+    workbook - just a "SQUADS" title over one numbered roster column per
+    participating board (currently only Pakistan). Reads however many
+    board columns are actually populated rather than assuming a fixed
+    count, and picks up a match schedule/champion the same way the other
+    young competitions here do (Emerging Talent League, Lone Warrior) as
+    soon as the sheet grows one, instead of needing a code change then.
+    """
+    name = "Womens Global League"
+    info = tournament_updates.get("sections", {}).get("WOMENS GLOBAL LEAGUE 2026", {})
+    squads = {}
+    matches = []
+    if name in wb.sheetnames:
+        ws = wb[name]
+        for c in range(1, ws.max_column + 1):
+            board = _clean(ws.cell(row=2, column=c).value)
+            if not board or not isinstance(board, str):
+                continue
+            roster = _collect_numbered_list(ws, c, 3, ws.max_row)
+            if roster:
+                squads[board] = roster
+        schedule_row = _find_row_with_text(ws, WOMENS_GLOBAL_LEAGUE_SCHEDULE_RE)
+        if schedule_row:
+            matches = _read_franchise_matches(ws, schedule_row + 1, ws.max_row + 1)
+    completed_matches = [m for m in matches if m.get("Winner")]
+    return {
+        "name": "Womens Global League 2026",
+        "squads": squads,
+        "matches": matches,
+        "totalMatches": len(completed_matches),
+        "champion": info.get("champion"),
+        "runnerUp": info.get("runnerUp"),
+        "status": "Completed" if info.get("champion") else ("Ongoing" if squads else "Upcoming"),
+    }
+
+
 def _read_lone_warrior_matches(ws):
     """The bracket (Group A/B round robin, Quarter Finals, Semifinals, Grand
     Final) lives in 4 side-by-side columns, each schedule cell 2 columns to
@@ -1558,6 +1598,7 @@ def build_dashboard(path):
     hall_of_fame = get_hall_of_fame(wb)
     continental_cups = get_continental_cups(wb)
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
+    womens_league = get_womens_global_league(wb, credits_data["tournamentUpdates"])
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
     board_rankings = get_board_rankings(wb)
     umpire_rankings = get_umpire_rankings(boards)
@@ -1591,6 +1632,19 @@ def build_dashboard(path):
             "totalMatches": len([m for m in emerging["matches"] if m.get("winner")]),
         }
     )
+    if womens_league["squads"]:
+        tournaments.append(
+            {
+                "id": "womens-global-league-2026",
+                "name": "Womens Global League 2026",
+                "category": "International",
+                "season": "2026",
+                "status": womens_league["status"],
+                "champion": womens_league["champion"],
+                "runnerUp": womens_league["runnerUp"],
+                "totalMatches": womens_league["totalMatches"],
+            }
+        )
     tournaments.append(
         {
             "id": "lone-warrior-2026",
@@ -1730,6 +1784,7 @@ def build_dashboard(path):
         "franchiseLeagues": franchise_leagues,
         "continentalCups": continental_cups,
         "emergingTalentLeague": emerging,
+        "womensGlobalLeague": womens_league,
         "loneWarrior": lone_warrior,
         "fixtures": fixtures,
         "upcomingMatches": upcoming,

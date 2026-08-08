@@ -46,6 +46,8 @@ export default function TournamentDetail() {
     body = <T20WorldCupDetail t20={data.t20WorldCup} />
   } else if (tournamentId === 'emerging-talent-league-2026' && data.emergingTalentLeague) {
     body = <EmergingTalentDetail etl={data.emergingTalentLeague} />
+  } else if (tournamentId === 'womens-global-league-2026' && data.womensGlobalLeague) {
+    body = <WomensGlobalLeagueDetail wgl={data.womensGlobalLeague} />
   } else if (tournamentId === 'lone-warrior-2026' && data.loneWarrior) {
     body = <LoneWarriorDetail lw={data.loneWarrior} />
   } else {
@@ -394,6 +396,39 @@ function EmergingTalentDetail({ etl }) {
           </div>
         )}
       </div>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Womens Global League — brand-new competition, squads-only so far    */
+/* ------------------------------------------------------------------ */
+function WomensGlobalLeagueDetail({ wgl }) {
+  const boards = Object.keys(wgl.squads || {})
+  const matches = wgl.matches || []
+
+  return (
+    <>
+      <ChampionBanner champion={wgl.champion} runnerUp={wgl.runnerUp} totalMatches={wgl.totalMatches || null} />
+
+      <div className="td-subsection">
+        <h3 className="td-subsection__title">Squads</h3>
+        {boards.length === 0 ? (
+          <div className="empty-state">No squads on record.</div>
+        ) : (
+          <div className="card-grid">
+            {boards.map((b) => (
+              <SquadCard key={b} board={b} players={wgl.squads[b]} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {matches.length > 0 ? (
+        <FranchiseMatchTimeline matches={matches} />
+      ) : (
+        <div className="empty-state">Fixtures for this league have not been scheduled yet.</div>
+      )}
     </>
   )
 }

@@ -465,6 +465,16 @@ export function buildAchievementsIndex(data) {
     addMatchHonors(index, 'World Test Championship', m, detail, pool, data, globalCandidateNames)
   }
 
+  // Continental cups (Asia/Euro/Oceania Cup) — national-board round-robins,
+  // same "Schedule: A vs B" shape as the T20 World Cup's own match blocks,
+  // so they resolve against the same board roster pool.
+  for (const cup of data.continentalCups || []) {
+    for (const m of cup.matches || []) {
+      const pool = matchCandidatePool(m.Schedule, boardNames, rosterForBoard)
+      addMatchHonors(index, cup.name, m, m.Schedule, pool, data, globalCandidateNames)
+    }
+  }
+
   const etl = data.emergingTalentLeague
   if (etl) {
     for (const m of etl.matches || []) {
@@ -481,6 +491,19 @@ export function buildAchievementsIndex(data) {
           detail: schedule,
         })
       }
+    }
+  }
+
+  // Womens Global League — its own separate roster (women players, not
+  // part of any board's men's roster), so match honors resolve against
+  // the league's own squads dict rather than boardRosterIndex/rosterForBoard.
+  const wgl = data.womensGlobalLeague
+  if (wgl) {
+    const wglBoardNames = Object.keys(wgl.squads || {})
+    const rosterForWglBoard = (boardName) => wgl.squads[boardName] || []
+    for (const m of wgl.matches || []) {
+      const pool = matchCandidatePool(m.Schedule, wglBoardNames, rosterForWglBoard)
+      addMatchHonors(index, wgl.name, m, m.Schedule, pool, data, globalCandidateNames)
     }
   }
 
