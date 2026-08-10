@@ -23,6 +23,7 @@ BOARD_SHEETS = {
     "Canada": "Canada",
     "England": "England",
     "India": "India",
+    "Ireland": "Ireland",
     "Italy": "Italy",
     "Netherlands": "Netherlands",
     "Newzealand": "Newzealand",
@@ -32,6 +33,8 @@ BOARD_SHEETS = {
     "South Africa": "SA",
     "Srilanka": "Srilanka",
     "UAE": "UAE",
+    "Uganda": "Uganda",
+    "USA": "USA",
     "West Indies": "WestIndies",
     "Zimbabwe": "Zimbabwe",
 }
@@ -46,6 +49,20 @@ def _clean(v):
     if isinstance(v, str):
         v = v.strip()
         return v if v else None
+    return v
+
+
+# A handful of newly-added boards (Ireland, Uganda, USA) haven't had a
+# Chairman/CEO assigned yet and the sheet marks that with a literal "---"
+# placeholder rather than leaving the cell blank. Treated as "not yet
+# assigned" (None) rather than rendered as the literal dashes.
+_PLACEHOLDER_RE = re.compile(r"^-+$")
+
+
+def _clean_or_placeholder(v):
+    v = _clean(v)
+    if isinstance(v, str) and _PLACEHOLDER_RE.match(v):
+        return None
     return v
 
 
@@ -251,12 +268,12 @@ def parse_board_sheet(wb, sheet_name, display_name, credits_fallback):
     ceo = None
     m = re.search(r"chairman:\s*(.+?)(?:\s*\|\s*ceo:\s*(.+))?$", meta_line, re.I)
     if m:
-        chairman = _clean(m.group(1))
-        ceo = _clean(m.group(2))
+        chairman = _clean_or_placeholder(m.group(1))
+        ceo = _clean_or_placeholder(m.group(2))
     if chairman and "|" in chairman:
         # fallback split in case regex missed the CEO half
         parts = [p.strip() for p in chairman.split("|")]
-        chairman = parts[0]
+        chairman = _clean_or_placeholder(parts[0])
 
     header_row = _find_players_header_row(ws, max_row)
 

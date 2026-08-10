@@ -63,6 +63,11 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#1a3fa0', secondary: '#ff9933' },
     instagram: 'https://www.instagram.com/iocb_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
+  Ireland: {
+    flagCode: 'ie', flagEmoji: '🇮🇪', mascotName: 'Irish Elk',
+    mascotImage: '/mascots/ireland.png',
+    crest: { primary: '#169b62', secondary: '#ff883e' },
+  },
   Italy: {
     flagCode: 'it', flagEmoji: '🇮🇹', mascotName: 'Roman Wolf',
     mascotImage: '/mascots/italy.png',
@@ -116,6 +121,16 @@ export const BOARD_IDENTITY = {
     mascotImage: '/mascots/uae.png',
     crest: { primary: '#00732f', secondary: '#ff0000' },
     instagram: 'https://www.instagram.com/uae_iocf?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+  },
+  Uganda: {
+    flagCode: 'ug', flagEmoji: '🇺🇬', mascotName: 'Mountain Gorilla',
+    mascotImage: '/mascots/uganda.png',
+    crest: { primary: '#000000', secondary: '#fcdc04' },
+  },
+  USA: {
+    flagCode: 'us', flagEmoji: '🇺🇸', mascotName: 'American Bison',
+    mascotImage: '/mascots/usa.png',
+    crest: { primary: '#0a3161', secondary: '#b31942' },
   },
   'West Indies': {
     flagCode: null, flagEmoji: '🌴', mascotName: 'Shark',

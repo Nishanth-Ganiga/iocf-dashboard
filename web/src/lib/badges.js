@@ -49,6 +49,7 @@ const BOARD_CODES = {
   Canada: 'CAN',
   England: 'ENG',
   India: 'IND',
+  Ireland: 'IRE',
   Italy: 'ITA',
   Netherlands: 'NED',
   Newzealand: 'NZ',
@@ -58,6 +59,8 @@ const BOARD_CODES = {
   'South Africa': 'SA',
   Srilanka: 'SL',
   UAE: 'UAE',
+  Uganda: 'UGA',
+  USA: 'USA',
   'West Indies': 'WI',
   Zimbabwe: 'ZIM',
 }
