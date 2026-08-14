@@ -12,9 +12,12 @@ import './BoardDetail.css'
 
 // Board-level wins in IOCF's own organized international tournaments —
 // distinct from board.trophies (bilateral series trophies scraped straight
-// off each board's sheet). Champion/runner-up here come from the top-level
-// dashboard payload (data.t20WorldCup / data.emergingTalentLeague), the
-// same fields playerBadges.js already reads for the 'world-champion' badge.
+// off each board's sheet). Champion/runner-up for the first two come from
+// the top-level dashboard payload (data.t20WorldCup / data.emergingTalentLeague),
+// the same fields playerBadges.js already reads for the 'world-champion'
+// badge. Continental cups (Asia/Euro/Oceania) instead live as one entry
+// each in data.continentalCups, so they're looked up by id further below
+// rather than by a single object key like the other two.
 const INTERNATIONAL_TOURNAMENTS = [
   {
     id: 't20-world-cup-2026',
@@ -29,6 +32,12 @@ const INTERNATIONAL_TOURNAMENTS = [
     key: 'emergingTalentLeague',
   },
 ]
+
+const CONTINENTAL_CUP_TROPHIES = {
+  'iocf-asia-cup': '/trophies/asia-cup.png',
+  'iocf-euro-cup': '/trophies/euro-cup.png',
+  'iocf-oceania-cup': '/trophies/oceania-cup.png',
+}
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
 // and recent transfer activity — everything the workbook has on one board.
@@ -78,6 +87,16 @@ export default function BoardDetail() {
       if (info.runnerUp === board.name) return { ...t, result: 'Runners-up' }
       return null
     })
+    .concat(
+      (data.continentalCups || [])
+        .map((cup) => {
+          const image = CONTINENTAL_CUP_TROPHIES[cup.id]
+          if (!image) return null
+          if (cup.champion === board.name) return { id: cup.id, name: cup.name, image, result: 'Champions' }
+          if (cup.runnerUp === board.name) return { id: cup.id, name: cup.name, image, result: 'Runners-up' }
+          return null
+        })
+    )
     .filter(Boolean)
 
   return (

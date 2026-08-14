@@ -1427,6 +1427,33 @@ CONTINENTAL_CUPS = {
 }
 
 CONTINENTAL_CUP_SCHEDULE_RE = re.compile(r"schedule and all match updates", re.I)
+CONTINENTAL_CUP_AWARDS_RE = re.compile(r"\bawards\b", re.I)
+
+
+def _read_continental_cup_awards(ws, header_row, end_row):
+    """Reads a continental cup's "Award Name / Award Winner / Board /
+    Achievement / Award Credits" table - a different column order than a
+    franchise league's own awards table (no "Franchise Team" column, and
+    Champions/Runners-up name a national *board* in column C rather than a
+    player/team name in column B, which is blank for those two rows).
+    Stops at the first blank Award Name (the "Team of the tournament"
+    sub-table's own header follows right after, with no data rows yet).
+    """
+    awards = []
+    for r in range(header_row + 1, end_row):
+        award_name = _clean(ws.cell(row=r, column=1).value)
+        if not award_name:
+            break
+        awards.append(
+            {
+                "award": award_name,
+                "winner": _clean(ws.cell(row=r, column=2).value),
+                "board": _clean(ws.cell(row=r, column=3).value),
+                "achievement": _clean(ws.cell(row=r, column=4).value),
+                "credits": _num_or_none(ws.cell(row=r, column=5).value),
+            }
+        )
+    return awards
 
 
 def get_continental_cups(wb):
@@ -1448,8 +1475,21 @@ def get_continental_cups(wb):
         if schedule_row:
             matches = _read_franchise_matches(ws, schedule_row + 1, ws.max_row + 1)
 
+        awards_row = _find_row_with_text(ws, CONTINENTAL_CUP_AWARDS_RE, start_row=(schedule_row or 1) + 1)
+        awards = []
+        champion = None
+        runner_up = None
+        if awards_row:
+            awards = _read_continental_cup_awards(ws, awards_row + 1, ws.max_row + 1)
+            for a in awards:
+                name = (a["award"] or "").strip().lower()
+                if name == "champions":
+                    champion = a["board"]
+                elif name in ("runners up", "runner up", "runners-up"):
+                    runner_up = a["board"]
+
         completed = [m for m in matches if m.get("Winner")]
-        if matches and len(completed) == len(matches):
+        if champion:
             status = "Completed"
         elif completed:
             status = "Ongoing"
@@ -1464,11 +1504,14 @@ def get_continental_cups(wb):
                 "teams": teams,
                 "matches": matches,
                 "totalMatches": len(matches),
+                "awards": awards,
                 "status": status,
-                "champion": None,
+                "champion": champion,
+                "runnerUp": runner_up,
             }
         )
     return cups
+
 
 
 def get_emerging_talent_league(wb, tournament_updates):
@@ -1683,7 +1726,7 @@ def build_dashboard(path):
                 "season": cup["season"],
                 "status": cup["status"],
                 "champion": cup["champion"],
-                "runnerUp": None,
+                "runnerUp": cup["runnerUp"],
                 "totalMatches": cup["totalMatches"],
             }
         )

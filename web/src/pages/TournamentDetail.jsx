@@ -476,9 +476,10 @@ function LoneWarriorDetail({ lw }) {
 function ContinentalCupDetail({ cup }) {
   const teams = cup.teams || []
   const matches = cup.matches || []
+  const awards = cup.awards || []
   return (
     <>
-      <ChampionBanner champion={cup.champion} totalMatches={cup.totalMatches || null} />
+      <ChampionBanner champion={cup.champion} runnerUp={cup.runnerUp} totalMatches={cup.totalMatches || null} />
       <div className="td-subsection">
         <h3 className="td-subsection__title">Participating Teams</h3>
         {teams.length === 0 ? (
@@ -499,7 +500,39 @@ function ContinentalCupDetail({ cup }) {
       ) : (
         <div className="empty-state">Fixtures for this cup have not been scheduled yet.</div>
       )}
+      {awards.length > 0 && <ContinentalCupAwardsShowcase awards={awards} />}
     </>
+  )
+}
+
+// Continental cup awards use a different column shape than a franchise
+// league's own awards table — no "Franchise Team" column, an extra
+// "Achievement" stat string (e.g. "571 runs"), and Champions/Runners-up
+// name a national board in `board` rather than `winner` (which is blank
+// for those two rows) — so this can't just reuse FranchiseAwardsShowcase.
+function ContinentalCupAwardsShowcase({ awards }) {
+  return (
+    <div className="td-subsection">
+      <h3 className="td-subsection__title">Awards</h3>
+      <div className="card-grid td-award-grid">
+        {awards.map((a, i) => (
+          <div key={i} className="entity-card glass-panel td-award-card">
+            <IconTrophy className="td-award-card__icon" aria-hidden="true" />
+            <p className="td-award-card__name">{a.award}</p>
+            <p className="td-award-card__winner">{a.winner || a.board}</p>
+            {a.winner && a.board && (
+              <p className="text-faint td-award-card__sub">{a.board}</p>
+            )}
+            {a.achievement && a.achievement !== '-' && (
+              <p className="text-faint td-award-card__sub">{a.achievement}</p>
+            )}
+            {a.credits != null && (
+              <span className="pill td-award-card__credits">{formatCredits(a.credits)} credits</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

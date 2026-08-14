@@ -467,8 +467,21 @@ export function buildAchievementsIndex(data) {
 
   // Continental cups (Asia/Euro/Oceania Cup) — national-board round-robins,
   // same "Schedule: A vs B" shape as the T20 World Cup's own match blocks,
-  // so they resolve against the same board roster pool.
+  // so they resolve against the same board roster pool. Their own awards
+  // table also names individual players (Golden Ball/Bat, Player/Captain
+  // of the Tournament, Emerging Player, Fair Play) board-scoped the same
+  // way T20 World Cup awards are; the Champions/Runners-up rows have no
+  // `winner` (just a board name) so pushAwardAchievement is a safe no-op
+  // for those two rows rather than fabricating a player entry.
   for (const cup of data.continentalCups || []) {
+    for (const a of cup.awards || []) {
+      pushAwardAchievement(index, a.winner, a.board, {
+        source: cup.name,
+        title: a.award,
+        detail: a.achievement && a.achievement !== '-' ? a.achievement : a.board,
+        credits: a.credits,
+      }, boardRosterIndex, true)
+    }
     for (const m of cup.matches || []) {
       const pool = matchCandidatePool(m.Schedule, boardNames, rosterForBoard)
       addMatchHonors(index, cup.name, m, m.Schedule, pool, data, globalCandidateNames)

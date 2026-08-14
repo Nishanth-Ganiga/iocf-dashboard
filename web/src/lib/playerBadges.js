@@ -17,6 +17,7 @@ export const BADGE_ICONS = {
   'specialist-award': IconSpecialistAward,
   'world-champion': IconEarth,
   'world-cup-hero': IconGlobe,
+  'continental-champion': IconEarth,
   'franchise-champion': IconChampion,
   'franchise-serial-champion': IconTrophy,
   'franchise-runner-up': IconMedal,
@@ -305,6 +306,18 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: 'Named in a T20 World Cup 2026 award or match honor',
       criteria: 'Awarded to players named in any T20 World Cup 2026 award or match honor.',
       evidence: worldCupAchievements.map(describeAchievement),
+    })
+  }
+  const continentalCupWins = (data.continentalCups || []).filter(
+    (cup) => cup.champion && home?.board?.name === cup.champion
+  )
+  if (continentalCupWins.length > 0) {
+    badges.push({
+      key: 'continental-champion',
+      label: 'Continental Champion',
+      detail: `Represents ${continentalCupWins[0].champion} — ${continentalCupWins[0].name} champions`,
+      criteria: 'Awarded to every player of the national board that won a continental cup (Asia/Euro/Oceania Cup).',
+      evidence: continentalCupWins.map((cup) => `${cup.champion} won the ${cup.name}`),
     })
   }
   const championSquads = squads.filter((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
