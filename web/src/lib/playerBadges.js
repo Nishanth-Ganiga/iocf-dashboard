@@ -18,6 +18,7 @@ export const BADGE_ICONS = {
   'world-champion': IconEarth,
   'world-cup-hero': IconGlobe,
   'continental-champion': IconEarth,
+  'continental-cup-hero': IconGlobe,
   'franchise-champion': IconChampion,
   'franchise-serial-champion': IconTrophy,
   'franchise-runner-up': IconMedal,
@@ -318,6 +319,17 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: `Represents ${continentalCupWins[0].champion} — ${continentalCupWins[0].name} champions`,
       criteria: 'Awarded to every player of the national board that won a continental cup (Asia/Euro/Oceania Cup).',
       evidence: continentalCupWins.map((cup) => `${cup.champion} won the ${cup.name}`),
+    })
+  }
+  const continentalCupNames = new Set((data.continentalCups || []).map((cup) => cup.name))
+  const continentalCupAchievements = achievements.filter((a) => continentalCupNames.has(a.source))
+  if (continentalCupAchievements.length > 0) {
+    badges.push({
+      key: 'continental-cup-hero',
+      label: 'Continental Cup Hero',
+      detail: 'Named in an Asia/Euro/Oceania Cup award or match honor',
+      criteria: 'Awarded to players named in any Asia Cup, Euro Cup, or Oceania Cup award or match honor.',
+      evidence: continentalCupAchievements.map(describeAchievement),
     })
   }
   const championSquads = squads.filter((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')
