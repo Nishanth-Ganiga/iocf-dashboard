@@ -305,7 +305,6 @@ export default function Dashboard() {
 
 const QUICK_MODULES = [
   { to: '/boards', Icon: IconBoard, title: 'Cricket Boards', desc: 'All 14 national boards & leadership' },
-  { to: '/players', Icon: IconPlayer, title: 'Players', desc: 'Browse every registered player' },
   { to: '/stadiums', Icon: IconStadium, title: 'Stadiums', desc: 'Venues across every board' },
   { to: '/tournaments', Icon: IconTrophy, title: 'Tournaments', desc: 'World Cups, leagues & cups' },
   { to: '/rankings', Icon: IconPodium, title: 'Credits Ranking', desc: 'Credits-based board leaderboard' },

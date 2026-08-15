@@ -137,8 +137,8 @@ export function resolveKnownAlias(rawName) {
 // entirely. Each mapping is a specific, manually-confirmed fact (not a
 // guess): the board named here is the one they were actually on before
 // being removed. Keyed by the fuller/display name only (not every
-// shorthand) — that's the one entry Players.jsx lists in the directory;
-// findFormerBoardMember below still matches shorthand mentions elsewhere.
+// shorthand) — that's the one entry a board's roster still lists them
+// under; findFormerBoardMember below still matches shorthand mentions elsewhere.
 export const FORMER_BOARD_MEMBER_NAMES = {
   'Nadirsha Nachu': 'England',
   'Rejith Mohan': 'England',

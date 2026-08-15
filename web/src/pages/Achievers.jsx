@@ -11,8 +11,8 @@ import './Achievers.css'
 
 const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
-// Hard cap on rendered rows, same rationale as Players.jsx — narrowing the
-// search always reveals more of the ranked list.
+// Hard cap on rendered rows — narrowing the search always reveals more of
+// the ranked list.
 const MAX_RESULTS = 150
 
 // A trophy says more about a career than a single match award, and a

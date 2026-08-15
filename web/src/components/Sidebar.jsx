@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
   IconBoard,
-  IconPlayer,
   IconStadium,
   IconTrophy,
   IconPodium,
@@ -22,7 +21,6 @@ import {
 const MODULES = [
   { label: 'Dashboard', to: '/dashboard', Icon: null, emoji: '🏠' },
   { label: 'Cricket Boards', to: '/boards', Icon: IconBoard },
-  { label: 'Players', to: '/players', Icon: IconPlayer },
   { label: 'Stadiums', to: '/stadiums', Icon: IconStadium },
   { label: 'Tournaments', to: '/tournaments', Icon: IconTrophy },
   { label: 'Credits Ranking', to: '/rankings', Icon: IconPodium },

@@ -5,7 +5,6 @@ import GlobalSearch from './GlobalSearch'
 const NAV_ITEMS = [
   { label: 'Home', to: '/dashboard' },
   { label: 'Cricket Boards', to: '/boards' },
-  { label: 'Players', to: '/players' },
   { label: 'Stadiums', to: '/stadiums' },
   { label: 'Tournaments', to: '/tournaments' },
   { label: 'Credits Ranking', to: '/rankings' },

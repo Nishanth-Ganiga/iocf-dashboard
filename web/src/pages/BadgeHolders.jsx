@@ -18,9 +18,8 @@ const MAX_RESULTS = 30
 // pass here — computing each player's full badge cabinet via
 // computeBadges, the same one PlayerDetail.jsx renders — only runs when
 // this page is actually visited, instead of on every Top Achievers load.
-// Clicking a player expands their row in place (mirroring Players.jsx's
-// card-expand pattern) to reveal their board and full badge list, rather
-// than navigating away.
+// Clicking a player expands their row in place to reveal their board and
+// full badge list, rather than navigating away.
 export default function BadgeHolders() {
   const { data, loading, error } = useDashboard()
   const [query, setQuery] = useState('')

@@ -21,9 +21,11 @@ const TEAM_HONOR_LABELS = {
 }
 
 // Dedicated player profile: home board, every franchise-league squad
-// they've been picked into, and their full achievement history — the
-// same cross-referenced data Players.jsx expands inline, but given its
-// own page + URL so it can be linked to directly.
+// they've been picked into, and their full achievement history. There's
+// no standalone players list/route in the app — this is only reached by
+// clicking a player from their board's own roster (BoardDetail.jsx) or
+// from Global Search, keeping the heavier achievements/badges computation
+// off any page that lists every player at once.
 export default function PlayerDetail() {
   const { name: encodedName } = useParams()
   const { data, loading, error } = useDashboard()
@@ -54,7 +56,7 @@ export default function PlayerDetail() {
             <div className="empty-state">
               Player not found.
               <div style={{ marginTop: 14 }}>
-                <Link to="/players" className="btn btn-outline-gold">Back to Players</Link>
+                <Link to="/boards" className="btn btn-outline-gold">Back to Boards</Link>
               </div>
             </div>
           </section>
@@ -76,7 +78,7 @@ export default function PlayerDetail() {
   return (
     <div className="page-enter">
       <div className="container">
-        <BackLink />
+        <BackLink board={board} />
 
         <section className="pd-hero glass-panel">
           <span className="pd-hero__badge">
@@ -286,10 +288,14 @@ function BadgeDetailModal({ badge, onClose }) {
   )
 }
 
-function BackLink() {
-  return (
-    <Link to="/players" className="pd-back">
-      ← Back to Players
+function BackLink({ board }) {
+  return board ? (
+    <Link to={`/boards/${board.id}`} className="pd-back">
+      ← Back to {board.name}
+    </Link>
+  ) : (
+    <Link to="/boards" className="pd-back">
+      ← Back to Boards
     </Link>
   )
 }

@@ -126,7 +126,7 @@ export default function GlobalSearch({ compact = false }) {
                     title={p.name}
                     subtitle={p.board}
                     onClick={() => {
-                      navigate('/players', { state: { query: p.name } })
+                      navigate(`/players/${encodeURIComponent(p.name)}`)
                       setOpen(false)
                       setQuery('')
                     }}

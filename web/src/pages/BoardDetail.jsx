@@ -171,10 +171,14 @@ export default function BoardDetail() {
           ) : (
             <div className="board-detail__player-grid">
               {players.map((name, i) => (
-                <div key={i} className="board-detail__player-chip glass-panel">
+                <Link
+                  key={i}
+                  to={`/players/${encodeURIComponent(name)}`}
+                  className="board-detail__player-chip glass-panel"
+                >
                   <Badge name={name} size={32} rounded="square" />
                   <span>{name}</span>
-                </div>
+                </Link>
               ))}
             </div>
           )}
