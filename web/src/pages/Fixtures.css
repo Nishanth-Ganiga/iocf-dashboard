@@ -307,6 +307,159 @@
   font-size: 0.76rem;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Series Squads & Matches Details — full squads + match-by-match for      */
+/* series added since squad announcements started.                        */
+/* ---------------------------------------------------------------------- */
+.fixture-caption {
+  font-size: 0.78rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.series-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.series-detail-card {
+  overflow: hidden;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.series-detail-card.is-expanded {
+  border-color: var(--glass-border-neon);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45), var(--shadow-glow-neon);
+}
+
+.series-detail-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.series-detail-card__teams {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.series-detail-card__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.series-detail-card__meta {
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.series-detail-card__body {
+  padding: 0 18px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  animation: cardRiseIn 0.35s var(--ease-out) both;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 18px;
+}
+
+.series-detail-card__squads {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  grid-column: 1 / -1;
+}
+
+.series-detail-card__squad-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  margin-bottom: 8px;
+  color: var(--ioc-neon);
+}
+
+.series-detail-card__squad-icon {
+  flex-shrink: 0;
+}
+
+.series-detail-card__squad-empty {
+  font-size: 0.8rem;
+}
+
+.series-detail-card__squad-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.series-detail-card__squad-list li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+.series-detail-card__squad-list li:last-child {
+  border-bottom: none;
+}
+
+.series-detail-card__matches {
+  grid-column: 1 / -1;
+}
+
+.series-detail-card__matches-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  margin-bottom: 10px;
+  color: var(--ioc-neon);
+}
+
+.series-detail-card__match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.series-detail-card__match-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.82rem;
+}
+
+.series-detail-card__match-name {
+  font-weight: 700;
+}
+
+.series-detail-card__match-meta {
+  font-size: 0.76rem;
+}
+
+.series-detail-card__match-standouts {
+  font-size: 0.76rem;
+  width: 100%;
+}
+
 @media (max-width: 640px) {
   .fixture-tabs {
     width: 100%;

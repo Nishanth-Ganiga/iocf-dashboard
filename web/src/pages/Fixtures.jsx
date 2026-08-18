@@ -3,7 +3,7 @@ import { useDashboard } from '../context/DashboardContext'
 import { LoadingState, ErrorState } from '../components/StateViews'
 import Badge from '../components/Badge'
 import { formatCredits } from '../lib/badges'
-import { IconTrophy, IconCalendar } from '../lib/icons'
+import { IconTrophy, IconCalendar, IconPlayer, IconMatch } from '../lib/icons'
 import './Fixtures.css'
 
 // Fixtures & Results module — upcoming series/tests with best-effort
@@ -217,6 +217,96 @@ function WtcStatusGrid({ rows }) {
   )
 }
 
+// Series added from the "Series Squads & Matches Details" sheet onward
+// carry a full squad list per side plus a real match-by-match table —
+// richer than the one-line summary every earlier bilateral series gets in
+// "Series Matches" (still rendered above via FixtureGroup, untouched).
+// Collapsed by default and expanded on click, same inline-expand pattern
+// used elsewhere in the app (BadgeHolders, franchise squad cards).
+function SeriesSquadDetailCard({ series }) {
+  const [expanded, setExpanded] = useState(false)
+  const sides = Object.entries(series.squads || {})
+  const matches = series.matches || []
+
+  return (
+    <div className={`glass-panel series-detail-card${expanded ? ' is-expanded' : ''}`}>
+      <button
+        type="button"
+        className="series-detail-card__header"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        <div className="series-detail-card__teams">
+          <Badge name={series.home} size={40} rounded="square" />
+          <div>
+            <p className="series-detail-card__title">{series.name}</p>
+            <p className="series-detail-card__meta text-faint">
+              {series.home} vs {series.opponent}
+            </p>
+          </div>
+        </div>
+        <span className={`pill pill-status-${series.status.toLowerCase()}`}>{series.status}</span>
+      </button>
+
+      {expanded && (
+        <div className="series-detail-card__body">
+          <div className="series-detail-card__squads">
+            {sides.map(([board, roster]) => (
+              <div key={board} className="series-detail-card__squad">
+                <p className="series-detail-card__squad-title">
+                  <IconPlayer className="series-detail-card__squad-icon" aria-hidden="true" />
+                  {board} Squad
+                  <span className="text-faint"> ({roster.length})</span>
+                </p>
+                {roster.length === 0 ? (
+                  <p className="text-faint series-detail-card__squad-empty">Squad not announced yet.</p>
+                ) : (
+                  <ul className="series-detail-card__squad-list">
+                    {roster.map((name, i) => (
+                      <li key={i}>{name}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="series-detail-card__matches">
+            <p className="series-detail-card__matches-title">
+              <IconMatch className="series-detail-card__squad-icon" aria-hidden="true" />
+              Matches ({matches.length})
+            </p>
+            {matches.length === 0 ? (
+              <p className="text-faint series-detail-card__squad-empty">No matches played yet.</p>
+            ) : (
+              <div className="series-detail-card__match-list">
+                {matches.map((m, i) => (
+                  <div key={i} className="series-detail-card__match-row">
+                    <span className="series-detail-card__match-name">{m['Match List']}</span>
+                    <span className="text-faint series-detail-card__match-meta">
+                      {[m['Format'], m['Date'], m['Venue']].filter(Boolean).join(' · ')}
+                    </span>
+                    {m['Winner'] && (
+                      <span className="pill pill-status-completed">Won: {m['Winner']}</span>
+                    )}
+                    {(m['Man of the Match'] || m['Best Batsman'] || m['Best Bowler']) && (
+                      <span className="text-faint series-detail-card__match-standouts">
+                        {m['Man of the Match'] && <>MOTM: {m['Man of the Match']} </>}
+                        {m['Best Batsman'] && <>· Bat: {m['Best Batsman']} </>}
+                        {m['Best Bowler'] && <>· Ball: {m['Best Bowler']}</>}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Fixtures() {
   const { data, loading, error } = useDashboard()
   const [tab, setTab] = useState('upcoming')
@@ -237,6 +327,7 @@ export default function Fixtures() {
   const franchiseLeagues = series.franchiseLeagues || []
   const majorTournaments = series.majorTournaments || []
   const wtcPending = tests.wtcPendingSchedule || []
+  const seriesSquadDetails = data.seriesSquadDetails || []
 
   return (
     <div className="page-enter">
@@ -312,6 +403,27 @@ export default function Fixtures() {
           <WtcStatusGrid rows={wtcPending} />
           {wtcPending.length === 0 && <div className="empty-state">No WTC schedule data recorded yet.</div>}
         </section>
+
+        {seriesSquadDetails.length > 0 && (
+          <section className="page-section">
+            <div className="section-header">
+              <div>
+                <p className="section-header__eyebrow">Squads & Match-by-Match</p>
+                <h2>Series Details</h2>
+              </div>
+            </div>
+            <p className="text-faint fixture-caption">
+              Full squads and a match-by-match breakdown for series added since squad announcements
+              started — click a series to expand. Earlier series only ever got the one-line summary
+              shown above under Series/Series Results.
+            </p>
+            <div className="series-detail-grid">
+              {seriesSquadDetails.map((s) => (
+                <SeriesSquadDetailCard key={s.id} series={s} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

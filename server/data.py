@@ -720,6 +720,116 @@ def get_fixtures(wb):
     return {"series": series, "tests": tests}
 
 
+# ---------------------------------------------------------------------------
+# Series Squads & Matches Details — a new sheet added partway through the
+# season. Bilateral series before it only ever got a one-line summary row
+# in "Series Matches" (see _parse_fixture_sheet above, left completely
+# untouched); series added from this sheet onward instead get a full squad
+# list per side plus a real match-by-match table, so this is deliberately a
+# separate parser/payload field rather than folded into get_fixtures - the
+# old series' shape and the app surfaces reading it are unaffected.
+# ---------------------------------------------------------------------------
+
+SERIES_DETAIL_SHEET = "Series Squads & Matches Details"
+SERIES_DETAIL_TITLE_RE = re.compile(
+    r"^(?P<name>.+?)\s*\[\s*(?P<home>.+?)\s*\(\s*Home\s*\)\s*vs\s*(?P<opponent>.+?)\s*\]\s*$", re.I
+)
+
+
+def _read_series_detail_matches(ws, header_row, end_row, start_col):
+    """Same idea as _read_franchise_matches (headers read straight off
+    `header_row` rather than assumed, one row per match), but the "Match
+    List" column here starts at `start_col` (column C, alongside the two
+    squad columns in A/B) instead of always being column A - kept as its
+    own small reader rather than adding a start_col param to the
+    heavily-used _read_franchise_matches, so every existing caller of that
+    function is completely unaffected.
+    """
+    headers = {}
+    for c in range(start_col, ws.max_column + 1):
+        h = _clean(ws.cell(row=header_row, column=c).value)
+        if h:
+            headers[c] = h.strip().rstrip(":").strip()
+
+    matches = []
+    for r in range(header_row + 1, end_row):
+        schedule = _clean(ws.cell(row=r, column=start_col).value)
+        if not schedule:
+            continue
+        row = {}
+        for c, h in headers.items():
+            v = _jsonify_scalar(_clean(ws.cell(row=r, column=c).value))
+            if v is not None:
+                row[h] = v
+        if row:
+            matches.append(row)
+    return matches
+
+
+def get_series_squad_details(wb):
+    """Reads every "<Series Name> [ <Home>(Home) vs <Opponent> ]" block on
+    the sheet: a squad list per side (columns A/B, a numbered list each,
+    stopping at the first blank row - same convention as every other squad
+    list in this file) and a "Match List / Format / Date / Venue / Winner /
+    Umpire / Man of the Match / Best Batsman / Best Bowler" table starting
+    in column C on the same row the squads start. A series with no matches
+    played yet still gets its squads (matches just comes back empty), and
+    series here that end up in "Series Matches" too aren't cross-referenced
+    or deduplicated against that sheet - they're two different sources.
+    """
+    if SERIES_DETAIL_SHEET not in wb.sheetnames:
+        return []
+    ws = wb[SERIES_DETAIL_SHEET]
+    max_row = ws.max_row
+
+    title_rows = []
+    for r in range(1, max_row + 1):
+        v = _clean(ws.cell(row=r, column=1).value)
+        if isinstance(v, str) and SERIES_DETAIL_TITLE_RE.match(v):
+            title_rows.append(r)
+
+    series_list = []
+    for i, title_row in enumerate(title_rows):
+        m = SERIES_DETAIL_TITLE_RE.match(_clean(ws.cell(row=title_row, column=1).value))
+        block_end = title_rows[i + 1] - 1 if i + 1 < len(title_rows) else max_row
+
+        squads_row = title_row + 1
+        home_squad = _collect_numbered_list(ws, 1, squads_row + 1, block_end)
+        opponent_squad = _collect_numbered_list(ws, 2, squads_row + 1, block_end)
+
+        matches = []
+        match_header_row = squads_row + 1
+        if _clean(ws.cell(row=match_header_row, column=3).value):
+            matches = _read_series_detail_matches(ws, match_header_row, block_end + 1, start_col=3)
+
+        completed = [mt for mt in matches if mt.get("Winner")]
+        if matches and len(completed) == len(matches):
+            status = "Completed"
+        elif completed:
+            status = "Ongoing"
+        else:
+            status = "Upcoming"
+
+        home_name = m.group("home").strip()
+        opponent_name = m.group("opponent").strip()
+        series_list.append(
+            {
+                "id": re.sub(r"[^a-z0-9]+", "-", m.group("name").strip().lower()).strip("-"),
+                "name": m.group("name").strip(),
+                "home": home_name,
+                "opponent": opponent_name,
+                "squads": {
+                    home_name: home_squad,
+                    opponent_name: opponent_squad,
+                },
+                "matches": matches,
+                "totalMatches": len(matches),
+                "status": status,
+            }
+        )
+    return series_list
+
+
 def _levenshtein(a, b):
     if a == b:
         return 0
@@ -1654,6 +1764,7 @@ def build_dashboard(path):
     boards, dismantled, credits_data = get_boards(wb)
     t20wc = get_t20_world_cup(wb)
     fixtures = get_fixtures(wb)
+    series_squad_details = get_series_squad_details(wb)
     franchise_leagues = get_franchise_leagues(wb)
     hall_of_fame = get_hall_of_fame(wb)
     continental_cups = get_continental_cups(wb)
@@ -1847,6 +1958,7 @@ def build_dashboard(path):
         "womensGlobalLeague": womens_league,
         "loneWarrior": lone_warrior,
         "fixtures": fixtures,
+        "seriesSquadDetails": series_squad_details,
         "upcomingMatches": upcoming,
         "hallOfFame": hall_of_fame,
         "news": news,
