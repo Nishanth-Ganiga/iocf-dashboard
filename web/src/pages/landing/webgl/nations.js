@@ -23,6 +23,7 @@ export const IOCF_NATIONS = [
   { id: 'ireland', name: 'Ireland', lat: 53, lng: -8, color: '#34e0ff' },
   { id: 'uganda', name: 'Uganda', lat: 1, lng: 32, color: '#f5cf5c' },
   { id: 'usa', name: 'United States', lat: 39, lng: -98, color: '#d4af37' },
+  { id: 'portugal', name: 'Portugal', lat: 39, lng: -8, color: '#f5cf5c' },
 ]
 
 // Converts lat/lng (degrees) to a point on a sphere of the given radius,

@@ -28,6 +28,7 @@ BOARD_SHEETS = {
     "Netherlands": "Netherlands",
     "Newzealand": "Newzealand",
     "Pakistan": "Pakistan",
+    "Portugal": "Portugal",
     "Qatar": "Qatar",
     "Scotland": "Scotland",
     "South Africa": "SA",
@@ -1064,6 +1065,7 @@ FRANCHISE_SHEETS = [
     "IPL 2026",
     "CPL 2026",
     "SPL 2026",
+    "QECL",
 ]
 
 FRANCHISE_DISPLAY_NAMES = {
@@ -1075,6 +1077,7 @@ FRANCHISE_DISPLAY_NAMES = {
     "IPL 2026": "Indian Premier League 2026",
     "CPL 2026": "Caribbean Premier League 2026",
     "SPL 2026": "Scottish Premier League 2026",
+    "QECL": "Qatar Elite Cricket League 2026",
 }
 
 FRANCHISE_ALL_TEAMS_RE = re.compile(r"all\s*teams\s*$", re.I)
@@ -1100,6 +1103,24 @@ ROLE_ABBRS = {"c", "vc", "m", "dc", "ds"}
 # Signing (signed directly by the franchise outside the main auction).
 ROLE_NAMES = {"c": "Captain", "vc": "Vice-Captain", "m": "Marquee", "dc": "Designated Coach", "ds": "Direct Signing"}
 
+# QECL's "All TEAMS" picks use one whole-line format not seen in any other
+# franchise sheet - a full-word role plus board before a colon-separated
+# credits figure ("Ans Sheikh(Captain-Qatar): 600000"), instead of the
+# 1-5-letter role tag and space/hyphen-separated credits every other league
+# uses. Matched as a full-line pattern and checked first, so it can only
+# ever fire on this exact shape and never changes any other sheet's line.
+QECL_ROLE_CREDIT_RE = re.compile(
+    r"^(?P<name>.+?)\s*\(\s*(?P<role>[a-z -]+?)\s*-\s*(?P<board>.+?)\s*\)\s*:\s*(?P<credits>\d[\d,]*)\s*$",
+    re.I,
+)
+QECL_ROLE_WORDS = {
+    "captain": "Captain",
+    "vice-captain": "Vice-Captain",
+    "marquee": "Marquee",
+    "designated coach": "Designated Coach",
+    "direct signing": "Direct Signing",
+}
+
 
 def _parse_franchise_player_line(raw):
     """Parses one numbered roster line from a "Franchise League ... All
@@ -1111,6 +1132,17 @@ def _parse_franchise_player_line(raw):
     """
     m = PLAYER_LINE_RE.match(raw)
     text = m.group(1) if m else raw.strip()
+
+    qecl_m = QECL_ROLE_CREDIT_RE.match(text)
+    if qecl_m:
+        role_word = qecl_m.group("role").strip().lower()
+        if role_word in QECL_ROLE_WORDS:
+            name = _clean(qecl_m.group("name"))
+            board = _clean(qecl_m.group("board"))
+            if board:
+                name = f"{name}({board})"
+            credits = int(qecl_m.group("credits").replace(",", ""))
+            return {"name": name, "credits": credits, "role": QECL_ROLE_WORDS[role_word], "note": None}
 
     note = None
     note_m = REPLACED_NOTE_RE.search(text)
@@ -1285,8 +1317,15 @@ def get_franchise_leagues(wb):
 
         boards = {}
         for r in range(2, registration_end):
-            next_row_first_cell = _clean(ws.cell(row=r + 1, column=1).value)
-            if not (isinstance(next_row_first_cell, str) and next_row_first_cell.strip().startswith("1.")):
+            # Checked across every column rather than just column 1: QECL
+            # lists Australia first with zero registrants, so column 1 alone
+            # would make this whole row look header-less even though most of
+            # the other board columns do have a numbered roster below it.
+            next_row_has_players = any(
+                isinstance(v, str) and v.strip().startswith("1.")
+                for v in (_clean(ws.cell(row=r + 1, column=c).value) for c in range(1, ws.max_column + 1))
+            )
+            if not next_row_has_players:
                 continue
             for c in range(1, ws.max_column + 1):
                 board = _clean(ws.cell(row=r, column=c).value)
@@ -1623,6 +1662,193 @@ def get_continental_cups(wb):
     return cups
 
 
+# ---------------------------------------------------------------------------
+# World Cups (IOCF ODI World Cup, IOCF Associate Nations Cup)
+# ---------------------------------------------------------------------------
+
+WORLD_CUP_SHEETS = {
+    "IOCF ODI WORLD CUP": "IOCF ODI World Cup",
+    "IOCF Associate Nations Cup": "IOCF Associate Nations Cup",
+}
+
+WORLD_CUP_TITLE_RE = re.compile(r"hosted by\s+(.+?)\s*$", re.I)
+WORLD_CUP_SQUADS_LABEL_RE = re.compile(r"^squads$", re.I)
+WORLD_CUP_POOLS_LABEL_RE = re.compile(r"^pools$", re.I)
+WORLD_CUP_POOL_NAME_RE = re.compile(r"^pool\s+\S+$", re.I)
+WORLD_CUP_MATCH_TABLE_RE = re.compile(r"schedule and all match updates", re.I)
+WORLD_CUP_SQUAD_ROLE_RE = re.compile(r"\(\s*(captain|vice[- ]captain)\s*\)\s*$", re.I)
+
+
+def _read_world_cup_squads(ws, header_row, start_row, end_row):
+    """Reads the per-team numbered squad lists below a World Cup's
+    "SQUADS" header row - same numbered-list shape used everywhere else
+    in the workbook, with an optional trailing "(Captain)"/"(Vice-Captain)"
+    tag some names carry that isn't part of the name itself. Team names
+    are normalized through _resolve_board_name - the ODI World Cup's own
+    "SQUADS" header row spells every team in ALL CAPS ("AUSTRALIA"), a
+    different casing than its own pool-list ("Australia") or the board's
+    canonical display name used everywhere else on the dashboard, which
+    would otherwise stop Badge/flag lookups from matching this team to its
+    board identity."""
+    squads = {}
+    for c in range(1, ws.max_column + 1):
+        team = _clean(ws.cell(row=header_row, column=c).value)
+        if not team:
+            continue
+        team = _resolve_board_name(team) or team
+        players = []
+        for raw in _collect_numbered_list(ws, c, start_row, end_row):
+            role = None
+            name = raw
+            role_m = WORLD_CUP_SQUAD_ROLE_RE.search(raw)
+            if role_m:
+                role = "Vice-Captain" if "vice" in role_m.group(1).lower() else "Captain"
+                name = raw[: role_m.start()].strip()
+            players.append({"name": name, "role": role})
+        if players:
+            squads[team] = players
+    return squads
+
+
+def _read_bounded_match_table(ws, header_row, start_col, end_col, end_row):
+    """Same shape as _read_franchise_matches, but confined to columns
+    [start_col, end_col] - needed when a sheet places more than one
+    "Schedule and All Match Updates" table side by side sharing the same
+    row range (the ODI World Cup's Pool A / Pool B tables), where an
+    unbounded column scan would merge both tables into one."""
+    headers = {}
+    for c in range(start_col, end_col + 1):
+        h = _clean(ws.cell(row=header_row, column=c).value)
+        if h:
+            headers[c] = h.strip().rstrip(":").strip()
+
+    matches = []
+    for r in range(header_row + 1, end_row):
+        schedule = _clean(ws.cell(row=r, column=start_col).value)
+        if not schedule:
+            continue
+        row = {}
+        for c, h in headers.items():
+            v = _jsonify_scalar(_clean(ws.cell(row=r, column=c).value))
+            if v is not None:
+                row[h] = v
+        if row:
+            matches.append(row)
+    return matches
+
+
+def get_world_cups(wb):
+    """Reads the "IOCF ... WORLD CUP" / "IOCF ... NATIONS CUP" sheets -
+    each a standalone global tournament rather than a per-continent or
+    per-franchise one. Structurally closest to a continental cup (same
+    awards-table shape, reused via _read_continental_cup_awards as-is),
+    but with two differences handled here instead: teams sit in a header
+    row rather than a numbered list, and a sheet can carry two pool
+    schedule tables side by side sharing the same row range. Every section
+    degrades to an empty list/dict rather than raising when a sheet hasn't
+    reached that stage yet - the Associate Nations Cup, for one, has no
+    squads/pools/schedule filled in at all so far, just its teams and a
+    blank awards template.
+    """
+    cups = []
+    for sheet_name, display in WORLD_CUP_SHEETS.items():
+        if sheet_name not in wb.sheetnames:
+            continue
+        ws = wb[sheet_name]
+        max_row = ws.max_row
+
+        title = _clean(ws.cell(row=1, column=1).value) or sheet_name
+        host_m = WORLD_CUP_TITLE_RE.search(title) if isinstance(title, str) else None
+        host = host_m.group(1).strip() if host_m else None
+
+        squads_row = _find_row_with_text(ws, WORLD_CUP_SQUADS_LABEL_RE, start_row=2)
+        squads = {}
+        teams = []
+        if squads_row:
+            header_row = squads_row + 1
+            squads = _read_world_cup_squads(ws, header_row, header_row + 1, max_row)
+            teams = list(squads.keys())
+        if not teams:
+            header_row = squads_row + 1 if squads_row else 2
+            teams = [
+                _resolve_board_name(v) or v
+                for c in range(1, ws.max_column + 1)
+                if (v := _clean(ws.cell(row=header_row, column=c).value))
+            ]
+
+        pools_row = _find_row_with_text(ws, WORLD_CUP_POOLS_LABEL_RE, start_row=2)
+        pools = []
+        matches = []
+        if pools_row:
+            list_row = pools_row + 1
+            pool_cols = [
+                (c, v.strip())
+                for c in range(1, ws.max_column + 1)
+                for v in [_clean(ws.cell(row=list_row, column=c).value)]
+                if isinstance(v, str) and WORLD_CUP_POOL_NAME_RE.match(v.strip())
+            ]
+            for col, pool_name in pool_cols:
+                pool_teams = [_resolve_board_name(t) or t for t in _collect_numbered_list(ws, col, list_row + 1, max_row)]
+                pools.append({"name": pool_name, "teams": pool_teams})
+
+            table_cols = [
+                c
+                for c in range(1, ws.max_column + 1)
+                for v in [_clean(ws.cell(row=list_row, column=c).value)]
+                if isinstance(v, str) and WORLD_CUP_MATCH_TABLE_RE.search(v)
+            ]
+            for i, start_col in enumerate(table_cols):
+                end_col = start_col
+                while _clean(ws.cell(row=list_row + 1, column=end_col + 1).value):
+                    end_col += 1
+                pool_name = pool_cols[i][1] if i < len(pool_cols) else None
+                for row in _read_bounded_match_table(ws, list_row + 1, start_col, end_col, max_row + 1):
+                    matches.append({"Pool": pool_name, **row} if pool_name else row)
+        else:
+            schedule_row = _find_row_with_text(ws, WORLD_CUP_MATCH_TABLE_RE, start_row=2)
+            if schedule_row:
+                matches = _read_franchise_matches(ws, schedule_row + 1, max_row + 1)
+
+        awards_row = _find_row_with_text(ws, CONTINENTAL_CUP_AWARDS_RE, start_row=2)
+        awards = []
+        champion = None
+        runner_up = None
+        if awards_row:
+            awards = _read_continental_cup_awards(ws, awards_row + 1, max_row + 1)
+            for a in awards:
+                name = (a["award"] or "").strip().lower()
+                if name == "champions":
+                    champion = a["board"]
+                elif name in ("runners up", "runner up", "runners-up"):
+                    runner_up = a["board"]
+
+        completed = [m for m in matches if m.get("Winner")]
+        if champion:
+            status = "Completed"
+        elif completed:
+            status = "Ongoing"
+        else:
+            status = "Upcoming"
+
+        cups.append(
+            {
+                "id": sheet_name.lower().replace(" ", "-"),
+                "name": display,
+                "season": "2026",
+                "host": host,
+                "teams": teams,
+                "squads": squads,
+                "pools": pools,
+                "matches": matches,
+                "totalMatches": len(matches),
+                "awards": awards,
+                "status": status,
+                "champion": champion,
+                "runnerUp": runner_up,
+            }
+        )
+    return cups
+
 
 def get_emerging_talent_league(wb, tournament_updates):
     name = "Emerging Talent League"
@@ -1673,7 +1899,11 @@ def get_womens_global_league(wb, tournament_updates):
     soon as the sheet grows one, instead of needing a code change then.
     """
     name = "Womens Global League"
-    info = tournament_updates.get("sections", {}).get("WOMENS GLOBAL LEAGUE 2026", {})
+    # The credits-sheet summary table titles this section "WOMEN'S GLOBAL
+    # LEAGUE 2026" (with the apostrophe) - matched exactly rather than the
+    # apostrophe-less spelling, or the champion/runner-up filled in there
+    # silently never reaches this dashboard.
+    info = tournament_updates.get("sections", {}).get("WOMEN'S GLOBAL LEAGUE 2026", {})
     squads = {}
     matches = []
     if name in wb.sheetnames:
@@ -1768,6 +1998,7 @@ def build_dashboard(path):
     franchise_leagues = get_franchise_leagues(wb)
     hall_of_fame = get_hall_of_fame(wb)
     continental_cups = get_continental_cups(wb)
+    world_cups = get_world_cups(wb)
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
     womens_league = get_womens_global_league(wb, credits_data["tournamentUpdates"])
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
@@ -1841,6 +2072,19 @@ def build_dashboard(path):
                 "totalMatches": cup["totalMatches"],
             }
         )
+    for cup in world_cups:
+        tournaments.append(
+            {
+                "id": cup["id"],
+                "name": cup["name"],
+                "category": "World Cup",
+                "season": cup["season"],
+                "status": cup["status"],
+                "champion": cup["champion"],
+                "runnerUp": cup["runnerUp"],
+                "totalMatches": cup["totalMatches"],
+            }
+        )
     for lg in franchise_leagues:
         tournaments.append(
             {
@@ -1868,6 +2112,7 @@ def build_dashboard(path):
         + len([m for m in emerging["matches"] if m.get("winner")])
         + lone_warrior["totalMatches"]
         + sum(len([m for m in cup["matches"] if m.get("Winner")]) for cup in continental_cups)
+        + sum(len([m for m in cup["matches"] if m.get("Winner")]) for cup in world_cups)
     )
     total_championships = len([t for t in tournaments if t.get("champion")])
     total_credits = sum(b["credits"] or 0 for b in boards)
@@ -1954,6 +2199,7 @@ def build_dashboard(path):
         "t20WorldCup": t20wc,
         "franchiseLeagues": franchise_leagues,
         "continentalCups": continental_cups,
+        "worldCups": world_cups,
         "emergingTalentLeague": emerging,
         "womensGlobalLeague": womens_league,
         "loneWarrior": lone_warrior,

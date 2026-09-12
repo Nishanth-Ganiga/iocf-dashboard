@@ -488,6 +488,28 @@ export function buildAchievementsIndex(data) {
     }
   }
 
+  // World Cups (IOCF ODI World Cup, IOCF Associate Nations Cup) — same
+  // "Schedule: A vs B" national-board match shape and the same
+  // Award Name/Winner/Board/Achievement awards-table shape as a
+  // continental cup, so they resolve against the board roster pool the
+  // same way. Both cups are still early in the season in the source
+  // workbook (no awards decided yet), so this is mostly future-proofing
+  // for once they are.
+  for (const cup of data.worldCups || []) {
+    for (const a of cup.awards || []) {
+      pushAwardAchievement(index, a.winner, a.board, {
+        source: cup.name,
+        title: a.award,
+        detail: a.achievement && a.achievement !== '-' ? a.achievement : a.board,
+        credits: a.credits,
+      }, boardRosterIndex, true)
+    }
+    for (const m of cup.matches || []) {
+      const pool = matchCandidatePool(m.Schedule, boardNames, rosterForBoard)
+      addMatchHonors(index, cup.name, m, m.Schedule, pool, data, globalCandidateNames)
+    }
+  }
+
   const etl = data.emergingTalentLeague
   if (etl) {
     for (const m of etl.matches || []) {

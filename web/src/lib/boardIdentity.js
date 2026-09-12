@@ -92,6 +92,14 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#01411c', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/pakistan_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
+  // Newest board (added 2026) - no mascot artwork or Instagram handle on
+  // record yet, so both are left out entirely rather than invented; see
+  // MascotIcon.jsx/FlagIcon.jsx for how a missing mascotImage/instagram
+  // degrades gracefully instead of rendering broken.
+  Portugal: {
+    flagCode: 'pt', flagEmoji: '🇵🇹', mascotName: null,
+    crest: { primary: '#046A38', secondary: '#DA291C' },
+  },
   Qatar: {
     flagCode: 'qa', flagEmoji: '🇶🇦', mascotName: 'Arabian Horse',
     mascotImage: '/mascots/qatar.png',

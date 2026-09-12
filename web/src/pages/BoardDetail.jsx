@@ -31,12 +31,26 @@ const INTERNATIONAL_TOURNAMENTS = [
     image: '/trophies/emerging-talents-league.png',
     key: 'emergingTalentLeague',
   },
+  {
+    id: 'womens-global-league-2026',
+    name: "IOCF Women's Global League",
+    image: '/trophies/womens-global-league.png',
+    key: 'womensGlobalLeague',
+  },
 ]
 
 const CONTINENTAL_CUP_TROPHIES = {
   'iocf-asia-cup': '/trophies/asia-cup.png',
   'iocf-euro-cup': '/trophies/euro-cup.png',
   'iocf-oceania-cup': '/trophies/oceania-cup.png',
+}
+
+// World Cups (data.worldCups) get their own trophy map, same idea as
+// CONTINENTAL_CUP_TROPHIES just above — one entry each rather than a
+// single object key, since they live as a list on the dashboard payload.
+const WORLD_CUP_TROPHIES = {
+  'iocf-odi-world-cup': '/trophies/odi-world-cup.png',
+  'iocf-associate-nations-cup': '/trophies/associate-nations-cup.png',
 }
 
 // Rich single-board profile: leadership, roster, stadiums, trophy cabinet
@@ -91,6 +105,16 @@ export default function BoardDetail() {
       (data.continentalCups || [])
         .map((cup) => {
           const image = CONTINENTAL_CUP_TROPHIES[cup.id]
+          if (!image) return null
+          if (cup.champion === board.name) return { id: cup.id, name: cup.name, image, result: 'Champions' }
+          if (cup.runnerUp === board.name) return { id: cup.id, name: cup.name, image, result: 'Runners-up' }
+          return null
+        })
+    )
+    .concat(
+      (data.worldCups || [])
+        .map((cup) => {
+          const image = WORLD_CUP_TROPHIES[cup.id]
           if (!image) return null
           if (cup.champion === board.name) return { id: cup.id, name: cup.name, image, result: 'Champions' }
           if (cup.runnerUp === board.name) return { id: cup.id, name: cup.name, image, result: 'Runners-up' }

@@ -52,9 +52,12 @@ export default function TournamentDetail() {
     body = <LoneWarriorDetail lw={data.loneWarrior} />
   } else {
     const continentalCup = (data.continentalCups || []).find((c) => c.id === tournamentId)
+    const worldCup = (data.worldCups || []).find((c) => c.id === tournamentId)
     const franchiseLeague = (data.franchiseLeagues || []).find((l) => l.id === tournamentId)
     if (continentalCup) {
       body = <ContinentalCupDetail cup={continentalCup} />
+    } else if (worldCup) {
+      body = <WorldCupDetail cup={worldCup} />
     } else if (franchiseLeague) {
       body = <FranchiseLeagueDetail league={franchiseLeague} />
     } else {
@@ -519,7 +522,7 @@ function ContinentalCupAwardsShowcase({ awards }) {
           <div key={i} className="entity-card glass-panel td-award-card">
             <IconTrophy className="td-award-card__icon" aria-hidden="true" />
             <p className="td-award-card__name">{a.award}</p>
-            <p className="td-award-card__winner">{a.winner || a.board}</p>
+            <p className="td-award-card__winner">{a.winner || a.board || '—'}</p>
             {a.winner && a.board && (
               <p className="text-faint td-award-card__sub">{a.board}</p>
             )}
@@ -532,6 +535,133 @@ function ContinentalCupAwardsShowcase({ awards }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* World Cup — global tournaments (ODI World Cup, Associate Nations    */
+/* Cup): teams/pools/squads/matches/awards each degrade to empty when  */
+/* a cup hasn't reached that stage yet, same as ContinentalCupDetail.  */
+/* ------------------------------------------------------------------ */
+function WorldCupDetail({ cup }) {
+  const teams = cup.teams || []
+  const squadBoards = Object.keys(cup.squads || {})
+  const pools = cup.pools || []
+  const matches = cup.matches || []
+  const awards = cup.awards || []
+
+  return (
+    <>
+      <ChampionBanner champion={cup.champion} runnerUp={cup.runnerUp} totalMatches={cup.totalMatches || null} />
+
+      {cup.host && <p className="text-faint td-caption">Hosted by {cup.host}</p>}
+
+      {pools.length > 0 ? (
+        <div className="td-subsection">
+          <h3 className="td-subsection__title">Pools</h3>
+          <div className="card-grid">
+            {pools.map((pool) => (
+              <div key={pool.name} className="entity-card glass-panel td-team-list">
+                <p className="entity-card__title">{pool.name}</p>
+                <ul className="td-team-list__items">
+                  {pool.teams.map((team) => (
+                    <li key={team}>
+                      <Badge name={team} size={26} /> {team}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        teams.length > 0 && (
+          <div className="td-subsection">
+            <h3 className="td-subsection__title">Participating Teams</h3>
+            <div className="card-grid">
+              {teams.map((team) => (
+                <div key={team} className="entity-card glass-panel td-team-card">
+                  <Badge name={team} size={44} />
+                  <p className="entity-card__title">{team}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      )}
+
+      {squadBoards.length > 0 && (
+        <div className="td-subsection">
+          <h3 className="td-subsection__title">Squads</h3>
+          <div className="card-grid">
+            {squadBoards.map((b) => (
+              <WorldCupSquadCard key={b} board={b} players={cup.squads[b]} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {matches.length > 0 ? (
+        pools.length > 0 ? (
+          pools.map((pool) => {
+            const poolMatches = matches.filter((m) => m.Pool === pool.name)
+            return poolMatches.length > 0 ? (
+              <FranchiseMatchTimeline key={pool.name} title={`${pool.name} — Matches`} matches={poolMatches} />
+            ) : null
+          })
+        ) : (
+          <FranchiseMatchTimeline matches={matches} />
+        )
+      ) : (
+        <div className="empty-state">Fixtures for this World Cup have not been scheduled yet.</div>
+      )}
+
+      {awards.length > 0 && <ContinentalCupAwardsShowcase awards={awards} />}
+    </>
+  )
+}
+
+// Same shape as SquadCard, but a World Cup squad's numbered list can carry
+// a trailing "(Captain)"/"(Vice-Captain)" tag per player - split out by
+// get_world_cups() into a `role` field, so captains get the same pill
+// treatment as a franchise team's leadership picks (FranchiseTeamCard)
+// instead of just reading as a plain name in the roster list.
+function WorldCupSquadCard({ board, players }) {
+  const [expanded, setExpanded] = useState(false)
+  const list = players || []
+  const leadership = list.filter((p) => p.role)
+  const roster = list.filter((p) => !p.role)
+  const shown = expanded ? roster : roster.slice(0, 6)
+
+  return (
+    <div className="entity-card glass-panel td-squad-card">
+      <div className="entity-card__top">
+        <Badge name={board} size={44} />
+        <div>
+          <p className="entity-card__title">{board}</p>
+          <p className="entity-card__meta">{list.length} player{list.length === 1 ? '' : 's'}</p>
+        </div>
+      </div>
+      {leadership.length > 0 && (
+        <div className="td-franchise-card__leadership">
+          {leadership.map((p) => (
+            <span key={p.name} className="pill td-franchise-card__role-pill">
+              <IconCaptain aria-hidden="true" /> {p.name} · {p.role}
+            </span>
+          ))}
+        </div>
+      )}
+      <ul className="td-squad-card__players">
+        {shown.map((p) => (
+          <li key={p.name}>{p.name}</li>
+        ))}
+      </ul>
+      {roster.length > 6 && (
+        <button type="button" className="btn btn-ghost td-squad-card__toggle" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? 'Show less' : `Show all ${roster.length}`}
+        </button>
+      )}
     </div>
   )
 }
@@ -716,10 +846,10 @@ function FranchiseTeamCard({ team, highestSpend }) {
 // reads much better than one more giant scrollable table.
 const KNOCKOUT_RE = /qualifier|eliminator|final/i
 
-function FranchiseMatchTimeline({ matches }) {
+function FranchiseMatchTimeline({ matches, title = 'Match Timeline' }) {
   return (
     <div className="td-subsection">
-      <h3 className="td-subsection__title">Match Timeline ({matches.length})</h3>
+      <h3 className="td-subsection__title">{title} ({matches.length})</h3>
       <div className="glass-panel td-timeline">
         {matches.map((m, i) => {
           const schedule = m.Schedule || ''

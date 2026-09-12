@@ -17,6 +17,8 @@ export const BADGE_ICONS = {
   'specialist-award': IconSpecialistAward,
   'world-champion': IconEarth,
   'world-cup-hero': IconGlobe,
+  'world-cup-champion': IconEarth,
+  'world-cup-hero-global': IconGlobe,
   'continental-champion': IconEarth,
   'continental-cup-hero': IconGlobe,
   'franchise-champion': IconChampion,
@@ -330,6 +332,34 @@ export function computeBadges(data, name, { home, squads, achievements, boards }
       detail: 'Named in an Asia/Euro/Oceania Cup award or match honor',
       criteria: 'Awarded to players named in any Asia Cup, Euro Cup, or Oceania Cup award or match honor.',
       evidence: continentalCupAchievements.map(describeAchievement),
+    })
+  }
+  // World Cups (IOCF ODI World Cup, IOCF Associate Nations Cup) - global
+  // tournaments distinct from the T20 World Cup, so these get their own
+  // badge keys ('world-cup-champion'/'world-cup-hero-global') rather than
+  // reusing 'world-champion'/'world-cup-hero', which are specifically
+  // about the T20 World Cup.
+  const worldCupWins = (data.worldCups || []).filter(
+    (cup) => cup.champion && home?.board?.name === cup.champion
+  )
+  if (worldCupWins.length > 0) {
+    badges.push({
+      key: 'world-cup-champion',
+      label: 'World Cup Champion Board',
+      detail: `Represents ${worldCupWins[0].champion} — ${worldCupWins[0].name} champions`,
+      criteria: 'Awarded to every player of the national board that won a World Cup (IOCF ODI World Cup / Associate Nations Cup).',
+      evidence: worldCupWins.map((cup) => `${cup.champion} won the ${cup.name}`),
+    })
+  }
+  const worldCupNames = new Set((data.worldCups || []).map((cup) => cup.name))
+  const worldCupAchievementsGlobal = achievements.filter((a) => worldCupNames.has(a.source))
+  if (worldCupAchievementsGlobal.length > 0) {
+    badges.push({
+      key: 'world-cup-hero-global',
+      label: 'World Cup Hero',
+      detail: 'Named in an IOCF ODI World Cup / Associate Nations Cup award or match honor',
+      criteria: 'Awarded to players named in any IOCF ODI World Cup or Associate Nations Cup award or match honor.',
+      evidence: worldCupAchievementsGlobal.map(describeAchievement),
     })
   }
   const championSquads = squads.filter((s) => teamHonorFor(data, s.leagueId, s.team) === 'champion')

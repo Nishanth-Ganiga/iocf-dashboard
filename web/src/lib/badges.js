@@ -54,6 +54,7 @@ const BOARD_CODES = {
   Netherlands: 'NED',
   Newzealand: 'NZ',
   Pakistan: 'PAK',
+  Portugal: 'POR',
   Qatar: 'QAT',
   Scotland: 'SCO',
   'South Africa': 'SA',
