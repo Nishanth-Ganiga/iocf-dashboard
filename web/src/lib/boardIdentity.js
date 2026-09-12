@@ -67,6 +67,7 @@ export const BOARD_IDENTITY = {
     flagCode: 'ie', flagEmoji: '🇮🇪', mascotName: 'Irish Elk',
     mascotImage: '/mascots/ireland.png',
     crest: { primary: '#169b62', secondary: '#ff883e' },
+    instagram: 'https://www.instagram.com/ireland_iocf/',
   },
   Italy: {
     flagCode: 'it', flagEmoji: '🇮🇹', mascotName: 'Roman Wolf',
@@ -92,13 +93,13 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#01411c', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/pakistan_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
-  // Newest board (added 2026) - no mascot artwork or Instagram handle on
-  // record yet, so both are left out entirely rather than invented; see
-  // MascotIcon.jsx/FlagIcon.jsx for how a missing mascotImage/instagram
-  // degrades gracefully instead of rendering broken.
+  // Newest board (added 2026) - no mascot artwork on record yet, so it's
+  // left out entirely rather than invented; see MascotIcon.jsx for how a
+  // missing mascotImage degrades gracefully instead of rendering broken.
   Portugal: {
     flagCode: 'pt', flagEmoji: '🇵🇹', mascotName: null,
     crest: { primary: '#046A38', secondary: '#DA291C' },
+    instagram: 'https://www.instagram.com/portugal.iocf/',
   },
   Qatar: {
     flagCode: 'qa', flagEmoji: '🇶🇦', mascotName: 'Arabian Horse',
@@ -134,11 +135,13 @@ export const BOARD_IDENTITY = {
     flagCode: 'ug', flagEmoji: '🇺🇬', mascotName: 'Mountain Gorilla',
     mascotImage: '/mascots/uganda.png',
     crest: { primary: '#000000', secondary: '#fcdc04' },
+    instagram: 'https://www.instagram.com/uganda_oc',
   },
   USA: {
     flagCode: 'us', flagEmoji: '🇺🇸', mascotName: 'American Bison',
     mascotImage: '/mascots/usa.png',
     crest: { primary: '#0a3161', secondary: '#b31942' },
+    instagram: 'https://www.instagram.com/usa_iocf/',
   },
   'West Indies': {
     flagCode: null, flagEmoji: '🌴', mascotName: 'Shark',
