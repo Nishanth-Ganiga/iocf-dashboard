@@ -28,6 +28,7 @@ BOARD_SHEETS = {
     "Netherlands": "Netherlands",
     "Newzealand": "Newzealand",
     "Pakistan": "Pakistan",
+    "Papua New Guinea": "PNG",
     "Portugal": "Portugal",
     "Qatar": "Qatar",
     "Scotland": "Scotland",
@@ -1762,14 +1763,19 @@ def get_world_cups(wb):
         host = host_m.group(1).strip() if host_m else None
 
         squads_row = _find_row_with_text(ws, WORLD_CUP_SQUADS_LABEL_RE, start_row=2)
-        squads = {}
-        teams = []
-        if squads_row:
-            header_row = squads_row + 1
-            squads = _read_world_cup_squads(ws, header_row, header_row + 1, max_row)
-            teams = list(squads.keys())
+        # A "SQUADS" label is only sometimes present (the ODI World Cup has
+        # one; the Associate Nations Cup lists its numbered rosters
+        # straight under the team-name row with no label at all) - so
+        # squads are always attempted at the team-header row rather than
+        # only when the label exists. This is a pure superset of the old
+        # behaviour: when the label is present nothing changes, and when
+        # it's absent this only adds a squads read that previously never
+        # ran (falling back to the old team-names-only reading unchanged
+        # when there's no numbered list to find either).
+        header_row = squads_row + 1 if squads_row else 2
+        squads = _read_world_cup_squads(ws, header_row, header_row + 1, max_row)
+        teams = list(squads.keys())
         if not teams:
-            header_row = squads_row + 1 if squads_row else 2
             teams = [
                 _resolve_board_name(v) or v
                 for c in range(1, ws.max_column + 1)
@@ -1848,6 +1854,155 @@ def get_world_cups(wb):
             }
         )
     return cups
+
+
+# ---------------------------------------------------------------------------
+# Champions League
+# ---------------------------------------------------------------------------
+# Pits the reigning champion FRANCHISE TEAM of each completed franchise
+# league (The Hundred, PSL, BBL, KCL, IPL, CPL, SPL, QECL) against each
+# other with a freshly-drafted squad. Still at the "squads announced"
+# stage in the source workbook - no schedule/pools/awards section exists
+# yet, unlike the World Cups which at least model that as a possible
+# future stage - so this only ever returns squads (an empty one for a
+# league whose franchise final hasn't happened yet, e.g. QECL); matches
+# and awards are always empty and status is always "Upcoming" until the
+# sheet grows a schedule.
+CHAMPIONS_LEAGUE_SHEET = "Champions league"
+CL_LEAGUE_HEADER_RE = re.compile(r"^(?P<league>.+?)\s+Champions\s*\(\s*(?P<board>.+?)\s*\)\s*$", re.I)
+
+# Each team's squad line mixes several one-off, hand-typed conventions
+# (full board name after " - ", abbreviated board tucked inside the role
+# parens, credits as a plain number/"K" thousands/"L" lakhs with or
+# without a decimal) not seen on any other sheet, so this gets its own
+# dedicated line parser rather than extending _parse_franchise_player_line.
+CL_BOARD_ABBR = {
+    "aus": "Australia", "wi": "West Indies", "eng": "England", "sl": "Srilanka",
+    "pak": "Pakistan", "scot": "Scotland", "bd": "Bangladesh", "ind": "India",
+    "nz": "Newzealand", "sa": "South Africa",
+}
+CL_ROLE_WORDS = {
+    "captain": "Captain", "vice-captain": "Vice-Captain", "vice captain": "Vice-Captain",
+    "marquee": "Marquee",
+}
+CL_CREDITS_RE = re.compile(r"-\s*(\d+(?:\.\d+)?)\s*([kKlL])?\s*$")
+CL_DASH_BOARD_RE = re.compile(r"-\s*([A-Za-z][A-Za-z .]*)\s*$")
+CL_PAREN_RE = re.compile(r"\(([^)]*)\)\s*$")
+
+
+def _cl_resolve_board(token):
+    """Exact-match lookup against BOARD_SHEETS plus the short-code table
+    above - deliberately NOT the fuzzy _resolve_board_name helper, since a
+    2-3 letter code like "SA" or "WI" is well within Levenshtein distance
+    1 of an unrelated board ("SA" -> "USA") and would silently mis-resolve.
+    """
+    token = token.strip()
+    if not token:
+        return None
+    for board in BOARD_SHEETS:
+        if token.lower() == board.lower():
+            return board
+    return CL_BOARD_ABBR.get(token.lower())
+
+
+def _parse_champions_league_player_line(raw):
+    m = PLAYER_LINE_RE.match(raw)
+    text = m.group(1) if m else raw.strip()
+
+    credits = None
+    credit_m = CL_CREDITS_RE.search(text)
+    if credit_m:
+        amount = float(credit_m.group(1))
+        suffix = (credit_m.group(2) or "").lower()
+        if suffix == "k":
+            amount *= 1000
+        elif suffix == "l":
+            amount *= 100000
+        credits = int(round(amount))
+        text = text[: credit_m.start()].rstrip()
+
+    board = None
+    role = None
+
+    # A trailing "- <full board name>" is only ever a board (never
+    # credits, already stripped above) - real board names aren't numeric
+    # so this can't collide with the credits pattern above.
+    dash_m = CL_DASH_BOARD_RE.search(text)
+    if dash_m:
+        board_raw = _clean(dash_m.group(1))
+        text = text[: dash_m.start()].rstrip()
+        if board_raw and board_raw.lower() != "no board":
+            board = _cl_resolve_board(board_raw) or board_raw
+
+    paren_m = CL_PAREN_RE.search(text)
+    if paren_m:
+        inner = paren_m.group(1)
+        text = text[: paren_m.start()].rstrip()
+        for part in inner.split("-"):
+            part = part.strip()
+            if not part:
+                continue
+            key = part.lower()
+            if key in ROLE_ABBRS:
+                role = ROLE_NAMES[key]
+            elif key in CL_ROLE_WORDS:
+                role = CL_ROLE_WORDS[key]
+            elif board is None:
+                board = _cl_resolve_board(part) or part
+
+    name = _clean(text) or _clean(raw)
+    return {"name": name, "board": board, "role": role, "credits": credits}
+
+
+def get_champions_league(wb):
+    if CHAMPIONS_LEAGUE_SHEET not in wb.sheetnames:
+        return None
+    ws = wb[CHAMPIONS_LEAGUE_SHEET]
+    # The sheet's own A1 title ("Champions League All Squads") is really
+    # this squads section's own label, not a tournament name - same
+    # hardcoded-display-name precedent as Emerging Talent League/Lone
+    # Warrior/Womens Global League below, all of which have their own
+    # differently-worded sheet titles too.
+    name = "Champions League"
+
+    teams = []
+    for c in range(1, ws.max_column + 1):
+        header = _clean(ws.cell(row=2, column=c).value)
+        if not header:
+            continue
+        header_m = CL_LEAGUE_HEADER_RE.match(header)
+        league = header_m.group("league").strip() if header_m else header
+        board_raw = header_m.group("board").strip() if header_m else None
+        board = (_cl_resolve_board(board_raw) or board_raw) if board_raw else None
+
+        team_name = _clean(ws.cell(row=3, column=c).value)
+
+        squad = []
+        for r in range(4, ws.max_row + 1):
+            raw = _clean(ws.cell(row=r, column=c).value)
+            if isinstance(raw, str) and PLAYER_LINE_RE.match(raw):
+                squad.append(_parse_champions_league_player_line(raw))
+
+        teams.append(
+            {
+                "league": league,
+                "board": board,
+                "team": team_name,
+                "squad": squad,
+            }
+        )
+
+    return {
+        "id": "champions-league",
+        "name": name,
+        "season": "2026",
+        "status": "Upcoming",
+        "champion": None,
+        "runnerUp": None,
+        "teams": teams,
+        "matches": [],
+        "awards": [],
+    }
 
 
 def get_emerging_talent_league(wb, tournament_updates):
@@ -1999,6 +2154,7 @@ def build_dashboard(path):
     hall_of_fame = get_hall_of_fame(wb)
     continental_cups = get_continental_cups(wb)
     world_cups = get_world_cups(wb)
+    champions_league = get_champions_league(wb)
     emerging = get_emerging_talent_league(wb, credits_data["tournamentUpdates"])
     womens_league = get_womens_global_league(wb, credits_data["tournamentUpdates"])
     lone_warrior = get_lone_warrior(wb, credits_data["tournamentUpdates"])
@@ -2083,6 +2239,19 @@ def build_dashboard(path):
                 "champion": cup["champion"],
                 "runnerUp": cup["runnerUp"],
                 "totalMatches": cup["totalMatches"],
+            }
+        )
+    if champions_league and any(t["squad"] for t in champions_league["teams"]):
+        tournaments.append(
+            {
+                "id": champions_league["id"],
+                "name": champions_league["name"],
+                "category": "Champions League",
+                "season": champions_league["season"],
+                "status": champions_league["status"],
+                "champion": champions_league["champion"],
+                "runnerUp": champions_league["runnerUp"],
+                "totalMatches": 0,
             }
         )
     for lg in franchise_leagues:
@@ -2200,6 +2369,7 @@ def build_dashboard(path):
         "franchiseLeagues": franchise_leagues,
         "continentalCups": continental_cups,
         "worldCups": world_cups,
+        "championsLeague": champions_league,
         "emergingTalentLeague": emerging,
         "womensGlobalLeague": womens_league,
         "loneWarrior": lone_warrior,

@@ -58,6 +58,8 @@ export default function TournamentDetail() {
       body = <ContinentalCupDetail cup={continentalCup} />
     } else if (worldCup) {
       body = <WorldCupDetail cup={worldCup} />
+    } else if (tournamentId === 'champions-league' && data.championsLeague) {
+      body = <ChampionsLeagueDetail league={data.championsLeague} />
     } else if (franchiseLeague) {
       body = <FranchiseLeagueDetail league={franchiseLeague} />
     } else {
@@ -661,6 +663,111 @@ function WorldCupSquadCard({ board, players }) {
         <button type="button" className="btn btn-ghost td-squad-card__toggle" onClick={() => setExpanded((v) => !v)}>
           {expanded ? 'Show less' : `Show all ${roster.length}`}
         </button>
+      )}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Champions League — draws each completed franchise league's champion */
+/* team into a fresh squad (re-drafted, so credits/roles differ from   */
+/* the original auction) for a league-of-leagues showdown. The         */
+/* workbook only has squads at this stage - no fixtures/awards exist   */
+/* yet, so this only ever renders team cards, same as a World Cup      */
+/* before its schedule is announced. One column (QECL) hasn't had its  */
+/* champion decided yet, so `team` is null there - shown as a distinct */
+/* placeholder card rather than silently dropping that league.         */
+/* ------------------------------------------------------------------ */
+function ChampionsLeagueDetail({ league }) {
+  const teams = league.teams || []
+
+  return (
+    <>
+      <p className="text-faint td-caption">
+        Champions of each completed franchise league, re-drafted into fresh squads for a league-of-leagues showdown.
+      </p>
+      <div className="td-subsection">
+        <div className="card-grid">
+          {teams.map((t) => (
+            <ChampionsLeagueTeamCard key={t.league} team={t} />
+          ))}
+        </div>
+      </div>
+      {(league.matches || []).length === 0 && (
+        <div className="empty-state">Fixtures for the Champions League have not been scheduled yet.</div>
+      )}
+    </>
+  )
+}
+
+// One league's entry in the Champions League draft - its franchise
+// champion's re-drafted squad, split into leadership (Captain/
+// Vice-Captain/Marquee) and roster same as every other squad card here.
+// A player's `board` is the real board they represent (not the league
+// team they were drafted into), so it's shown alongside their name
+// rather than assumed from the card's own board context.
+function ChampionsLeagueTeamCard({ team }) {
+  const [expanded, setExpanded] = useState(false)
+  const squad = team.squad || []
+  const leadership = squad.filter((p) => p.role)
+  const roster = squad.filter((p) => !p.role)
+  const shown = expanded ? roster : roster.slice(0, 5)
+
+  if (!team.team) {
+    return (
+      <div className="entity-card glass-panel td-team-card">
+        {team.board && <Badge name={team.board} size={44} />}
+        <p className="entity-card__title">{team.league}</p>
+        <p className="text-faint td-caption">Champion not decided yet</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="entity-card glass-panel td-franchise-card">
+      <div className="td-franchise-card__top">
+        {team.board && <Badge name={team.board} size={48} />}
+        <div>
+          <p className="entity-card__title">{team.team}</p>
+          <p className="entity-card__meta">
+            {team.league} Champions{team.board ? ` · ${team.board}` : ''}
+          </p>
+        </div>
+      </div>
+
+      {leadership.length > 0 && (
+        <div className="td-franchise-card__leadership">
+          {leadership.map((p) => (
+            <span key={p.name} className="pill td-franchise-card__role-pill">
+              <IconCaptain aria-hidden="true" /> {p.name} · {p.role}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {roster.length > 0 && (
+        <>
+          <ul className="td-squad-card__players td-franchise-card__players">
+            {shown.map((p) => (
+              <li key={p.name}>
+                <span>
+                  {p.name}
+                  {p.board && <span className="text-faint"> ({p.board})</span>}
+                </span>
+                {p.credits != null && <span className="td-franchise-card__player-credits">{formatCredits(p.credits)}</span>}
+              </li>
+            ))}
+          </ul>
+          {roster.length > 5 && (
+            <button
+              type="button"
+              className="btn btn-ghost td-squad-card__toggle"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? 'Show less' : `Show all ${roster.length}`}
+            </button>
+          )}
+        </>
       )}
     </div>
   )

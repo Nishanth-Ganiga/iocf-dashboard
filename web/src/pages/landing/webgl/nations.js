@@ -8,6 +8,7 @@ export const IOCF_NATIONS = [
   { id: 'india', name: 'India', lat: 21, lng: 78, color: '#f5cf5c' },
   { id: 'australia', name: 'Australia', lat: -25, lng: 133, color: '#f5cf5c' },
   { id: 'pakistan', name: 'Pakistan', lat: 30, lng: 70, color: '#34e0ff' },
+  { id: 'papuanewguinea', name: 'Papua New Guinea', lat: -6.3, lng: 143.9, color: '#34e0ff' },
   { id: 'bangladesh', name: 'Bangladesh', lat: 24, lng: 90, color: '#34e0ff' },
   { id: 'scotland', name: 'Scotland', lat: 56, lng: -4, color: '#d4af37' },
   { id: 'italy', name: 'Italy', lat: 42, lng: 12, color: '#34e0ff' },

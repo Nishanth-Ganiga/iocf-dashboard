@@ -93,6 +93,14 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#01411c', secondary: '#f5f5f5' },
     instagram: 'https://www.instagram.com/pakistan_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
+  // Newest board (added 2026) - no Instagram handle on record yet, so
+  // it's left out entirely rather than invented; see FlagIcon.jsx for how
+  // a missing instagram degrades gracefully instead of rendering broken.
+  'Papua New Guinea': {
+    flagCode: 'pg', flagEmoji: '🇵🇬', mascotName: 'Bird of Paradise',
+    mascotImage: '/mascots/papua-new-guinea.png',
+    crest: { primary: '#CE1126', secondary: '#000000' },
+  },
   // Newest board (added 2026) - no mascot artwork on record yet, so it's
   // left out entirely rather than invented; see MascotIcon.jsx for how a
   // missing mascotImage degrades gracefully instead of rendering broken.
