@@ -51,6 +51,7 @@ const BOARD_CODES = {
   India: 'IND',
   Ireland: 'IRE',
   Italy: 'ITA',
+  Nepal: 'NEP',
   Netherlands: 'NED',
   Newzealand: 'NZ',
   Pakistan: 'PAK',

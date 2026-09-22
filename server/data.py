@@ -25,6 +25,7 @@ BOARD_SHEETS = {
     "India": "India",
     "Ireland": "Ireland",
     "Italy": "Italy",
+    "Nepal": "Nepal",
     "Netherlands": "Netherlands",
     "Newzealand": "Newzealand",
     "Pakistan": "Pakistan",
