@@ -38,36 +38,42 @@ function scoreFor(achievementCount, honors) {
 export default function Achievers() {
   const { data, loading, error } = useDashboard()
   const [query, setQuery] = useState('')
+  const [loadedCount, setLoadedCount] = useState(50) // Load 50 achievers initially
   const achievementsIndex = useMemo(() => buildAchievementsIndex(data), [data])
+
+  const leaderboard = useMemo(() => {
+    if (!data) return []
+    const { boards = [] } = data
+    const allPlayers = []
+    for (const b of boards) {
+      for (const n of splitOfficeHolders(b.chairman)) allPlayers.push({ name: n, board: b.name, boardId: b.id })
+      for (const n of splitOfficeHolders(b.ceo)) allPlayers.push({ name: n, board: b.name, boardId: b.id })
+      for (const name of b.players || []) allPlayers.push({ name, board: b.name, boardId: b.id })
+    }
+
+    return allPlayers
+      .map((p) => {
+        const achievementCount = getAchievementsFor(achievementsIndex, p.name).length
+        const honors = { champion: 0, runnerUp: 0, fairPlay: 0 }
+        for (const s of findFranchiseSquads(data, p.name)) {
+          const honor = teamHonorFor(data, s.leagueId, s.team)
+          if (honor === 'champion') honors.champion++
+          else if (honor === 'runner-up') honors.runnerUp++
+          else if (honor === 'fair-play') honors.fairPlay++
+        }
+        return { ...p, achievementCount, honors, score: scoreFor(achievementCount, honors) }
+      })
+      .filter((p) => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, loadedCount) // Only load up to loadedCount
+      .map((p, i) => ({ ...p, rank: i + 1 }))
+  }, [data, achievementsIndex, loadedCount])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} />
   if (!data) return null
 
   const { boards = [] } = data
-
-  const allPlayers = []
-  for (const b of boards) {
-    for (const n of splitOfficeHolders(b.chairman)) allPlayers.push({ name: n, board: b.name, boardId: b.id })
-    for (const n of splitOfficeHolders(b.ceo)) allPlayers.push({ name: n, board: b.name, boardId: b.id })
-    for (const name of b.players || []) allPlayers.push({ name, board: b.name, boardId: b.id })
-  }
-
-  const leaderboard = allPlayers
-    .map((p) => {
-      const achievementCount = getAchievementsFor(achievementsIndex, p.name).length
-      const honors = { champion: 0, runnerUp: 0, fairPlay: 0 }
-      for (const s of findFranchiseSquads(data, p.name)) {
-        const honor = teamHonorFor(data, s.leagueId, s.team)
-        if (honor === 'champion') honors.champion++
-        else if (honor === 'runner-up') honors.runnerUp++
-        else if (honor === 'fair-play') honors.fairPlay++
-      }
-      return { ...p, achievementCount, honors, score: scoreFor(achievementCount, honors) }
-    })
-    .filter((p) => p.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .map((p, i) => ({ ...p, rank: i + 1 }))
 
   const maxScore = Math.max(1, ...leaderboard.map((p) => p.score))
 
@@ -97,69 +103,80 @@ export default function Achievers() {
           <p className="achievers-caption text-faint">
             Ranked by a combined score: every individual award on record, plus every franchise
             squad that went on to win Champion (×3), Runner-up (×2), or Fair Play (×1) for its
-            league. {leaderboard.length} players have at least one honor on record.
-            {truncated && ` Showing top ${MAX_RESULTS} — narrow your search to see more.`}
+            league. Showing {leaderboard.length} achievers.
           </p>
 
           {filtered.length === 0 ? (
             <div className="empty-state">No achievers match "{query}".</div>
           ) : (
-            <div className="glass-panel achievers-table">
-              {visible.map((p) => {
-                const medal = MEDALS[p.rank]
-                const share = Math.max(2, (p.score / maxScore) * 100)
-                return (
-                  <div
-                    key={`${p.name}-${p.boardId}`}
-                    className={`achievers-row${medal ? ' achievers-row--top' : ''}`}
-                  >
-                    <div className="achievers-row__bar" style={{ width: `${share}%` }} aria-hidden="true" />
-                    <div className={`achievers-row__rank${medal ? ` achievers-row__rank--${p.rank}` : ''}`}>
-                      {medal || `#${p.rank}`}
-                    </div>
-                    <Badge name={p.name} size={44} rounded="square" />
-                    <div className="achievers-row__text">
-                      <Link to={`/players/${encodeURIComponent(p.name)}`} className="achievers-row__name">
-                        {p.name}
-                      </Link>
-                      <Link to={`/boards/${p.boardId}`} className="achievers-row__board text-faint">
-                        {p.board}
-                      </Link>
-                    </div>
-                    <div className="achievers-row__pills">
-                      <div className="achievers-pills-group achievers-pills-group--honors">
-                        {p.honors.champion > 0 && (
-                          <span className="pill achievers-pill achievers-pill--champion" title="Champion squads">
-                            <IconChampion aria-hidden="true" /> {p.honors.champion}
-                          </span>
-                        )}
-                        {p.honors.runnerUp > 0 && (
-                          <span className="pill achievers-pill achievers-pill--runner-up" title="Runner-up squads">
-                            <IconMedal aria-hidden="true" /> {p.honors.runnerUp}
-                          </span>
-                        )}
-                        {p.honors.fairPlay > 0 && (
-                          <span className="pill achievers-pill achievers-pill--fair-play" title="Fair Play squads">
-                            <IconFairPlay aria-hidden="true" /> {p.honors.fairPlay}
-                          </span>
+            <>
+              <div className="glass-panel achievers-table">
+                {visible.map((p) => {
+                  const medal = MEDALS[p.rank]
+                  const share = Math.max(2, (p.score / maxScore) * 100)
+                  return (
+                    <div
+                      key={`${p.name}-${p.boardId}`}
+                      className={`achievers-row${medal ? ' achievers-row--top' : ''}`}
+                    >
+                      <div className="achievers-row__bar" style={{ width: `${share}%` }} aria-hidden="true" />
+                      <div className={`achievers-row__rank${medal ? ` achievers-row__rank--${p.rank}` : ''}`}>
+                        {medal || `#${p.rank}`}
+                      </div>
+                      <Badge name={p.name} size={44} rounded="square" />
+                      <div className="achievers-row__text">
+                        <Link to={`/players/${encodeURIComponent(p.name)}`} className="achievers-row__name">
+                          {p.name}
+                        </Link>
+                        <Link to={`/boards/${p.boardId}`} className="achievers-row__board text-faint">
+                          {p.board}
+                        </Link>
+                      </div>
+                      <div className="achievers-row__pills">
+                        <div className="achievers-pills-group achievers-pills-group--honors">
+                          {p.honors.champion > 0 && (
+                            <span className="pill achievers-pill achievers-pill--champion" title="Champion squads">
+                              <IconChampion aria-hidden="true" /> {p.honors.champion}
+                            </span>
+                          )}
+                          {p.honors.runnerUp > 0 && (
+                            <span className="pill achievers-pill achievers-pill--runner-up" title="Runner-up squads">
+                              <IconMedal aria-hidden="true" /> {p.honors.runnerUp}
+                            </span>
+                          )}
+                          {p.honors.fairPlay > 0 && (
+                            <span className="pill achievers-pill achievers-pill--fair-play" title="Fair Play squads">
+                              <IconFairPlay aria-hidden="true" /> {p.honors.fairPlay}
+                            </span>
+                          )}
+                        </div>
+                        {p.achievementCount > 0 && (
+                          <div className="achievers-pills-group achievers-pills-group--achievements">
+                            <span className="pill achievers-pill achievers-pill--award" title="Individual awards">
+                              <IconAward aria-hidden="true" /> {p.achievementCount}
+                            </span>
+                          </div>
                         )}
                       </div>
-                      {p.achievementCount > 0 && (
-                        <div className="achievers-pills-group achievers-pills-group--achievements">
-                          <span className="pill achievers-pill achievers-pill--award" title="Individual awards">
-                            <IconAward aria-hidden="true" /> {p.achievementCount}
-                          </span>
-                        </div>
-                      )}
+                      <div className="achievers-row__score">
+                        <span className="text-faint">Score</span>
+                        <b>{p.score}</b>
+                      </div>
                     </div>
-                    <div className="achievers-row__score">
-                      <span className="text-faint">Score</span>
-                      <b>{p.score}</b>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+              {loadedCount < 200 && (
+                <div className="achievers-load-more-container">
+                  <button
+                    className="btn btn-outline-gold"
+                    onClick={() => setLoadedCount(loadedCount + 50)}
+                  >
+                    Load more achievers (+50)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

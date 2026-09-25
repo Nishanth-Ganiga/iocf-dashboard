@@ -44,7 +44,8 @@ export default function BadgeHolders() {
   const { data, loading, error } = useDashboard()
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(null)
-  const [badgePages, setBadgePages] = useState({}) // Track which page each player is on
+  const [badgePages, setBadgePages] = useState({})
+  const [loadedCount, setLoadedCount] = useState(15) // Start with top 15 only
   const achievementsIndex = useMemo(() => buildAchievementsIndex(data), [data])
 
   const leaderboard = useMemo(() => {
@@ -71,9 +72,9 @@ export default function BadgeHolders() {
       })
       .filter((p) => p.badges.length > 0)
       .sort((a, b) => b.badges.length - a.badges.length)
-      .slice(0, MAX_RESULTS)
+      .slice(0, loadedCount) // Only load up to loadedCount
       .map((p, i) => ({ ...p, rank: i + 1 }))
-  }, [data, achievementsIndex])
+  }, [data, achievementsIndex, loadedCount])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} />
@@ -112,103 +113,115 @@ export default function BadgeHolders() {
           {filtered.length === 0 ? (
             <div className="empty-state">No badge holders match "{query}".</div>
           ) : (
-            <div className="glass-panel bh-table">
-              {filtered.map((p) => {
-                const cardKey = `${p.name}-${p.boardId}`
-                const isOpen = expanded === cardKey
-                const medal = MEDALS[p.rank]
-                const share = Math.max(2, (p.badges.length / maxBadges) * 100)
-                return (
-                  <div
-                    key={cardKey}
-                    className={`bh-row${medal ? ' bh-row--top' : ''}${isOpen ? ' is-expanded' : ''}`}
-                  >
-                    <div className="bh-row__bar" style={{ width: `${share}%` }} aria-hidden="true" />
+            <>
+              <div className="glass-panel bh-table">
+                {filtered.map((p) => {
+                  const cardKey = `${p.name}-${p.boardId}`
+                  const isOpen = expanded === cardKey
+                  const medal = MEDALS[p.rank]
+                  const share = Math.max(2, (p.badges.length / (Math.max(1, ...leaderboard.map((x) => x.badges.length)))) * 100)
+                  return (
                     <div
-                      className="bh-row__main"
-                      onClick={() => setExpanded(isOpen ? null : cardKey)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          setExpanded(isOpen ? null : cardKey)
-                        }
-                      }}
+                      key={cardKey}
+                      className={`bh-row${medal ? ' bh-row--top' : ''}${isOpen ? ' is-expanded' : ''}`}
                     >
-                      <div className={`bh-row__rank${medal ? ` bh-row__rank--${p.rank}` : ''}`}>
-                        {medal || `#${p.rank}`}
-                      </div>
-                      <Badge name={p.name} size={44} rounded="square" />
-                      <div className="bh-row__text">
-                        <Link
-                          to={`/players/${encodeURIComponent(p.name)}`}
-                          className="bh-row__name"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {p.name}
-                        </Link>
-                        <span className="bh-row__board text-faint">
-                          {p.former ? `Formerly ${p.board}` : p.board}
-                        </span>
-                      </div>
-                      <div className="bh-row__count">
-                        <span className="text-faint">Badges</span>
-                        <b>{p.badges.length}</b>
-                      </div>
-                    </div>
-                    {isOpen && (
-                      <div className="bh-row__panel">
-                        <Link to={`/boards/${p.boardId}`} className="bh-row__board-link">
-                          {p.former ? 'Formerly represented ' : 'Represents '}
-                          {p.board}
-                        </Link>
-                        <div className="bh-badges-container">
-                          {categorizeBadges(p.badges).map(([category, categoryBadges]) => {
-                            const cardKey = `${p.name}-${p.boardId}`
-                            const currentPage = badgePages[cardKey] || 0
-                            const start = currentPage * BADGES_PER_VIEW
-                            const shown = categoryBadges.slice(start, start + BADGES_PER_VIEW)
-                            const hasMore = start + BADGES_PER_VIEW < categoryBadges.length
-                            return (
-                              <div key={category} className="bh-badge-category">
-                                <p className="bh-badge-category__title">{category}</p>
-                                <div className="bh-badge-grid">
-                                  {shown.map((b) => {
-                                    const Icon = BADGE_ICONS[b.key] || IconAward
-                                    return (
-                                      <span key={b.key} className="bh-badge-chip" title={b.detail}>
-                                        <Icon aria-hidden="true" /> {b.label}
-                                      </span>
-                                    )
-                                  })}
-                                </div>
-                                {hasMore && (
-                                  <button
-                                    className="bh-badge-more"
-                                    onClick={() => setBadgePages({ ...badgePages, [cardKey]: currentPage + 1 })}
-                                  >
-                                    Show more {category.toLowerCase()} ({categoryBadges.length - shown.length} more)
-                                  </button>
-                                )}
-                                {currentPage > 0 && (
-                                  <button
-                                    className="bh-badge-less"
-                                    onClick={() => setBadgePages({ ...badgePages, [cardKey]: 0 })}
-                                  >
-                                    Show less
-                                  </button>
-                                )}
-                              </div>
-                            )
-                          })}
+                      <div className="bh-row__bar" style={{ width: `${share}%` }} aria-hidden="true" />
+                      <div
+                        className="bh-row__main"
+                        onClick={() => setExpanded(isOpen ? null : cardKey)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setExpanded(isOpen ? null : cardKey)
+                          }
+                        }}
+                      >
+                        <div className={`bh-row__rank${medal ? ` bh-row__rank--${p.rank}` : ''}`}>
+                          {medal || `#${p.rank}`}
+                        </div>
+                        <Badge name={p.name} size={44} rounded="square" />
+                        <div className="bh-row__text">
+                          <Link
+                            to={`/players/${encodeURIComponent(p.name)}`}
+                            className="bh-row__name"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {p.name}
+                          </Link>
+                          <span className="bh-row__board text-faint">
+                            {p.former ? `Formerly ${p.board}` : p.board}
+                          </span>
+                        </div>
+                        <div className="bh-row__count">
+                          <span className="text-faint">Badges</span>
+                          <b>{p.badges.length}</b>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                      {isOpen && (
+                        <div className="bh-row__panel">
+                          <Link to={`/boards/${p.boardId}`} className="bh-row__board-link">
+                            {p.former ? 'Formerly represented ' : 'Represents '}
+                            {p.board}
+                          </Link>
+                          <div className="bh-badges-container">
+                            {categorizeBadges(p.badges).map(([category, categoryBadges]) => {
+                              const cardKey = `${p.name}-${p.boardId}`
+                              const currentPage = badgePages[cardKey] || 0
+                              const start = currentPage * BADGES_PER_VIEW
+                              const shown = categoryBadges.slice(start, start + BADGES_PER_VIEW)
+                              const hasMore = start + BADGES_PER_VIEW < categoryBadges.length
+                              return (
+                                <div key={category} className="bh-badge-category">
+                                  <p className="bh-badge-category__title">{category}</p>
+                                  <div className="bh-badge-grid">
+                                    {shown.map((b) => {
+                                      const Icon = BADGE_ICONS[b.key] || IconAward
+                                      return (
+                                        <span key={b.key} className="bh-badge-chip" title={b.detail}>
+                                          <Icon aria-hidden="true" /> {b.label}
+                                        </span>
+                                      )
+                                    })}
+                                  </div>
+                                  {hasMore && (
+                                    <button
+                                      className="bh-badge-more"
+                                      onClick={() => setBadgePages({ ...badgePages, [cardKey]: currentPage + 1 })}
+                                    >
+                                      Show more {category.toLowerCase()} ({categoryBadges.length - shown.length} more)
+                                    </button>
+                                  )}
+                                  {currentPage > 0 && (
+                                    <button
+                                      className="bh-badge-less"
+                                      onClick={() => setBadgePages({ ...badgePages, [cardKey]: 0 })}
+                                    >
+                                      Show less
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {loadedCount < 100 && (
+                <div className="bh-load-more-container">
+                  <button
+                    className="btn btn-outline-gold"
+                    onClick={() => setLoadedCount(loadedCount + 15)}
+                  >
+                    Load more badge holders (+15)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

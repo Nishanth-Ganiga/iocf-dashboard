@@ -193,6 +193,18 @@
   }
 }
 
+.achievers-load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 16px 0;
+}
+
+.achievers-load-more-container .btn {
+  padding: 10px 24px;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 640px) {
   .achievers-search {
     width: 100%;

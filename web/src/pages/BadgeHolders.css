@@ -252,3 +252,15 @@
     width: 32px;
   }
 }
+
+.bh-load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 16px 0;
+}
+
+.bh-load-more-container .btn {
+  padding: 10px 24px;
+  font-size: 0.85rem;
+}
