@@ -16,8 +16,6 @@ import Stadiums from './pages/Stadiums'
 import Tournaments from './pages/Tournaments'
 import TournamentDetail from './pages/TournamentDetail'
 import Rankings from './pages/Rankings'
-import Achievers from './pages/Achievers'
-import BadgeHolders from './pages/BadgeHolders'
 import BoardRankings from './pages/BoardRankings'
 import UmpireRankings from './pages/UmpireRankings'
 import Compare from './pages/Compare'
@@ -63,8 +61,6 @@ function AppShell() {
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/tournaments/:tournamentId" element={<TournamentDetail />} />
             <Route path="/rankings" element={<Rankings />} />
-            <Route path="/achievers" element={<Achievers />} />
-            <Route path="/badge-holders" element={<BadgeHolders />} />
             <Route path="/board-rankings" element={<BoardRankings />} />
             <Route path="/umpire-rankings" element={<UmpireRankings />} />
             <Route path="/compare" element={<Compare />} />
