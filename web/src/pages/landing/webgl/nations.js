@@ -4,6 +4,7 @@
 // these only need to read as "roughly the right part of the globe", not
 // survey-accurate.
 export const IOCF_NATIONS = [
+  { id: 'argentina', name: 'Argentina', lat: -34, lng: -64, color: '#d4af37' },
   { id: 'england', name: 'England', lat: 52, lng: -1, color: '#34e0ff' },
   { id: 'india', name: 'India', lat: 21, lng: 78, color: '#f5cf5c' },
   { id: 'australia', name: 'Australia', lat: -25, lng: 133, color: '#f5cf5c' },
@@ -13,6 +14,7 @@ export const IOCF_NATIONS = [
   { id: 'bangladesh', name: 'Bangladesh', lat: 24, lng: 90, color: '#34e0ff' },
   { id: 'scotland', name: 'Scotland', lat: 56, lng: -4, color: '#d4af37' },
   { id: 'italy', name: 'Italy', lat: 42, lng: 12, color: '#34e0ff' },
+  { id: 'kenya', name: 'Kenya', lat: -1, lng: 37, color: '#f5cf5c' },
   { id: 'netherlands', name: 'Netherlands', lat: 52, lng: 5, color: '#d4af37' },
   { id: 'qatar', name: 'Qatar', lat: 25, lng: 51, color: '#f5cf5c' },
   { id: 'southafrica', name: 'South Africa', lat: -29, lng: 24, color: '#d4af37' },

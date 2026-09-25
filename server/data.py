@@ -18,6 +18,7 @@ import openpyxl
 # Board sheet -> credits-sheet display name mapping
 # ---------------------------------------------------------------------------
 BOARD_SHEETS = {
+    "Argentina": "Argentina",
     "Australia": "Australia",
     "Bangladesh": "Bangladesh",
     "Canada": "Canada",
@@ -25,6 +26,7 @@ BOARD_SHEETS = {
     "India": "India",
     "Ireland": "Ireland",
     "Italy": "Italy",
+    "Kenya": "Kenya",
     "Nepal": "Nepal",
     "Netherlands": "Netherlands",
     "Newzealand": "Newzealand",

@@ -44,6 +44,7 @@ export function initialsFor(name = '', max = 3) {
 // Common 2-3 letter codes for the 14 IOCF boards read out of the workbook -
 // falls back to auto-initials for anything else (tournaments, stadiums).
 const BOARD_CODES = {
+  Argentina: 'ARG',
   Australia: 'AUS',
   Bangladesh: 'BAN',
   Canada: 'CAN',
@@ -51,6 +52,7 @@ const BOARD_CODES = {
   India: 'IND',
   Ireland: 'IRE',
   Italy: 'ITA',
+  Kenya: 'KEN',
   Nepal: 'NEP',
   Netherlands: 'NED',
   Newzealand: 'NZ',

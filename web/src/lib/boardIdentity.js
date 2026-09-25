@@ -33,6 +33,13 @@
 // it's what the board's supporters are known as, same idea as national
 // sports teams having an animal nickname.
 export const BOARD_IDENTITY = {
+  // Newest boards (added 2026) - no Instagram handles on record yet, so
+  // they're left out entirely rather than invented; see FlagIcon.jsx for how
+  // a missing instagram degrades gracefully instead of rendering broken.
+  Argentina: {
+    flagCode: 'ar', flagEmoji: '🇦🇷', mascotName: 'Jaguar',
+    crest: { primary: '#74ACDF', secondary: '#FFFFFF' },
+  },
   Australia: {
     flagCode: 'au', flagEmoji: '🇦🇺', mascotName: 'Kangaroo',
     mascotImage: '/mascots/australia.png',
@@ -74,6 +81,13 @@ export const BOARD_IDENTITY = {
     mascotImage: '/mascots/italy.png',
     crest: { primary: '#008C45', secondary: '#CD212A' },
     instagram: 'https://www.instagram.com/italy_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+  },
+  // Newest board (added 2026) - no Instagram handle on record yet, so
+  // it's left out entirely rather than invented; see FlagIcon.jsx for how
+  // a missing instagram degrades gracefully instead of rendering broken.
+  Kenya: {
+    flagCode: 'ke', flagEmoji: '🇰🇪', mascotName: 'Lion',
+    crest: { primary: '#CE1126', secondary: '#000000' },
   },
   Netherlands: {
     flagCode: 'nl', flagEmoji: '🇳🇱', mascotName: 'Fox',
