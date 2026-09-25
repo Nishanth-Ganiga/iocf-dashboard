@@ -21,6 +21,7 @@ import {
 const MODULES = [
   { label: 'Dashboard', to: '/dashboard', Icon: null, emoji: '🏠' },
   { label: 'Cricket Boards', to: '/boards', Icon: IconBoard },
+  { label: 'Complete Roster', to: '/roster', Icon: null, emoji: '👥' },
   { label: 'Stadiums', to: '/stadiums', Icon: IconStadium },
   { label: 'Tournaments', to: '/tournaments', Icon: IconTrophy },
   { label: 'Credits Ranking', to: '/rankings', Icon: IconPodium },
