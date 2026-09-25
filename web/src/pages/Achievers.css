@@ -137,9 +137,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
-  max-width: 220px;
+  max-width: 280px;
+}
+
+.achievers-pills-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .achievers-pill {

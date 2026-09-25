@@ -127,25 +127,29 @@ export default function Achievers() {
                       </Link>
                     </div>
                     <div className="achievers-row__pills">
-                      {p.honors.champion > 0 && (
-                        <span className="pill achievers-pill achievers-pill--champion" title="Champion squads">
-                          <IconChampion aria-hidden="true" /> {p.honors.champion}
-                        </span>
-                      )}
-                      {p.honors.runnerUp > 0 && (
-                        <span className="pill achievers-pill achievers-pill--runner-up" title="Runner-up squads">
-                          <IconMedal aria-hidden="true" /> {p.honors.runnerUp}
-                        </span>
-                      )}
-                      {p.honors.fairPlay > 0 && (
-                        <span className="pill achievers-pill achievers-pill--fair-play" title="Fair Play squads">
-                          <IconFairPlay aria-hidden="true" /> {p.honors.fairPlay}
-                        </span>
-                      )}
+                      <div className="achievers-pills-group achievers-pills-group--honors">
+                        {p.honors.champion > 0 && (
+                          <span className="pill achievers-pill achievers-pill--champion" title="Champion squads">
+                            <IconChampion aria-hidden="true" /> {p.honors.champion}
+                          </span>
+                        )}
+                        {p.honors.runnerUp > 0 && (
+                          <span className="pill achievers-pill achievers-pill--runner-up" title="Runner-up squads">
+                            <IconMedal aria-hidden="true" /> {p.honors.runnerUp}
+                          </span>
+                        )}
+                        {p.honors.fairPlay > 0 && (
+                          <span className="pill achievers-pill achievers-pill--fair-play" title="Fair Play squads">
+                            <IconFairPlay aria-hidden="true" /> {p.honors.fairPlay}
+                          </span>
+                        )}
+                      </div>
                       {p.achievementCount > 0 && (
-                        <span className="pill achievers-pill achievers-pill--award" title="Individual awards">
-                          <IconAward aria-hidden="true" /> {p.achievementCount}
-                        </span>
+                        <div className="achievers-pills-group achievers-pills-group--achievements">
+                          <span className="pill achievers-pill achievers-pill--award" title="Individual awards">
+                            <IconAward aria-hidden="true" /> {p.achievementCount}
+                          </span>
+                        </div>
                       )}
                     </div>
                     <div className="achievers-row__score">

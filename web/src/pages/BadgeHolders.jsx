@@ -13,17 +13,38 @@ import './BadgeHolders.css'
 
 const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }
 const MAX_RESULTS = 30
+const BADGES_PER_VIEW = 8
 
-// Own route (rather than a tab on Achievers) so the heavier per-player
-// pass here — computing each player's full badge cabinet via
-// computeBadges, the same one PlayerDetail.jsx renders — only runs when
-// this page is actually visited, instead of on every Top Achievers load.
-// Clicking a player expands their row in place to reveal their board and
-// full badge list, rather than navigating away.
+// Categorize badges by type for better organization
+function categorizeBadges(badges) {
+  const categories = {
+    Tournament: [],
+    Team: [],
+    Role: [],
+    Achievement: [],
+    Other: [],
+  }
+  badges.forEach(b => {
+    if (b.key.includes('world-cup') || b.key.includes('continental')) {
+      categories.Tournament.push(b)
+    } else if (b.key.includes('champion') || b.key.includes('runner') || b.key.includes('hero')) {
+      categories.Team.push(b)
+    } else if (b.key.includes('captain') || b.key.includes('chairman') || b.key.includes('ceo')) {
+      categories.Role.push(b)
+    } else if (b.key.includes('badge') || b.key.includes('hall')) {
+      categories.Achievement.push(b)
+    } else {
+      categories.Other.push(b)
+    }
+  })
+  return Object.entries(categories).filter(([_, badges]) => badges.length > 0)
+}
+
 export default function BadgeHolders() {
   const { data, loading, error } = useDashboard()
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(null)
+  const [badgePages, setBadgePages] = useState({}) // Track which page each player is on
   const achievementsIndex = useMemo(() => buildAchievementsIndex(data), [data])
 
   const leaderboard = useMemo(() => {
@@ -142,13 +163,43 @@ export default function BadgeHolders() {
                           {p.former ? 'Formerly represented ' : 'Represents '}
                           {p.board}
                         </Link>
-                        <div className="bh-badge-grid">
-                          {p.badges.map((b) => {
-                            const Icon = BADGE_ICONS[b.key] || IconAward
+                        <div className="bh-badges-container">
+                          {categorizeBadges(p.badges).map(([category, categoryBadges]) => {
+                            const cardKey = `${p.name}-${p.boardId}`
+                            const currentPage = badgePages[cardKey] || 0
+                            const start = currentPage * BADGES_PER_VIEW
+                            const shown = categoryBadges.slice(start, start + BADGES_PER_VIEW)
+                            const hasMore = start + BADGES_PER_VIEW < categoryBadges.length
                             return (
-                              <span key={b.key} className="bh-badge-chip" title={b.detail}>
-                                <Icon aria-hidden="true" /> {b.label}
-                              </span>
+                              <div key={category} className="bh-badge-category">
+                                <p className="bh-badge-category__title">{category}</p>
+                                <div className="bh-badge-grid">
+                                  {shown.map((b) => {
+                                    const Icon = BADGE_ICONS[b.key] || IconAward
+                                    return (
+                                      <span key={b.key} className="bh-badge-chip" title={b.detail}>
+                                        <Icon aria-hidden="true" /> {b.label}
+                                      </span>
+                                    )
+                                  })}
+                                </div>
+                                {hasMore && (
+                                  <button
+                                    className="bh-badge-more"
+                                    onClick={() => setBadgePages({ ...badgePages, [cardKey]: currentPage + 1 })}
+                                  >
+                                    Show more {category.toLowerCase()} ({categoryBadges.length - shown.length} more)
+                                  </button>
+                                )}
+                                {currentPage > 0 && (
+                                  <button
+                                    className="bh-badge-less"
+                                    onClick={() => setBadgePages({ ...badgePages, [cardKey]: 0 })}
+                                  >
+                                    Show less
+                                  </button>
+                                )}
+                              </div>
                             )
                           })}
                         </div>
