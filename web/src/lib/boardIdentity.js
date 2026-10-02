@@ -38,6 +38,7 @@ export const BOARD_IDENTITY = {
   // a missing instagram degrades gracefully instead of rendering broken.
   Argentina: {
     flagCode: 'ar', flagEmoji: '🇦🇷', mascotName: 'Jaguar',
+    mascotImage: '/mascots/argentina.png',
     crest: { primary: '#74ACDF', secondary: '#FFFFFF' },
   },
   Australia: {
@@ -87,6 +88,7 @@ export const BOARD_IDENTITY = {
   // a missing instagram degrades gracefully instead of rendering broken.
   Kenya: {
     flagCode: 'ke', flagEmoji: '🇰🇪', mascotName: 'Lion',
+    mascotImage: '/mascots/kenya.png',
     crest: { primary: '#CE1126', secondary: '#000000' },
   },
   Netherlands: {
@@ -112,6 +114,7 @@ export const BOARD_IDENTITY = {
   // a missing instagram degrades gracefully instead of rendering broken.
   Nepal: {
     flagCode: 'np', flagEmoji: '🇳🇵', mascotName: 'Snow Leopard',
+    mascotImage: '/mascots/nepal.png',
     crest: { primary: '#DC143C', secondary: '#003DA5' },
   },
   // Newest board (added 2026) - no Instagram handle on record yet, so
@@ -122,11 +125,12 @@ export const BOARD_IDENTITY = {
     mascotImage: '/mascots/papua-new-guinea.png',
     crest: { primary: '#CE1126', secondary: '#000000' },
   },
-  // Newest board (added 2026) - no mascot artwork on record yet, so it's
-  // left out entirely rather than invented; see MascotIcon.jsx for how a
-  // missing mascotImage degrades gracefully instead of rendering broken.
+  // Newest board (added 2026) - no Instagram handle on record yet, so
+  // it's left out entirely rather than invented; see FlagIcon.jsx for how
+  // a missing instagram degrades gracefully instead of rendering broken.
   Portugal: {
-    flagCode: 'pt', flagEmoji: '🇵🇹', mascotName: null,
+    flagCode: 'pt', flagEmoji: '🇵🇹', mascotName: 'Rooster',
+    mascotImage: '/mascots/portugal.png',
     crest: { primary: '#046A38', secondary: '#DA291C' },
     instagram: 'https://www.instagram.com/portugal.iocf/',
   },
