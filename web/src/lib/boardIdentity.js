@@ -83,6 +83,12 @@ export const BOARD_IDENTITY = {
     crest: { primary: '#008C45', secondary: '#CD212A' },
     instagram: 'https://www.instagram.com/italy_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
   },
+  // Newest boards (added 2026) - no Instagram handles on record yet
+  Japan: {
+    flagCode: 'jp', flagEmoji: '🇯🇵', mascotName: 'Phoenix',
+    mascotImage: '/mascots/japan.png',
+    crest: { primary: '#BC002D', secondary: '#FFFFFF' },
+  },
   // Newest board (added 2026) - no Instagram handle on record yet, so
   // it's left out entirely rather than invented; see FlagIcon.jsx for how
   // a missing instagram degrades gracefully instead of rendering broken.
@@ -151,6 +157,12 @@ export const BOARD_IDENTITY = {
     mascotImage: '/mascots/south-africa.png',
     crest: { primary: '#007749', secondary: '#ffb612' },
     instagram: 'https://www.instagram.com/cric.sa_oc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+  },
+  // Newest board (added 2026) - no Instagram handle on record yet
+  Spain: {
+    flagCode: 'es', flagEmoji: '🇪🇸', mascotName: 'Eagle',
+    mascotImage: '/mascots/spain.png',
+    crest: { primary: '#C60B1E', secondary: '#FFC400' },
   },
   Srilanka: {
     flagCode: 'lk', flagEmoji: '🇱🇰', mascotName: 'Bear',
